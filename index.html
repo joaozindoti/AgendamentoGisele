@@ -16,7 +16,6 @@ a{color:inherit;text-decoration:none}
 img{display:block;max-width:100%}
 ul{list-style:none}
 
-/* TOKENS */
 :root{
   --rose:#B76E79;--rose-d:#9E5D68;--nude:#F5F0EB;--light:#FAF8F5;
   --border:#E8D5C4;--dark:#1B1C1C;--text:#524345;--muted:#857374;
@@ -26,7 +25,6 @@ ul{list-style:none}
   --sh-lg:0 16px 48px rgba(183,110,121,.13);
 }
 
-/* LAYOUT */
 .container{width:100%;max-width:1100px;margin:0 auto;padding:0 16px}
 @media(min-width:768px){.container{padding:0 40px}}
 .section{padding:64px 0}
@@ -60,39 +58,27 @@ ul{list-style:none}
 
 /* TIPOGRAFIA */
 .eyebrow{display:block;font-size:11px;font-weight:700;letter-spacing:.20em;text-transform:uppercase;color:var(--rose);margin-bottom:16px}
-.display-title{font-family:'Playfair Display',serif;font-size:clamp(2rem,6vw,3.2rem);font-weight:700;line-height:1.1;color:var(--dark)}
 .section-title{font-family:'Playfair Display',serif;font-size:clamp(1.6rem,4vw,2.4rem);font-weight:600;line-height:1.2;color:var(--dark);margin-bottom:16px}
 .section-header{text-align:center;margin-bottom:40px}
 .section-subtitle{font-size:15px;color:var(--muted);line-height:1.7;max-width:520px;margin:0 auto}
 .gold-line{width:48px;height:2px;background:var(--grad);margin:16px auto;border-radius:2px}
 
-/* HERO */
-.hero{padding:140px 0 80px;text-align:center;background:var(--nude);border-bottom:1px solid var(--border)}
+/* HERO COM FOTO DE FUNDO */
+.hero{position:relative;min-height:540px;display:flex;align-items:center;text-align:center;border-bottom:1px solid var(--border);overflow:hidden;padding:100px 0 80px}
+.hero__bg{position:absolute;inset:0;z-index:0}
+.hero__bg img{width:100%;height:100%;object-fit:cover;object-position:center top}
+.hero__bg::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,rgba(250,248,245,.60) 0%,rgba(250,248,245,.40) 45%,rgba(250,248,245,.65) 100%)}
+.hero .container{position:relative;z-index:1;width:100%}
 .hero h1{font-family:'Playfair Display',serif;font-size:clamp(2rem,6vw,3.2rem);font-weight:700;color:var(--dark);line-height:1.1;margin:16px 0}
 .hero h1 em{font-style:italic;color:var(--rose)}
-.hero p{font-size:15px;color:var(--muted);max-width:480px;margin:0 auto 32px;line-height:1.7}
+.hero p{font-size:15px;color:var(--text);max-width:480px;margin:0 auto 32px;line-height:1.7}
 .hero-actions{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;align-items:center}
 .hero-badge{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);font-weight:500}
 .hero-badge-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:pulse 2s ease-in-out infinite}
 
-/* BENEFÍCIOS */
-.benefits{background:var(--white);border-bottom:1px solid var(--border);padding:32px 0}
-.grid-4{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-@media(min-width:768px){.grid-4{grid-template-columns:repeat(4,1fr)}}
-.benefit{text-align:center;padding:24px 16px;transition:.18s}
-.benefit:hover{transform:translateY(-4px)}
-.benefit-icon{width:56px;height:56px;border-radius:50%;background:var(--nude);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:24px;transition:.18s}
-.benefit:hover .benefit-icon{background:var(--grad);border-color:transparent}
-.benefit h3{font-family:'Playfair Display',serif;font-size:15px;font-weight:600;color:var(--dark);margin-bottom:8px}
-.benefit p{font-size:13px;color:var(--muted);line-height:1.65}
-
 /* SERVIÇOS SHOWCASE */
-.showcase-grid{display:grid;grid-template-columns:1fr;gap:16px}
-@media(min-width:640px){.showcase-grid{grid-template-columns:1fr 1fr}}
-@media(min-width:900px){
-  .showcase-grid{grid-template-columns:2fr 1fr;grid-template-rows:auto auto}
-  .showcase-grid .card-img:first-child{grid-row:span 2;aspect-ratio:unset}
-}
+.showcase-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(min-width:768px){.showcase-grid{grid-template-columns:repeat(3,1fr);gap:16px}}
 .card-img{position:relative;border-radius:16px;overflow:hidden;aspect-ratio:3/2;cursor:pointer}
 .card-img img{width:100%;height:100%;object-fit:cover;transition:transform .5s}
 .card-img:hover img{transform:scale(1.05)}
@@ -100,8 +86,6 @@ ul{list-style:none}
 .card-img__content{position:absolute;bottom:0;left:0;right:0;padding:20px}
 .card-img__cat{font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#D48E98;margin-bottom:4px}
 .card-img__name{font-family:'Playfair Display',serif;font-size:20px;font-weight:600;color:var(--white);line-height:1.2;margin-bottom:12px}
-.card-img__btn{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.15);backdrop-filter:blur(8px);color:var(--white);border:1px solid rgba(255,255,255,.30);border-radius:100px;padding:8px 18px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;transition:.18s}
-.card-img:hover .card-img__btn{background:var(--rose);border-color:var(--rose)}
 
 /* HORÁRIOS */
 .schedule-card{background:var(--nude);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:var(--sh);max-width:520px;margin:0 auto}
@@ -120,15 +104,6 @@ ul{list-style:none}
 /* MAPA */
 .map-card{border-radius:20px;overflow:hidden;box-shadow:var(--sh-lg);border:1px solid var(--border);height:380px;max-width:720px;margin:0 auto}
 .map-card iframe{width:100%;height:100%;border:none;display:block}
-.location-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:20px;max-width:720px;margin-left:auto;margin-right:auto}
-@media(max-width:600px){.location-grid{grid-template-columns:1fr}}
-.location-item{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;box-shadow:0 2px 8px rgba(183,110,121,.07)}
-.location-item.primary{background:var(--grad);cursor:pointer;box-shadow:0 4px 16px rgba(183,110,121,.25)}
-.location-item__icon{font-size:22px;margin-bottom:8px}
-.location-item__label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
-.location-item.primary .location-item__label{color:rgba(255,255,255,.75)}
-.location-item__text{font-size:13px;color:var(--dark);font-weight:500;line-height:1.5}
-.location-item.primary .location-item__text{color:white;font-weight:600}
 
 /* FOOTER */
 footer{background:var(--dark);color:rgba(255,255,255,.55);padding:40px 0;text-align:center;font-size:12px}
@@ -140,7 +115,6 @@ footer{background:var(--dark);color:rgba(255,255,255,.55);padding:40px 0;text-al
 .footer-div{color:rgba(255,255,255,.15)}
 .footer-copy{font-size:11px;color:rgba(255,255,255,.30);margin-top:24px;padding-top:24px;border-top:.5px solid rgba(255,255,255,.10)}
 
-/* ANIMAÇÕES */
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
 .anim{opacity:0;animation:fadeUp .5s ease forwards}
@@ -149,7 +123,6 @@ footer{background:var(--dark);color:rgba(255,255,255,.55);padding:40px 0;text-al
 </head>
 <body>
 
-<!-- NAVBAR -->
 <nav class="navbar" id="navbar">
   <div class="container navbar__inner">
     <img src="logo.png" alt="Studio Gisele Lima" class="navbar__logo">
@@ -174,8 +147,10 @@ footer{background:var(--dark);color:rgba(255,255,255,.55);padding:40px 0;text-al
 
 <main>
 
-  <!-- HERO -->
   <section class="hero">
+    <div class="hero__bg">
+      <img src="gisele.jpg" alt="Gisele Lima" loading="eager">
+    </div>
     <div class="container">
       <span class="eyebrow anim">Estética Feminina · Pedreiras-MA</span>
       <h1 class="anim d1">Realce sua beleza<br>com <em>sofisticação</em></h1>
@@ -190,35 +165,6 @@ footer{background:var(--dark);color:rgba(255,255,255,.55);padding:40px 0;text-al
     </div>
   </section>
 
-  <!-- BENEFÍCIOS -->
-  <section class="benefits">
-    <div class="container">
-      <div class="grid-4">
-        <div class="benefit">
-          <div class="benefit-icon">🪞</div>
-          <h3>Atendimento Personalizado</h3>
-          <p>Cada cliente recebe atenção exclusiva e cuidado individual.</p>
-        </div>
-        <div class="benefit">
-          <div class="benefit-icon">✨</div>
-          <h3>Profissional Especializada</h3>
-          <p>Técnicas modernas e produtos de alta qualidade.</p>
-        </div>
-        <div class="benefit">
-          <div class="benefit-icon">🌸</div>
-          <h3>Ambiente Acolhedor</h3>
-          <p>Um espaço pensado para seu conforto e bem-estar.</p>
-        </div>
-        <div class="benefit">
-          <div class="benefit-icon">📅</div>
-          <h3>Agendamento Fácil</h3>
-          <p>Marque em segundos, direto pelo site ou WhatsApp.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- SERVIÇOS DESTAQUE -->
   <section id="servicos" class="section">
     <div class="container">
       <div class="section-header">
@@ -227,44 +173,69 @@ footer{background:var(--dark);color:rgba(255,255,255,.55);padding:40px 0;text-al
         <div class="gold-line"></div>
         <p class="section-subtitle">Do design de sobrancelha à limpeza de pele, cada serviço realizado com técnica apurada.</p>
       </div>
-
       <div class="showcase-grid">
+
         <div class="card-img" onclick="location.href='servicos.html'">
-          <img src="https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?w=900&q=80&fit=crop" alt="Limpeza de Pele" loading="lazy">
+          <img src="https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?w=600&q=80&fit=crop" alt="Limpeza de Pele" loading="lazy">
           <div class="card-img__overlay"></div>
           <div class="card-img__content">
             <p class="card-img__cat">Facial</p>
-            <h3 class="card-img__name">Limpeza de Pele Profunda</h3>
-            <span class="card-img__btn">Agendar este ›</span>
+            <h3 class="card-img__name">Limpeza de Pele</h3>
           </div>
         </div>
+
         <div class="card-img" onclick="location.href='servicos.html'">
           <img src="https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?w=600&q=80&fit=crop" alt="Design de Sobrancelha" loading="lazy">
           <div class="card-img__overlay"></div>
           <div class="card-img__content">
             <p class="card-img__cat">Sobrancelha</p>
             <h3 class="card-img__name">Design de Sobrancelha</h3>
-            <span class="card-img__btn">Agendar este ›</span>
           </div>
         </div>
+
         <div class="card-img" onclick="location.href='servicos.html'">
           <img src="https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=600&q=80&fit=crop" alt="Hidratação Facial" loading="lazy">
           <div class="card-img__overlay"></div>
           <div class="card-img__content">
             <p class="card-img__cat">Facial</p>
             <h3 class="card-img__name">Hidratação Facial</h3>
-            <span class="card-img__btn">Agendar este ›</span>
           </div>
         </div>
-      </div>
 
+        <div class="card-img" onclick="location.href='servicos.html'">
+          <img src="https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=600&q=80&fit=crop" alt="Epilação" loading="lazy">
+          <div class="card-img__overlay"></div>
+          <div class="card-img__content">
+            <p class="card-img__cat">Epilação</p>
+            <h3 class="card-img__name">Epilação a Cera</h3>
+          </div>
+        </div>
+
+        <div class="card-img" onclick="location.href='servicos.html'">
+          <img src="https://images.unsplash.com/photo-1560066984-138dadb4c035?w=600&q=80&fit=crop" alt="Sobrancelha com Henna" loading="lazy">
+          <div class="card-img__overlay"></div>
+          <div class="card-img__content">
+            <p class="card-img__cat">Sobrancelha</p>
+            <h3 class="card-img__name">Sobrancelha + Henna</h3>
+          </div>
+        </div>
+
+        <div class="card-img" onclick="location.href='servicos.html'">
+          <img src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600&q=80&fit=crop" alt="Cuidados Faciais" loading="lazy">
+          <div class="card-img__overlay"></div>
+          <div class="card-img__content">
+            <p class="card-img__cat">Facial</p>
+            <h3 class="card-img__name">Cuidados Faciais</h3>
+          </div>
+        </div>
+
+      </div>
       <div style="text-align:center;margin-top:32px">
         <a href="servicos.html" class="btn btn-outline">Ver todos os serviços e preços</a>
       </div>
     </div>
   </section>
 
-  <!-- HORÁRIOS -->
   <section id="horarios" class="section" style="background:var(--white)">
     <div class="container">
       <div class="section-header">
@@ -272,7 +243,6 @@ footer{background:var(--dark);color:rgba(255,255,255,.55);padding:40px 0;text-al
         <h2 class="section-title">Horário de Atendimento</h2>
         <div class="gold-line"></div>
       </div>
-
       <div class="schedule-card">
         <div class="schedule-card__head">
           <p>Studio Gisele Lima</p>
@@ -287,49 +257,27 @@ footer{background:var(--dark);color:rgba(255,255,255,.55);padding:40px 0;text-al
         <div class="schedule-row closed"><span>Domingo</span><span>Fechado</span></div>
         <div class="schedule-card__foot">⏸ Pausa para almoço: <strong style="color:var(--dark)">12h às 14h</strong></div>
       </div>
-
       <div style="text-align:center;margin-top:24px">
         <a href="servicos.html" class="btn btn-primary">Agendar meu horário</a>
       </div>
     </div>
   </section>
 
-  <!-- LOCALIZAÇÃO -->
   <section id="contato" class="section" style="background:var(--nude)">
     <div class="container">
       <div class="section-header">
         <span class="eyebrow">Localização</span>
         <h2 class="section-title">Como nos encontrar</h2>
         <div class="gold-line"></div>
-        <p class="section-subtitle">Estamos no Parque das Palmeiras, em Pedreiras-MA.</p>
+        <p class="section-subtitle">Estamos na Rua Sete, em Pedreiras-MA.</p>
       </div>
-
       <div class="map-card">
         <iframe
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3979.8!2d-44.5977!3d-4.5499!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sParque+das+Palmeiras%2C+Pedreiras+-+MA!5e0!3m2!1spt-BR!2sbr!4v1700000000000!5m2!1spt-BR!2sbr"
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3979.6!2d-44.5885466!3d-4.5770764!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x78989d3452fca69%3A0x7054874adc8c2b5c!2sR.%20Sete%2C%2007%2C%20Pedreiras%20-%20MA%2C%2065725-000!5e0!3m2!1spt-BR!2sbr!4v1700000000000!5m2!1spt-BR!2sbr"
           allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
-          title="Studio Gisele Lima — Pedreiras-MA">
+          title="Studio Gisele Lima — Rua Sete, Pedreiras-MA">
         </iframe>
       </div>
-
-      <div class="location-grid">
-        <div class="location-item">
-          <div class="location-item__icon">📍</div>
-          <p class="location-item__label">Endereço</p>
-          <p class="location-item__text">Rua 7, Casa 29, Qd 10<br>Parque das Palmeiras<br>Pedreiras — MA</p>
-        </div>
-        <div class="location-item">
-          <div class="location-item__icon">🕐</div>
-          <p class="location-item__label">Horário</p>
-          <p class="location-item__text">Seg a Sáb<br>9h–12h · 14h–18h<br><span style="color:var(--muted);font-size:12px">Domingo fechado</span></p>
-        </div>
-        <div class="location-item primary" onclick="location.href='servicos.html'">
-          <div class="location-item__icon">📅</div>
-          <p class="location-item__label">Agendamento</p>
-          <p class="location-item__text">Agendar<br>pelo site agora</p>
-        </div>
-      </div>
-
       <div style="text-align:center;margin-top:20px">
         <a href="https://maps.app.goo.gl/HqEQcBhJyD5LhqB8A" target="_blank" rel="noopener" class="btn btn-outline">
           Abrir no Google Maps ↗
@@ -356,7 +304,6 @@ footer{background:var(--dark);color:rgba(255,255,255,.55);padding:40px 0;text-al
 </footer>
 
 <script>
-  // Navbar scroll
   window.addEventListener('scroll', function() {
     var n = document.getElementById('navbar');
     var c = document.getElementById('navCTA');
