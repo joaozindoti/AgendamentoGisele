@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Horário — Studio Gisele Lima</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px}
+body{background:#FAF8F5;color:#524345;font-family:'Montserrat',system-ui,sans-serif;font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased;min-height:100vh}
+button{cursor:pointer;border:none;background:none;font-family:inherit;-webkit-tap-highlight-color:transparent}
+:root{
+  --rose:#B76E79;--nude:#F5F0EB;--border:#E8D5C4;--dark:#1B1C1C;
+  --muted:#857374;--white:#FFFFFF;
+  --grad:linear-gradient(135deg,#B76E79,#D48E98);
+  --sh:0 2px 8px rgba(183,110,121,.07);--sh-md:0 8px 24px rgba(183,110,121,.10);
+}
+
+/* HEADER */
+.header{position:sticky;top:0;z-index:200;height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:rgba(250,248,245,.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+.header__title{position:absolute;left:50%;transform:translateX(-50%);font-family:'Playfair Display',serif;font-size:15px;font-weight:600;color:var(--dark);white-space:nowrap;pointer-events:none}
+.header__side{width:80px}
+.btn-back{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;min-height:44px;transition:.18s;-webkit-tap-highlight-color:transparent;text-decoration:none}
+.btn-back:hover{color:var(--rose)}
+
+/* PROGRESSO */
+.progress{background:var(--white);border-bottom:1px solid var(--border);padding:12px 16px}
+.progress__inner{max-width:600px;margin:0 auto;display:flex;align-items:center;gap:12px}
+.step{display:flex;align-items:center;gap:6px}
+.step__num{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.step__num.active{background:var(--grad);color:white}
+.step__num.done{background:rgba(183,110,121,.15);color:var(--rose)}
+.step__num.pending{border:1.5px solid var(--border);color:var(--border)}
+.step__label{font-size:12px;font-weight:600}
+.step__label.active{color:var(--rose)}
+.step__label.pending{color:var(--border)}
+.step__label.done{color:var(--muted)}
+.step__line{flex:1;height:1px}
+.step__line.done{background:var(--rose)}
+.step__line.pending{background:var(--border)}
+
+/* CONTEÚDO */
+.content{padding:20px 16px 64px;max-width:600px;margin:0 auto}
+
+/* RESUMO */
+.summary{background:var(--nude);border:1px solid var(--border);border-radius:12px;margin-bottom:32px;overflow:hidden}
+.summary__toggle{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.summary__label{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.summary__arrow{font-size:12px;color:var(--muted);transition:.18s}
+.summary__arrow.open{transform:rotate(180deg)}
+.summary__body{overflow:hidden;transition:max-height .28s ease;max-height:0}
+.summary__body.open{max-height:600px}
+.summary__list{padding:0 20px 8px}
+.summary__item{display:flex;justify-content:space-between;align-items:center;padding:7px 0;font-size:13px;color:var(--dark);border-bottom:.5px solid var(--border)}
+.summary__item:last-child{border:none}
+.summary__item-price{color:var(--rose);font-weight:600;font-family:'Playfair Display',serif;margin-left:16px;flex-shrink:0}
+.summary__footer{display:flex;justify-content:space-between;align-items:center;padding:12px 20px;border-top:1px solid var(--border);background:rgba(255,255,255,.6)}
+.summary__duration{font-size:12px;color:var(--muted);font-weight:500}
+.summary__total{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:var(--rose)}
+
+/* LABEL DE SEÇÃO */
+.section-label{display:block;font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--rose);margin-bottom:16px}
+
+/* CALENDÁRIO */
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.cal-nav__btn{width:38px;height:38px;border-radius:8px;border:1px solid var(--border);background:var(--white);color:var(--dark);font-size:16px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.18s;-webkit-tap-highlight-color:transparent;box-shadow:var(--sh)}
+.cal-nav__btn:hover:not(:disabled){border-color:var(--rose);color:var(--rose)}
+.cal-nav__btn:disabled{color:var(--border);cursor:not-allowed;box-shadow:none}
+.cal-nav__title{font-family:'Playfair Display',serif;font-size:17px;font-weight:600;color:var(--dark);text-transform:capitalize}
+.cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:3px}
+.cal-weekday{text-align:center;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:6px 0}
+.cal-weekday.sun{color:var(--border)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cal-cell{aspect-ratio:1;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;border:1px solid transparent;transition:.18s;-webkit-tap-highlight-color:transparent}
+.cal-cell.past{color:var(--border)}
+.cal-cell.available{background:var(--white);border-color:var(--border);color:var(--dark);cursor:pointer;box-shadow:var(--sh)}
+.cal-cell.available:hover{border-color:var(--rose);color:var(--rose)}
+.cal-cell.today{border-style:dashed;border-color:var(--rose);color:var(--rose);font-weight:700}
+.cal-cell.selected{background:var(--grad)!important;color:white!important;border-color:transparent!important;font-weight:700;cursor:pointer;box-shadow:0 3px 12px rgba(183,110,121,.35)}
+
+/* SKELETON */
+.skeleton-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.sk{background:linear-gradient(90deg,#E8D5C4 25%,#F5F0EB 50%,#E8D5C4 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:8px}
+.sk-cell{aspect-ratio:1}
+.sk-pill{height:44px;width:86px;border-radius:100px}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.sk-pills{display:flex;flex-wrap:wrap;gap:8px}
+
+/* HORÁRIOS */
+.times-grid{display:flex;flex-wrap:wrap;gap:8px}
+.time-pill{display:inline-flex;align-items:center;justify-content:center;padding:10px 22px;border-radius:100px;border:1px solid var(--border);background:var(--white);font-size:13px;font-weight:600;color:var(--dark);cursor:pointer;min-height:44px;transition:.18s;-webkit-tap-highlight-color:transparent;box-shadow:var(--sh)}
+.time-pill:hover{border-color:var(--rose);color:var(--rose);background:#FDF6F7;box-shadow:var(--sh-md)}
+.time-pill:active{background:var(--grad);color:white;border-color:transparent}
+.times-group-label{width:100%;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.no-slots{font-size:13px;color:var(--muted);text-align:center;padding:32px 0;line-height:1.9}
+.no-slots strong{display:block;color:var(--rose);font-weight:600;margin-top:4px}
+
+/* DATE LABEL */
+.date-label{font-family:'Playfair Display',serif;font-size:15px;font-style:italic;color:var(--dark);margin-bottom:16px;margin-top:-8px;display:block;text-transform:capitalize}
+
+/* HINT */
+.times-hint{font-size:11px;color:var(--muted);margin-top:12px;font-style:italic}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header__side">
+    <a href="servicos.html" class="btn-back">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+        <path d="M11 14L6 9L11 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Serviços
+    </a>
+  </div>
+  <span class="header__title">Data e Horário</span>
+  <div class="header__side"></div>
+</header>
+
+<!-- PROGRESSO -->
+<div class="progress">
+  <div class="progress__inner">
+    <div class="step">
+      <div class="step__num done">
+        <svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1.5" stroke="#B76E79" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <span class="step__label done">Serviços</span>
+    </div>
+    <div class="step__line done"></div>
+    <div class="step">
+      <div class="step__num active">2</div>
+      <span class="step__label active">Data e Hora</span>
+    </div>
+    <div class="step__line pending"></div>
+    <div class="step">
+      <div class="step__num pending">3</div>
+      <span class="step__label pending">WhatsApp</span>
+    </div>
+  </div>
+</div>
+
+<!-- CONTEÚDO -->
+<div class="content">
+
+  <!-- Resumo -->
+  <div class="summary" id="summaryBox">
+    <div class="summary__toggle" onclick="toggleSummary()">
+      <span class="summary__label">Resumo dos serviços</span>
+      <span class="summary__arrow open" id="summaryArrow">▾</span>
+    </div>
+    <div class="summary__body open" id="summaryBody">
+      <ul class="summary__list" id="summaryList"></ul>
+      <div class="summary__footer">
+        <span class="summary__duration" id="summaryDuration"></span>
+        <span class="summary__total" id="summaryTotal"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Calendário -->
+  <div style="margin-bottom:32px">
+    <span class="section-label">Escolha a data</span>
+    <div class="cal-nav">
+      <button class="cal-nav__btn" id="btnPrev" onclick="prevMonth()">←</button>
+      <span class="cal-nav__title" id="calTitle"></span>
+      <button class="cal-nav__btn" onclick="nextMonth()">→</button>
+    </div>
+    <div class="cal-weekdays">
+      <div class="cal-weekday sun">Dom</div>
+      <div class="cal-weekday">Seg</div>
+      <div class="cal-weekday">Ter</div>
+      <div class="cal-weekday">Qua</div>
+      <div class="cal-weekday">Qui</div>
+      <div class="cal-weekday">Sex</div>
+      <div class="cal-weekday">Sáb</div>
+    </div>
+    <div id="calGrid">
+      <div class="skeleton-grid">
+        <div class="sk sk-cell"></div><div class="sk sk-cell"></div><div class="sk sk-cell"></div><div class="sk sk-cell"></div><div class="sk sk-cell"></div><div class="sk sk-cell"></div><div class="sk sk-cell"></div>
+      </div>
+      <div class="skeleton-grid" style="margin-top:3px">
+        <div class="sk sk-cell"></div><div class="sk sk-cell"></div><div class="sk sk-cell"></div><div class="sk sk-cell"></div><div class="sk sk-cell"></div><div class="sk sk-cell"></div><div class="sk sk-cell"></div>
+      </div>
+      <div class="skeleton-grid" style="margin-top:3px">
+        <div class="sk sk-cell"></div><div class="sk sk-cell"></div><div class="sk sk-cell"></div><div class="sk sk-cell"></div><div class="sk sk-cell"></div><div class="sk sk-cell"></div><div class="sk sk-cell"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Horários -->
+  <div id="timesSection" style="display:none">
+    <span class="section-label">Horários disponíveis</span>
+    <span class="date-label" id="dateLabel"></span>
+    <div class="times-grid" id="timesGrid"></div>
+    <p class="times-hint">Clique no horário para abrir o WhatsApp com o agendamento preenchido.</p>
+  </div>
+
+</div>
+
+<script>
+var KEY = 'sgl_sel';
+var WA_NUMBER = '5599999999999'; // ⚠️ Substituir pelo número real
+
+/* ── Carregar serviços do sessionStorage ── */
+var services = [];
+try {
+  var raw = sessionStorage.getItem(KEY);
+  if (raw) services = JSON.parse(raw);
+} catch(e) {}
+
+if (!services.length) {
+  location.href = 'servicos.html';
+}
+
+var totalDur = services.reduce(function(a,s){return a+s.duration;},0);
+var curY, curMo, selDay, sumOpen = true;
+
+/* ── Utils ── */
+function fmtCurrency(v){return v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});}
+function fmtDuration(m){if(m<60)return m+'min';var h=Math.floor(m/60),r=m%60;return r>0?h+'h '+r+'min':h+'h';}
+function fmtDateFull(y,mo,d){return new Date(y,mo,d).toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});}
+function fmtMonthYear(y,mo){return new Date(y,mo,1).toLocaleDateString('pt-BR',{month:'long',year:'numeric'});}
+function isPast(y,mo,d){var t=new Date();t.setHours(0,0,0,0);return new Date(y,mo,d)<t;}
+function isToday(y,mo,d){var t=new Date();return y===t.getFullYear()&&mo===t.getMonth()&&d===t.getDate();}
+function isSunday(y,mo,d){return new Date(y,mo,d).getDay()===0;}
+
+/* ── Calendar slots ── */
+var BUSINESS = {
+  1:[{o:'09:00',c:'12:00'},{o:'14:00',c:'18:00'}],
+  2:[{o:'09:00',c:'12:00'},{o:'14:00',c:'18:00'}],
+  3:[{o:'09:00',c:'12:00'},{o:'14:00',c:'18:00'}],
+  4:[{o:'09:00',c:'12:00'},{o:'14:00',c:'18:00'}],
+  5:[{o:'09:00',c:'12:00'},{o:'14:00',c:'18:00'}],
+  6:[{o:'09:00',c:'12:00'},{o:'14:00',c:'18:00'}]
+};
+
+function toMin(s){var p=s.split(':');return +p[0]*60+ +p[1];}
+function pad2(n){return String(n).padStart(2,'0');}
+
+function generateSlots(y,mo,d,dur){
+  var wd=new Date(y,mo,d).getDay();
+  var periods=BUSINESS[wd];
+  if(!periods)return[];
+  var now=new Date(),tod=isToday(y,mo,d),slots=[];
+  periods.forEach(function(p){
+    var cur=toMin(p.o),close=toMin(p.c);
+    while(cur+dur+10<=close){
+      var avail=!(tod&&cur<=now.getHours()*60+now.getMinutes());
+      slots.push({time:pad2(Math.floor(cur/60))+':'+pad2(cur%60),available:avail});
+      cur+=30;
+    }
+  });
+  return slots;
+}
+
+function getAvailableDays(y,mo,dur){
+  var total=new Date(y,mo+1,0).getDate(),result=[];
+  for(var d=1;d<=total;d++){
+    if(isPast(y,mo,d)||isSunday(y,mo,d))continue;
+    if(generateSlots(y,mo,d,dur).some(function(s){return s.available;}))result.push(d);
+  }
+  return result;
+}
+
+/* ── Resumo ── */
+function renderSummary(){
+  document.getElementById('summaryList').innerHTML=services.map(function(s){
+    return '<li class="summary__item"><span>'+s.name+'</span><span class="summary__item-price">'+fmtCurrency(s.price)+'</span></li>';
+  }).join('');
+  var total=services.reduce(function(a,s){return a+s.price;},0);
+  document.getElementById('summaryDuration').textContent='Duração: '+fmtDuration(totalDur);
+  document.getElementById('summaryTotal').textContent='Total: '+fmtCurrency(total);
+}
+
+function toggleSummary(){
+  sumOpen=!sumOpen;
+  document.getElementById('summaryBody').classList.toggle('open',sumOpen);
+  document.getElementById('summaryArrow').classList.toggle('open',sumOpen);
+}
+
+/* ── Calendário ── */
+function renderCalendar(y,mo){
+  curY=y;curMo=mo;selDay=null;
+  document.getElementById('calTitle').textContent=fmtMonthYear(y,mo);
+  var now=new Date();
+  document.getElementById('btnPrev').disabled=(y===now.getFullYear()&&mo===now.getMonth());
+  var first=new Date(y,mo,1).getDay();
+  var days=new Date(y,mo+1,0).getDate();
+  var avail=getAvailableDays(y,mo,totalDur);
+  var html='<div class="cal-grid">';
+  for(var i=0;i<first;i++)html+='<div class="cal-cell empty"></div>';
+  for(var d=1;d<=days;d++){
+    var ok=!isPast(y,mo,d)&&!isSunday(y,mo,d)&&avail.indexOf(d)>-1;
+    var cls='cal-cell'+(ok?' available'+(isToday(y,mo,d)?' today':''):' past');
+    html+='<div id="calday-'+d+'" class="'+cls+'"'+(ok?' onclick="selectDay('+y+','+mo+','+d+')"':'')+'>'+d+'</div>';
+  }
+  html+='</div>';
+  document.getElementById('calGrid').innerHTML=html;
+  document.getElementById('timesSection').style.display='none';
+}
+
+function selectDay(y,mo,d){
+  if(selDay){
+    var p=document.getElementById('calday-'+selDay);
+    if(p){p.classList.remove('selected');p.classList.add('available');if(isToday(y,mo,selDay))p.classList.add('today');}
+  }
+  selDay=d;
+  var cell=document.getElementById('calday-'+d);
+  if(cell){cell.classList.remove('available','today');cell.classList.add('selected');}
+  var sec=document.getElementById('timesSection');
+  sec.style.display='block';
+  document.getElementById('dateLabel').textContent=fmtDateFull(y,mo,d);
+  document.getElementById('timesGrid').innerHTML='<div class="sk-pills"><div class="sk sk-pill"></div><div class="sk sk-pill"></div><div class="sk sk-pill"></div><div class="sk sk-pill"></div></div>';
+  setTimeout(function(){sec.scrollIntoView({behavior:'smooth',block:'start'});},60);
+  setTimeout(function(){renderSlots(y,mo,d);},240);
+}
+
+function renderSlots(y,mo,d){
+  var avail=generateSlots(y,mo,d,totalDur).filter(function(s){return s.available;});
+  var grid=document.getElementById('timesGrid');
+  if(!avail.length){grid.innerHTML='<div class="no-slots">Nenhum horário disponível neste dia.<strong>Escolha outra data.</strong></div>';return;}
+  var manha=avail.filter(function(s){return parseInt(s.time)<12;});
+  var tarde=avail.filter(function(s){return parseInt(s.time)>=14;});
+  var html='';
+  function pills(list){return list.map(function(s){return '<button class="time-pill" onclick="selectTime(\''+s.time+'\')">'+s.time+'</button>';}).join('');}
+  if(manha.length)html+='<p class="times-group-label">☀️ Manhã</p>'+pills(manha);
+  if(tarde.length)html+='<p class="times-group-label" style="margin-top:'+(manha.length?'16px':'4px')+'">🌤 Tarde</p>'+pills(tarde);
+  grid.innerHTML=html;
+}
+
+function selectTime(time){
+  var lines=services.map(function(s){return '• '+s.name+' — '+fmtCurrency(s.price);}).join('\n');
+  var total=services.reduce(function(a,s){return a+s.price;},0);
+  var msg='Olá! Gostaria de agendar no Studio Gisele Lima:\n\n'+lines+'\n\n📅 '+fmtDateFull(curY,curMo,selDay)+'\n⏰ '+time+'\n💰 Total: '+fmtCurrency(total)+'\n\nPode confirmar?';
+  window.open('https://wa.me/'+WA_NUMBER+'?text='+encodeURIComponent(msg),'_blank');
+  sessionStorage.removeItem(KEY);
+}
+
+function prevMonth(){
+  var now=new Date();
+  if(curY===now.getFullYear()&&curMo===now.getMonth())return;
+  if(--curMo<0){curMo=11;curY--;}
+  renderCalendar(curY,curMo);
+}
+
+function nextMonth(){
+  if(++curMo>11){curMo=0;curY++;}
+  renderCalendar(curY,curMo);
+}
+
+/* ── Init ── */
+renderSummary();
+var now=new Date();
+curY=now.getFullYear();curMo=now.getMonth();
+setTimeout(function(){renderCalendar(curY,curMo);},300);
+</script>
+</body>
+</html>

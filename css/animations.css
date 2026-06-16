@@ -1,0 +1,45 @@
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.55; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-6px); }
+}
+
+.anim {
+  opacity: 0;
+  animation: fadeUp 0.5s ease forwards;
+}
+
+.anim-fade {
+  opacity: 0;
+  animation: fadeIn 0.5s ease forwards;
+}
+
+.d1 { animation-delay: 0.08s; }
+.d2 { animation-delay: 0.18s; }
+.d3 { animation-delay: 0.28s; }
+.d4 { animation-delay: 0.40s; }
+.d5 { animation-delay: 0.54s; }
+.d6 { animation-delay: 0.70s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .anim, .anim-fade { animation: none; opacity: 1; }
+}
