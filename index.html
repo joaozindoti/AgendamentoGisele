@@ -67,85 +67,24 @@ ul{list-style:none}
 .gold-line{width:48px;height:2px;background:var(--grad);margin:16px auto;border-radius:2px}
 
 /* HERO */
-.hero{
-  position:relative;
-  padding:140px 0 80px;
-  text-align:center;
-  border-bottom:1px solid var(--border);
-  overflow:hidden;
-  min-height:520px;
-  display:flex;
-  align-items:center;
-}
-.hero__bg{
-  position:absolute;
-  inset:0;
-  z-index:0;
-}
-.hero__bg img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  object-position:center top;
-}
-.hero__bg::after{
-  content:'';
-  position:absolute;
-  inset:0;
-  background:linear-gradient(
-    to bottom,
-    rgba(250,248,245,0.85) 0%,
-    rgba(250,248,245,0.72) 40%,
-    rgba(250,248,245,0.88) 100%
-  );
-}
-.hero .container{
-  position:relative;
-  z-index:1;
-  width:100%;
-}
-.hero h1{
-  font-family:'Playfair Display',serif;
-  font-size:clamp(2rem,6vw,3.2rem);
-  font-weight:700;
-  color:var(--dark);
-  line-height:1.1;
-  margin:16px 0;
-}
-.hero h1 em{
-  font-style:italic;
-  color:var(--rose);
-}
-.hero p{
-  font-size:15px;
-  color:var(--text);
-  max-width:480px;
-  margin:0 auto 32px;
-  line-height:1.7;
-}
-.hero-actions{
-  display:flex;
-  flex-wrap:wrap;
-  gap:12px;
-  justify-content:center;
-  align-items:center;
-}
-.hero-badge{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  font-size:12px;
-  color:var(--muted);
-  font-weight:500;
-}
-.hero-badge-dot{
-  width:6px;
-  height:6px;
-  border-radius:50%;
-  background:var(--gold);
-  animation:pulse 2s ease-in-out infinite;
-}
+.hero{padding:140px 0 80px;text-align:center;background:var(--nude);border-bottom:1px solid var(--border)}
+.hero h1{font-family:'Playfair Display',serif;font-size:clamp(2rem,6vw,3.2rem);font-weight:700;color:var(--dark);line-height:1.1;margin:16px 0}
+.hero h1 em{font-style:italic;color:var(--rose)}
+.hero p{font-size:15px;color:var(--muted);max-width:480px;margin:0 auto 32px;line-height:1.7}
+.hero-actions{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;align-items:center}
+.hero-badge{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);font-weight:500}
+.hero-badge-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:pulse 2s ease-in-out infinite}
 
+/* BENEFÍCIOS */
+.benefits{background:var(--white);border-bottom:1px solid var(--border);padding:32px 0}
+.grid-4{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(min-width:768px){.grid-4{grid-template-columns:repeat(4,1fr)}}
+.benefit{text-align:center;padding:24px 16px;transition:.18s}
+.benefit:hover{transform:translateY(-4px)}
+.benefit-icon{width:56px;height:56px;border-radius:50%;background:var(--nude);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:24px;transition:.18s}
+.benefit:hover .benefit-icon{background:var(--grad);border-color:transparent}
+.benefit h3{font-family:'Playfair Display',serif;font-size:15px;font-weight:600;color:var(--dark);margin-bottom:8px}
+.benefit p{font-size:13px;color:var(--muted);line-height:1.65}
 
 /* SERVIÇOS SHOWCASE */
 .showcase-grid{display:grid;grid-template-columns:1fr;gap:16px}
@@ -237,19 +176,12 @@ footer{background:var(--dark);color:rgba(255,255,255,.55);padding:40px 0;text-al
 
   <!-- HERO -->
   <section class="hero">
-    <div class="hero__bg">
-      <img src="gisele.jpg" alt="Gisele Lima — Estética Feminina" loading="eager">
-    </div>
     <div class="container">
       <span class="eyebrow anim">Estética Feminina · Pedreiras-MA</span>
       <h1 class="anim d1">Realce sua beleza<br>com <em>sofisticação</em></h1>
-      <p class="anim d2">
-        Tratamentos especializados com técnica e cuidado<br>para revelar sua melhor versão.
-      </p>
+      <p class="anim d2">Tratamentos especializados com técnica e cuidado para revelar sua melhor versão.</p>
       <div class="hero-actions anim d3">
-        <a href="servicos.html" class="btn btn-primary" style="height:52px;padding:0 48px;font-size:14px">
-          Agendar agora
-        </a>
+        <a href="servicos.html" class="btn btn-primary" style="height:52px;padding:0 48px;font-size:14px">Agendar agora</a>
         <span class="hero-badge">
           <span class="hero-badge-dot"></span>
           Atendimento com hora marcada
@@ -258,6 +190,33 @@ footer{background:var(--dark);color:rgba(255,255,255,.55);padding:40px 0;text-al
     </div>
   </section>
 
+  <!-- BENEFÍCIOS -->
+  <section class="benefits">
+    <div class="container">
+      <div class="grid-4">
+        <div class="benefit">
+          <div class="benefit-icon">🪞</div>
+          <h3>Atendimento Personalizado</h3>
+          <p>Cada cliente recebe atenção exclusiva e cuidado individual.</p>
+        </div>
+        <div class="benefit">
+          <div class="benefit-icon">✨</div>
+          <h3>Profissional Especializada</h3>
+          <p>Técnicas modernas e produtos de alta qualidade.</p>
+        </div>
+        <div class="benefit">
+          <div class="benefit-icon">🌸</div>
+          <h3>Ambiente Acolhedor</h3>
+          <p>Um espaço pensado para seu conforto e bem-estar.</p>
+        </div>
+        <div class="benefit">
+          <div class="benefit-icon">📅</div>
+          <h3>Agendamento Fácil</h3>
+          <p>Marque em segundos, direto pelo site ou WhatsApp.</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <!-- SERVIÇOS DESTAQUE -->
   <section id="servicos" class="section">
@@ -347,13 +306,28 @@ footer{background:var(--dark);color:rgba(255,255,255,.55);padding:40px 0;text-al
 
       <div class="map-card">
         <iframe
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3979.6!2d-44.5885466!3d-4.5770764!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x78989d3452fca69%3A0x7054874adc8c2b5c!2sR.%20Sete%2C%2007%2C%20Pedreiras%20-%20MA%2C%2065725-000!5e0!3m2!1spt-BR!2sbr!4v1700000000000!5m2!1spt-BR!2sbr"
-          allowfullscreen=""
-          loading="lazy"
-          referrerpolicy="no-referrer-when-downgrade"
-          title="Studio Gisele Lima — Rua Sete, Pedreiras-MA"
-          style="width:100%;height:100%;border:none;display:block">
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3979.8!2d-44.5977!3d-4.5499!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sParque+das+Palmeiras%2C+Pedreiras+-+MA!5e0!3m2!1spt-BR!2sbr!4v1700000000000!5m2!1spt-BR!2sbr"
+          allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+          title="Studio Gisele Lima — Pedreiras-MA">
         </iframe>
+      </div>
+
+      <div class="location-grid">
+        <div class="location-item">
+          <div class="location-item__icon">📍</div>
+          <p class="location-item__label">Endereço</p>
+          <p class="location-item__text">Rua 7, Casa 29, Qd 10<br>Parque das Palmeiras<br>Pedreiras — MA</p>
+        </div>
+        <div class="location-item">
+          <div class="location-item__icon">🕐</div>
+          <p class="location-item__label">Horário</p>
+          <p class="location-item__text">Seg a Sáb<br>9h–12h · 14h–18h<br><span style="color:var(--muted);font-size:12px">Domingo fechado</span></p>
+        </div>
+        <div class="location-item primary" onclick="location.href='servicos.html'">
+          <div class="location-item__icon">📅</div>
+          <p class="location-item__label">Agendamento</p>
+          <p class="location-item__text">Agendar<br>pelo site agora</p>
+        </div>
       </div>
 
       <div style="text-align:center;margin-top:20px">
