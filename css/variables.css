@@ -1,0 +1,49 @@
+:root {
+  /* Cores */
+  --c-bg:        #FAF8F5;
+  --c-primary:   #B76E79;
+  --c-primary-l: #D48E98;
+  --c-nude:      #F5F0EB;
+  --c-gold:      #D4AF37;
+  --c-dark:      #1B1C1C;
+  --c-text:      #524345;
+  --c-muted:     #857374;
+  --c-border:    #E8D5C4;
+  --c-white:     #FFFFFF;
+  --c-surface:   #F0EDEC;
+
+  /* Gradiente primário */
+  --grad-primary: linear-gradient(135deg, #B76E79 0%, #D48E98 100%);
+
+  /* Tipografia */
+  --f-display: 'Playfair Display', Georgia, serif;
+  --f-body:    'Montserrat', system-ui, sans-serif;
+
+  /* Espaçamentos */
+  --sp-1:  4px;
+  --sp-2:  8px;
+  --sp-3:  12px;
+  --sp-4:  16px;
+  --sp-5:  20px;
+  --sp-6:  24px;
+  --sp-8:  32px;
+  --sp-10: 40px;
+  --sp-16: 64px;
+  --sp-20: 80px;
+
+  /* Bordas */
+  --r-sm:   8px;
+  --r-md:   16px;
+  --r-lg:   24px;
+  --r-full: 100px;
+
+  /* Sombras */
+  --sh-sm:  0 2px 8px rgba(183,110,121,0.07);
+  --sh-md:  0 8px 24px rgba(183,110,121,0.10);
+  --sh-lg:  0 16px 48px rgba(183,110,121,0.13);
+  --sh-glow:0 0 24px rgba(183,110,121,0.30);
+
+  /* Transição */
+  --t:      0.22s ease;
+  --t-slow: 0.38s ease;
+}
