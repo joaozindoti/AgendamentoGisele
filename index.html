@@ -27,14 +27,16 @@ ul{list-style:none}
 
 .container{width:100%;max-width:1100px;margin:0 auto;padding:0 16px}
 @media(min-width:768px){.container{padding:0 40px}}
-.section{padding:64px 0}
-@media(min-width:768px){.section{padding:80px 0}}
+.section{padding:40px 0}
+@media(min-width:768px){.section{padding:56px 0}}
 
 /* NAVBAR */
 .navbar{position:fixed;top:0;left:0;right:0;z-index:500;height:64px;display:flex;align-items:center;background:rgba(250,248,245,.92);backdrop-filter:blur(14px);border-bottom:1px solid rgba(232,213,196,.5);transition:.2s}
 .navbar.scrolled{box-shadow:var(--sh);background:rgba(250,248,245,.97)}
 .navbar__inner{display:flex;align-items:center;justify-content:space-between;width:100%}
 .navbar__logo{height:42px;width:auto;object-fit:contain}
+.navbar__tagline{font-size:10px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:var(--muted);white-space:nowrap;display:none}
+@media(min-width:480px){.navbar__tagline{display:block}}
 .navbar__links{display:none;gap:32px}
 @media(min-width:768px){.navbar__links{display:flex}}
 .navbar__link{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);cursor:pointer;transition:.18s}
@@ -59,15 +61,15 @@ ul{list-style:none}
 /* TIPOGRAFIA */
 .eyebrow{display:block;font-size:11px;font-weight:700;letter-spacing:.20em;text-transform:uppercase;color:var(--rose);margin-bottom:16px}
 .section-title{font-family:'Playfair Display',serif;font-size:clamp(1.6rem,4vw,2.4rem);font-weight:600;line-height:1.2;color:var(--dark);margin-bottom:16px}
-.section-header{text-align:center;margin-bottom:40px}
+.section-header{text-align:center;margin-bottom:24px}
 .section-subtitle{font-size:15px;color:var(--muted);line-height:1.7;max-width:520px;margin:0 auto}
 .gold-line{width:48px;height:2px;background:var(--grad);margin:16px auto;border-radius:2px}
 
 /* HERO COM FOTO DE FUNDO */
-.hero{position:relative;min-height:540px;display:flex;align-items:center;text-align:center;border-bottom:1px solid var(--border);overflow:hidden;padding:100px 0 80px}
+.hero{position:relative;min-height:540px;display:flex;align-items:flex-end;text-align:center;border-bottom:1px solid var(--border);overflow:hidden;padding:0 0 40px}
 .hero__bg{position:absolute;inset:0;z-index:0}
 .hero__bg img{width:100%;height:100%;object-fit:cover;object-position:center top}
-.hero__bg::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,rgba(250,248,245,.60) 0%,rgba(250,248,245,.40) 45%,rgba(250,248,245,.65) 100%)}
+.hero__bg::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,rgba(250,248,245,.30) 0%,rgba(250,248,245,.10) 40%,rgba(250,248,245,.75) 75%,rgba(250,248,245,.92) 100%)}
 .hero .container{position:relative;z-index:1;width:100%}
 .hero h1{font-family:'Playfair Display',serif;font-size:clamp(2rem,6vw,3.2rem);font-weight:700;color:var(--dark);line-height:1.1;margin:16px 0}
 .hero h1 em{font-style:italic;color:var(--rose)}
@@ -125,7 +127,10 @@ footer{background:var(--dark);color:rgba(255,255,255,.55);padding:40px 0;text-al
 
 <nav class="navbar" id="navbar">
   <div class="container navbar__inner">
-    <img src="logo.png" alt="Studio Gisele Lima" class="navbar__logo">
+    <div style="display:flex;align-items:center;gap:10px">
+      <img src="logo.png" alt="Studio Gisele Lima" class="navbar__logo">
+      <span class="navbar__tagline">Estética Feminina · Pedreiras-MA</span>
+    </div>
     <div class="navbar__links">
       <span class="navbar__link" onclick="goTo('#servicos')">Serviços</span>
       <span class="navbar__link" onclick="goTo('#horarios')">Horários</span>
@@ -152,16 +157,8 @@ footer{background:var(--dark);color:rgba(255,255,255,.55);padding:40px 0;text-al
       <img src="gisele.jpg" alt="Gisele Lima" loading="eager">
     </div>
     <div class="container">
-      <span class="eyebrow anim">Estética Feminina · Pedreiras-MA</span>
       <h1 class="anim d1">Realce sua beleza<br>com <em>sofisticação</em></h1>
       <p class="anim d2">Tratamentos especializados com técnica e cuidado para revelar sua melhor versão.</p>
-      <div class="hero-actions anim d3">
-        <a href="servicos.html" class="btn btn-primary" style="height:52px;padding:0 48px;font-size:14px">Agendar agora</a>
-        <span class="hero-badge">
-          <span class="hero-badge-dot"></span>
-          Atendimento com hora marcada
-        </span>
-      </div>
     </div>
   </section>
 
@@ -230,13 +227,13 @@ footer{background:var(--dark);color:rgba(255,255,255,.55);padding:40px 0;text-al
         </div>
 
       </div>
-      <div style="text-align:center;margin-top:32px">
+      <div style="text-align:center;margin-top:20px">
         <a href="servicos.html" class="btn btn-outline">Ver todos os serviços e preços</a>
       </div>
     </div>
   </section>
 
-  <section id="horarios" class="section" style="background:var(--white)">
+  <section id="horarios" class="section" style="background:var(--nude);padding-top:24px">
     <div class="container">
       <div class="section-header">
         <span class="eyebrow">Funcionamento</span>
