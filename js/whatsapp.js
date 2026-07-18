@@ -1,22 +1,30 @@
-// ⚠️ Substituir pelo número real: 55 + DDD + número sem traços ou espaços
-var WA_NUMBER = '5599999999999';
+/* Mensagem de agendamento → WhatsApp
+   O número vem de WHATSAPP_NUMBER (js/utils.js). Enquanto for
+   placeholder, abre o WhatsApp só com a mensagem (sem destinatário). */
 
 function buildMessage(services, y, mo, d, time) {
-  var lines = services.map(function(s){
-    return '• ' + s.name + ' — ' + fmtCurrency(s.price);
+  var lines = services.map(function (s) {
+    return '- ' + s.name + ' — ' + fmtPrice(s.price);
   }).join('\n');
 
-  var total = services.reduce(function(a,s){ return a + s.price; }, 0);
+  // Se algum serviço está sem preço confirmado, o total fica "A confirmar"
+  var total = Store.hasUnpriced(services)
+    ? 'A confirmar'
+    : fmtCurrency(Store.totalPrice(services));
 
-  return 'Olá! Gostaria de agendar no Studio Gisele Lima:\n\n'
+  return 'Olá! Gostaria de agendar no Studio Gisele Lima ✨\n\n'
     + lines
     + '\n\n📅 ' + fmtDateFull(y, mo, d)
     + '\n⏰ ' + time
-    + '\n💰 Total: ' + fmtCurrency(total)
+    + '\n💰 Total: ' + total
     + '\n\nPode confirmar?';
 }
 
 function openWhatsApp(services, y, mo, d, time) {
-  var msg = buildMessage(services, y, mo, d, time);
-  window.open('https://wa.me/' + WA_NUMBER + '?text=' + encodeURIComponent(msg), '_blank');
+  var msg = encodeURIComponent(buildMessage(services, y, mo, d, time));
+  var hasNumber = /^\d{10,15}$/.test(WHATSAPP_NUMBER);
+  var url = hasNumber
+    ? 'https://wa.me/' + WHATSAPP_NUMBER + '?text=' + msg
+    : 'https://api.whatsapp.com/send?text=' + msg; // placeholder: sem destinatário
+  window.open(url, '_blank');
 }

@@ -6,105 +6,29 @@
 <title>Serviços — Studio Gisele Lima</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{font-size:16px}
-body{background:#FAF8F5;color:#524345;font-family:'Montserrat',system-ui,sans-serif;font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased;min-height:100vh}
-button{cursor:pointer;border:none;background:none;font-family:inherit;-webkit-tap-highlight-color:transparent}
-:root{
-  --rose:#B76E79;--rose-d:#9E5D68;--nude:#F5F0EB;--light:#FAF8F5;
-  --border:#E8D5C4;--dark:#1B1C1C;--muted:#857374;--white:#FFFFFF;
-  --grad:linear-gradient(135deg,#B76E79,#D48E98);
-  --sh:0 2px 8px rgba(183,110,121,.07);--sh-md:0 8px 24px rgba(183,110,121,.10);
-}
-
-/* HEADER */
-.header{position:sticky;top:0;z-index:200;height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:rgba(250,248,245,.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
-.header__title{position:absolute;left:50%;transform:translateX(-50%);font-family:'Playfair Display',serif;font-size:15px;font-weight:600;color:var(--dark);white-space:nowrap;pointer-events:none}
-.header__side{width:80px}
-.btn-back{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;min-height:44px;transition:.18s;-webkit-tap-highlight-color:transparent}
-.btn-back:hover{color:var(--rose)}
-.btn-back svg{flex-shrink:0}
-
-/* PROGRESSO */
-.progress{background:var(--white);border-bottom:1px solid var(--border);padding:12px 16px}
-.progress__inner{max-width:600px;margin:0 auto;display:flex;align-items:center;gap:12px}
-.step{display:flex;align-items:center;gap:6px}
-.step__num{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
-.step__num.active{background:var(--grad);color:white}
-.step__num.done{background:rgba(183,110,121,.15);color:var(--rose)}
-.step__num.pending{border:1.5px solid var(--border);color:var(--border)}
-.step__label{font-size:12px;font-weight:600}
-.step__label.active{color:var(--rose)}
-.step__label.pending{color:var(--border)}
-.step__label.done{color:var(--muted)}
-.step__line{flex:1;height:1px}
-.step__line.done{background:var(--rose)}
-.step__line.pending{background:var(--border)}
-
-/* CONTEÚDO */
-.content{padding:20px 16px 130px;max-width:600px;margin:0 auto}
-.intro{margin-bottom:20px;font-size:13px;color:var(--muted)}
-
-/* BADGES */
-.badge-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:20px;scrollbar-width:none}
-.badge-row::-webkit-scrollbar{display:none}
-.badge{display:inline-flex;align-items:center;white-space:nowrap;padding:8px 16px;border-radius:100px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--border);background:var(--white);color:var(--muted);cursor:pointer;min-height:36px;transition:.18s;-webkit-tap-highlight-color:transparent}
-.badge:hover{border-color:var(--rose);color:var(--rose)}
-.badge.active{background:var(--grad);color:white;border-color:transparent;box-shadow:0 2px 8px rgba(183,110,121,.25)}
-
-/* GRID */
-.services-grid{display:grid;grid-template-columns:1fr;gap:12px}
-@media(min-width:480px){.services-grid{grid-template-columns:1fr 1fr}}
-
-/* CARD */
-.service-card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;transition:border-color .18s,background .18s,box-shadow .18s;box-shadow:var(--sh)}
-.service-card:hover{border-color:var(--rose);box-shadow:var(--sh-md)}
-.service-card.selected{border:1.5px solid var(--rose);background:#FDF6F7;box-shadow:0 0 0 3px rgba(183,110,121,.10)}
-.card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px}
-.card-name{font-family:'Playfair Display',serif;font-size:15px;font-weight:600;color:var(--dark);line-height:1.3}
-.card-desc{font-size:11px;color:var(--muted);margin-top:3px}
-.card-check{display:none;width:22px;height:22px;background:var(--grad);border-radius:50%;flex-shrink:0;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(183,110,121,.30)}
-.service-card.selected .card-check{display:flex}
-.card-divider{height:.5px;background:var(--border);margin-bottom:12px}
-.card-foot{display:flex;justify-content:space-between;align-items:center}
-.card-price{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:var(--rose)}
-.card-time{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:4px;font-weight:500}
-
-/* BARRA FLUTUANTE */
-.bar{position:fixed;bottom:0;left:0;right:0;z-index:300;background:var(--dark);color:white;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;transform:translateY(110%);transition:transform .28s cubic-bezier(.4,0,.2,1);box-shadow:0 -4px 24px rgba(27,28,28,.20)}
-.bar.visible{transform:translateY(0)}
-.bar__count{font-size:11px;opacity:.6;margin-bottom:2px;font-weight:500}
-.bar__total{font-family:'Playfair Display',serif;font-size:18px;font-weight:700}
-
-/* BOTÃO */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 28px;border-radius:100px;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;border:none;cursor:pointer;transition:.18s;white-space:nowrap;-webkit-tap-highlight-color:transparent}
-.btn:active{transform:scale(.97)}
-.btn-primary{background:var(--grad);color:white;box-shadow:0 4px 16px rgba(183,110,121,.25)}
-.btn-primary:hover{box-shadow:0 0 24px rgba(183,110,121,.40)}
-.btn-primary:disabled{background:var(--nude);color:var(--muted);cursor:not-allowed;box-shadow:none;transform:none}
-
-.empty{text-align:center;padding:40px 16px;color:var(--muted);font-size:13px;grid-column:1/-1}
-</style>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/reset.css">
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/animations.css">
 </head>
 <body>
 
-<!-- HEADER -->
-<header class="header">
-  <div class="header__side">
-    <button class="btn-back" onclick="history.back()">
+<!-- ═══════════ HEADER ═══════════ -->
+<header class="flow-header">
+  <div class="flow-header__side">
+    <a href="index.html" class="btn-back">
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
         <path d="M11 14L6 9L11 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
-      Voltar
-    </button>
+      Início
+    </a>
   </div>
-  <span class="header__title">Studio Gisele Lima</span>
-  <div class="header__side"></div>
+  <a href="index.html"><img src="assets/fotos/logo.png" alt="Gisele Lima — Estética Feminina" class="flow-header__logo"></a>
+  <div class="flow-header__side"></div>
 </header>
 
-<!-- PROGRESSO -->
+<!-- ═══════════ PROGRESSO ═══════════ -->
 <div class="progress">
   <div class="progress__inner">
     <div class="step">
@@ -124,88 +48,64 @@ button{cursor:pointer;border:none;background:none;font-family:inherit;-webkit-ta
   </div>
 </div>
 
-<!-- CONTEÚDO -->
-<div class="content">
-  <p class="intro">Selecione quantos serviços quiser — o horário será reservado para tudo de uma vez.</p>
-  <div class="badge-row" id="badgeRow"></div>
+<!-- ═══════════ CONTEÚDO ═══════════ -->
+<div class="flow-content">
+  <p class="flow-intro">Selecione quantos serviços quiser — o horário será reservado para tudo de uma vez.</p>
+  <div class="badge-row no-scrollbar" id="badgeRow"></div>
   <div class="services-grid" id="servicesGrid"></div>
 </div>
 
-<!-- BARRA FLUTUANTE -->
+<!-- ═══════════ BARRA FLUTUANTE ═══════════ -->
 <div class="bar" id="bar">
   <div>
     <p class="bar__count" id="barCount"></p>
     <p class="bar__total" id="barTotal"></p>
   </div>
-  <button class="btn btn-primary" onclick="goToHorario()">Escolher horário →</button>
+  <button class="btn btn-gold" onclick="goToHorario()">Escolher horário →</button>
 </div>
 
+<script src="js/utils.js"></script>
+<script src="js/services.js"></script>
+<script src="js/store.js"></script>
 <script>
-var SERVICES = [
-  {id:'1', name:'Design de sobrancelha',    desc:'Modelagem e design personalizado',   price:25, duration:30, cat:'sobrancelha'},
-  {id:'2', name:'Sobrancelha + henna',       desc:'Design com aplicação de henna',      price:40, duration:45, cat:'sobrancelha'},
-  {id:'3', name:'Buço',                      desc:'Depilação com linha ou cera',        price:12, duration:20, cat:'buco'},
-  {id:'4', name:'Epilação axila',            desc:'Depilação com cera quente',          price:15, duration:30, cat:'epilacao'},
-  {id:'5', name:'Epilação meia perna',       desc:'Depilação com cera quente',          price:20, duration:30, cat:'epilacao'},
-  {id:'6', name:'Epilação perna inteira',    desc:'Depilação com cera quente',          price:35, duration:45, cat:'epilacao'},
-  {id:'7', name:'Epilação virilha simples',  desc:'Depilação com cera quente',          price:25, duration:30, cat:'epilacao'},
-  {id:'8', name:'Epilação virilha completa', desc:'Depilação com cera quente',          price:40, duration:45, cat:'epilacao'},
-  {id:'9', name:'Limpeza de pele',           desc:'Limpeza facial profunda',            price:70, duration:60, cat:'facial'},
-  {id:'10',name:'Hidratação facial',         desc:'Tratamento hidratante intensivo',    price:55, duration:45, cat:'facial'}
-];
-
-var CATS = [
-  {key:'all',label:'Todos'},{key:'sobrancelha',label:'Sobrancelha'},
-  {key:'buco',label:'Buço'},{key:'epilacao',label:'Epilação'},{key:'facial',label:'Facial'}
-];
-
 var selectedIds = [];
 var activeCat = 'all';
-var KEY = 'sgl_sel';
 
-function save() {
-  var sel = SERVICES.filter(function(s){return selectedIds.indexOf(s.id)>-1;});
-  sessionStorage.setItem(KEY, JSON.stringify(sel));
-}
-
-function fmtCurrency(v) { return v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
-function fmtDuration(m) {
-  if(m<60) return m+'min';
-  var h=Math.floor(m/60),r=m%60;
-  return r>0?h+'h '+r+'min':h+'h';
-}
-
-function getByCategory(cat) {
-  return cat==='all'?SERVICES:SERVICES.filter(function(s){return s.cat===cat;});
+function saveSelection() {
+  Store.save(SERVICES.filter(function (s) { return selectedIds.indexOf(s.id) > -1; }));
 }
 
 function renderBadges() {
-  document.getElementById('badgeRow').innerHTML = CATS.map(function(c){
-    return '<button class="badge'+(c.key===activeCat?' active':'')+'" onclick="filterCat(\''+c.key+'\')">'+c.label+'</button>';
+  document.getElementById('badgeRow').innerHTML = CATS.map(function (c) {
+    return '<button class="badge' + (c.key === activeCat ? ' active' : '') + '" onclick="filterCat(\'' + c.key + '\')">' + c.label + '</button>';
   }).join('');
 }
 
 function renderCards() {
   var list = getByCategory(activeCat);
-  if(!list.length){document.getElementById('servicesGrid').innerHTML='<div class="empty">Nenhum serviço nesta categoria.</div>';return;}
-  document.getElementById('servicesGrid').innerHTML = list.map(function(s){
-    var sel = selectedIds.indexOf(s.id)>-1;
-    return '<div class="service-card'+(sel?' selected':'')+'" data-id="'+s.id+'" onclick="toggle(\''+s.id+'\')">'+
-      '<div class="card-head"><div><p class="card-name">'+s.name+'</p><p class="card-desc">'+s.desc+'</p></div>'+
-      '<span class="card-check"><svg width="11" height="9" viewBox="0 0 11 9" fill="none"><path d="M1 4.5L3.8 7.5L10 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>'+
-      '<div class="card-divider"></div>'+
-      '<div class="card-foot"><span class="card-price">'+fmtCurrency(s.price)+'</span>'+
-      '<span class="card-time"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1.2"/><path d="M6 3.5V6L7.5 7.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>'+s.duration+'min</span></div>'+
+  document.getElementById('servicesGrid').innerHTML = list.map(function (s) {
+    var sel = selectedIds.indexOf(s.id) > -1;
+    var priceHtml = s.price === null
+      ? '<span class="card-price card-price--consult">Consulte o valor</span>'
+      : '<span class="card-price">' + fmtCurrency(s.price) + '</span>';
+    var premiumHtml = s.premium ? '<span class="badge-premium">Premium</span>' : '';
+    return '<div class="service-card' + (sel ? ' selected' : '') + '" data-id="' + s.id + '" onclick="toggleService(\'' + s.id + '\')">' +
+      '<div class="card-head"><div><p class="card-name">' + s.name + premiumHtml + '</p>' +
+      '<p class="card-desc">' + s.description + '</p></div>' +
+      '<span class="card-check"><svg width="11" height="9" viewBox="0 0 11 9" fill="none"><path d="M1 4.5L3.8 7.5L10 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>' +
+      '<div class="card-divider"></div>' +
+      '<div class="card-foot">' + priceHtml +
+      '<span class="card-time"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1.2"/><path d="M6 3.5V6L7.5 7.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>' + fmtDuration(s.duration) + '</span></div>' +
       '</div>';
   }).join('');
 }
 
-function toggle(id) {
+function toggleService(id) {
   var idx = selectedIds.indexOf(id);
-  if(idx>-1) selectedIds.splice(idx,1); else selectedIds.push(id);
-  var card = document.querySelector('.service-card[data-id="'+id+'"]');
-  if(card) card.classList.toggle('selected', selectedIds.indexOf(id)>-1);
-  save();
+  if (idx > -1) selectedIds.splice(idx, 1); else selectedIds.push(id);
+  var card = document.querySelector('.service-card[data-id="' + id + '"]');
+  if (card) card.classList.toggle('selected', selectedIds.indexOf(id) > -1);
+  saveSelection();
   updateBar();
 }
 
@@ -216,26 +116,34 @@ function filterCat(cat) {
 }
 
 function updateBar() {
-  var n = selectedIds.length;
   var bar = document.getElementById('bar');
-  if(n===0){bar.classList.remove('visible');return;}
-  var sel = SERVICES.filter(function(s){return selectedIds.indexOf(s.id)>-1;});
-  document.getElementById('barCount').textContent = n+' serviço'+(n>1?'s':'')+' · '+fmtDuration(sel.reduce(function(a,s){return a+s.duration;},0));
-  document.getElementById('barTotal').textContent = fmtCurrency(sel.reduce(function(a,s){return a+s.price;},0));
+  var sel = SERVICES.filter(function (s) { return selectedIds.indexOf(s.id) > -1; });
+  if (!sel.length) { bar.classList.remove('visible'); return; }
+
+  document.getElementById('barCount').textContent =
+    sel.length + ' serviço' + (sel.length > 1 ? 's' : '') + ' · ' + fmtDuration(Store.totalDuration(sel));
+
+  var totalNum = Store.totalPrice(sel);
+  var totalEl = document.getElementById('barTotal');
+  if (!Store.hasUnpriced(sel)) {
+    totalEl.textContent = fmtCurrency(totalNum);
+  } else if (totalNum === 0) {
+    totalEl.innerHTML = '<small>A consultar</small>';
+  } else {
+    totalEl.innerHTML = fmtCurrency(totalNum) + ' <small>+ consulta</small>';
+  }
+
   bar.classList.add('visible');
 }
 
 function goToHorario() {
-  if(selectedIds.length===0) return;
+  if (!selectedIds.length) return;
   location.href = 'horario.html';
 }
 
-// Init
-(function(){
-  try{
-    var raw = sessionStorage.getItem(KEY);
-    if(raw) selectedIds = JSON.parse(raw).map(function(s){return s.id;});
-  }catch(e){}
+// Init — restaura seleção anterior, se houver
+(function () {
+  selectedIds = Store.load().map(function (s) { return s.id; });
   renderBadges();
   renderCards();
   updateBar();
