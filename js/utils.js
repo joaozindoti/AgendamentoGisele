@@ -11,7 +11,16 @@ var WHATSAPP_NUMBER = 'SUBSTITUIR_QUANDO_TIVER_O_NUMERO';
 /* 2) ENDEREÇO — cliente está mudando de local; definitivo pendente. */
 var ADDRESS_PLACEHOLDER = 'Endereço em atualização — consulte pelo WhatsApp';
 
+/* 3) LINK DO GOOGLE MAPS — atualizar a query junto com o item 2,
+      assim que a cliente confirmar a nova localização.             */
+var MAPS_URL_PLACEHOLDER = 'https://www.google.com/maps/search/?api=1&query=SUBSTITUIR_QUANDO_TIVER_ENDERECO';
+
 /* ════════════════════════════════════════════════════════════════ */
+
+/* Botão "Ver no mapa" da home */
+function openMaps() {
+  window.open(MAPS_URL_PLACEHOLDER, '_blank');
+}
 
 /* ── Formatação ── */
 
@@ -87,7 +96,62 @@ function initPlaceholders() {
   });
 }
 
+/* ── Status "Aberto agora" na home ──
+   Usa BUSINESS_HOURS / LUNCH_BREAK via getDayWindows() de js/calendar.js —
+   a página precisa carregar calendar.js antes deste arquivo. Nas páginas
+   sem calendar.js (ou sem o elemento), a função simplesmente não faz nada. */
+
+var WEEKDAY_SHORT = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
+
+function fmtHourMin(min) {
+  var h = Math.floor(min / 60);
+  var m = min % 60;
+  return m > 0 ? h + 'h' + String(m).padStart(2, '0') : h + 'h';
+}
+
+function initOpenStatus() {
+  var el = document.querySelector('[data-open-status]');
+  if (!el || typeof getDayWindows !== 'function') return;
+
+  var now = new Date();
+  var nowMin = now.getHours() * 60 + now.getMinutes();
+  var windows = getDayWindows(now.getDay());
+  var open = false;
+  var text = '';
+
+  for (var i = 0; i < windows.length; i++) {
+    var w = windows[i];
+    if (nowMin >= w.open && nowMin < w.close) {
+      open = true;
+      text = 'Aberto agora · até ' + fmtHourMin(w.close);
+      break;
+    }
+    if (nowMin < w.open) {
+      text = 'Fechado no momento · abre hoje às ' + fmtHourMin(w.open);
+      break;
+    }
+  }
+
+  /* Já passou do último horário de hoje (ou é domingo): acha o próximo dia */
+  if (!open && !text) {
+    for (var d = 1; d <= 7; d++) {
+      var wd = (now.getDay() + d) % 7;
+      var next = getDayWindows(wd);
+      if (next.length) {
+        var dia = d === 1 ? 'amanhã' : WEEKDAY_SHORT[wd];
+        text = 'Fechado no momento · abre ' + dia + ' às ' + fmtHourMin(next[0].open);
+        break;
+      }
+    }
+  }
+
+  el.classList.toggle('closed', !open);
+  el.querySelector('.open-status__text').textContent = text;
+  el.hidden = false;
+}
+
 document.addEventListener('DOMContentLoaded', function () {
   initReveal();
   initPlaceholders();
+  initOpenStatus();
 });

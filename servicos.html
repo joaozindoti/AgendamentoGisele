@@ -52,7 +52,7 @@
 <div class="flow-content">
   <p class="flow-intro">Selecione quantos serviços quiser — o horário será reservado para tudo de uma vez.</p>
   <div class="badge-row no-scrollbar" id="badgeRow"></div>
-  <div class="services-grid" id="servicesGrid"></div>
+  <div id="servicesGrid"></div>
 </div>
 
 <!-- ═══════════ BARRA FLUTUANTE ═══════════ -->
@@ -81,22 +81,34 @@ function renderBadges() {
   }).join('');
 }
 
+function cardHtml(s) {
+  var sel = selectedIds.indexOf(s.id) > -1;
+  var priceHtml = s.price === null
+    ? '<span class="card-price card-price--consult">Consulte o valor</span>'
+    : '<span class="card-price">' + fmtCurrency(s.price) + '</span>';
+  var premiumHtml = s.premium ? '<span class="badge-premium">Premium</span>' : '';
+  return '<div class="service-card' + (sel ? ' selected' : '') + '" data-id="' + s.id + '" onclick="toggleService(\'' + s.id + '\')">' +
+    '<div class="card-head"><div><p class="card-name">' + s.name + premiumHtml + '</p>' +
+    '<p class="card-desc">' + s.description + '</p></div>' +
+    '<span class="card-check"><svg width="11" height="9" viewBox="0 0 11 9" fill="none"><path d="M1 4.5L3.8 7.5L10 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>' +
+    '<div class="card-divider"></div>' +
+    '<div class="card-foot">' + priceHtml +
+    '<span class="card-time"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1.2"/><path d="M6 3.5V6L7.5 7.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>' + fmtDuration(s.duration) + '</span></div>' +
+    '</div>';
+}
+
+/* Cards agrupados por categoria, com foto de contexto no topo de cada grupo */
 function renderCards() {
-  var list = getByCategory(activeCat);
-  document.getElementById('servicesGrid').innerHTML = list.map(function (s) {
-    var sel = selectedIds.indexOf(s.id) > -1;
-    var priceHtml = s.price === null
-      ? '<span class="card-price card-price--consult">Consulte o valor</span>'
-      : '<span class="card-price">' + fmtCurrency(s.price) + '</span>';
-    var premiumHtml = s.premium ? '<span class="badge-premium">Premium</span>' : '';
-    return '<div class="service-card' + (sel ? ' selected' : '') + '" data-id="' + s.id + '" onclick="toggleService(\'' + s.id + '\')">' +
-      '<div class="card-head"><div><p class="card-name">' + s.name + premiumHtml + '</p>' +
-      '<p class="card-desc">' + s.description + '</p></div>' +
-      '<span class="card-check"><svg width="11" height="9" viewBox="0 0 11 9" fill="none"><path d="M1 4.5L3.8 7.5L10 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>' +
-      '<div class="card-divider"></div>' +
-      '<div class="card-foot">' + priceHtml +
-      '<span class="card-time"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1.2"/><path d="M6 3.5V6L7.5 7.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>' + fmtDuration(s.duration) + '</span></div>' +
-      '</div>';
+  var groups = CATS.filter(function (c) {
+    return c.key !== 'all' && (activeCat === 'all' || c.key === activeCat);
+  });
+  document.getElementById('servicesGrid').innerHTML = groups.map(function (c) {
+    var banner = c.photo
+      ? '<div class="cat-banner"><img src="' + c.photo + '" alt="' + c.alt + '" loading="lazy">' +
+        '<span class="cat-banner__label">' + c.label + '</span></div>'
+      : '';
+    var cards = getByCategory(c.key).map(cardHtml).join('');
+    return '<section class="cat-group">' + banner + '<div class="services-grid">' + cards + '</div></section>';
   }).join('');
 }
 

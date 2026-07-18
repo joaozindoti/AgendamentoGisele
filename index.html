@@ -21,26 +21,9 @@
     <a href="index.html">
       <img src="assets/fotos/logo.png" alt="Gisele Lima — Estética Feminina" class="navbar__logo">
     </a>
-    <div class="navbar__links">
-      <a class="navbar__link" href="#trabalho">Nosso trabalho</a>
-      <a class="navbar__link" href="#servicos">Serviços</a>
-      <a class="navbar__link" href="#sobre">O Studio</a>
-      <a class="navbar__link" href="#info">Horários</a>
-    </div>
     <a href="servicos.html" class="btn btn-gold btn-sm">Agendar</a>
-    <div class="hamburger" onclick="toggleMenu()">
-      <span></span><span></span><span></span>
-    </div>
   </div>
 </nav>
-
-<div class="mobile-menu" id="mobileMenu">
-  <a href="#trabalho" onclick="toggleMenu()">Nosso trabalho</a>
-  <a href="#servicos" onclick="toggleMenu()">Serviços</a>
-  <a href="#sobre" onclick="toggleMenu()">O Studio</a>
-  <a href="#info" onclick="toggleMenu()">Horários</a>
-  <a href="servicos.html" class="btn btn-gold" style="margin-top:14px;justify-content:center">Agendar meu horário</a>
-</div>
 
 <main>
 
@@ -50,185 +33,30 @@
       <img src="assets/fotos/hero-01.jpg" alt="Resultado de design de sobrancelha no Studio Gisele Lima" loading="eager">
     </div>
     <div class="container hero__content">
-      <span class="eyebrow anim d1">Estética Feminina · Lindeza Premium</span>
+      <span class="hero__award anim d1">🏆 Top of Mind Excelência Brasil 2025</span>
+      <span class="eyebrow anim d1">Lindeza Premium</span>
       <h1 class="anim d2">Studio Gisele Lima</h1>
-      <p class="anim d3">Cada procedimento, uma experiência premium para realçar a sua beleza.</p>
-      <a href="servicos.html" class="btn btn-gold anim d3">Agendar meu horário</a>
+      <p class="anim d3">Procedimentos premium para uma beleza que é só sua.</p>
+      <a href="servicos.html" class="btn btn-gold anim d3">Agendar agora</a>
     </div>
   </section>
 
-  <!-- ═══════════ CATEGORIAS ═══════════ -->
-  <section class="section">
-    <div class="container">
-      <div class="section-head reveal">
-        <span class="eyebrow">Especialidades</span>
-        <h2 class="section-title">Cuidado premium em cada detalhe</h2>
-        <div class="gold-line"></div>
+  <!-- ═══════════ INFO RÁPIDA — horário + localização ═══════════ -->
+  <section id="info" class="quick-info">
+    <div class="container quick-info__grid">
+      <div class="quick-info__col">
+        <p class="quick-info__label">Horários</p>
+        <p class="open-status" data-open-status hidden>
+          <span class="open-status__dot" aria-hidden="true"></span>
+          <span class="open-status__text"></span>
+        </p>
+        <p class="quick-info__hours">Seg 14h–19h · Ter–Sex 9h30–20h · Sáb 9h30–18h</p>
+        <p class="quick-info__note">Pausa para almoço de terça a sábado: 12h–13h40 · Domingo fechado</p>
       </div>
-      <div class="tiles">
-        <a href="servicos.html" class="tile reveal-photo">
-          <img src="assets/fotos/sobrancelha-04.jpg" alt="Design de sobrancelha em detalhe" loading="lazy">
-          <div class="tile__overlay"></div>
-          <div class="tile__content">
-            <p class="tile__cat">Sobrancelha</p>
-            <h3 class="tile__name">Design &amp; Brow Lamination</h3>
-          </div>
-        </a>
-        <a href="servicos.html" class="tile reveal-photo reveal-delay-1">
-          <img src="assets/fotos/epilacao-02.jpg" alt="Epilação premium" loading="lazy">
-          <div class="tile__overlay"></div>
-          <div class="tile__content">
-            <p class="tile__cat">Epilação</p>
-            <h3 class="tile__name">Epilação Premium</h3>
-          </div>
-        </a>
-        <a href="servicos.html" class="tile reveal-photo reveal-delay-2">
-          <img src="assets/fotos/facial-01.jpg" alt="Limpeza de pele com máscara de ouro" loading="lazy">
-          <div class="tile__overlay"></div>
-          <div class="tile__content">
-            <p class="tile__cat">Facial</p>
-            <h3 class="tile__name">Limpeza de Pele</h3>
-          </div>
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <!-- ═══════════ MANIFESTO PREMIUM ═══════════ -->
-  <section class="section" style="background:var(--brand-light)">
-    <div class="container manifesto">
-      <div class="manifesto__photo reveal-photo">
-        <img src="assets/fotos/epilacao-01.jpg" alt="Somos especialistas em epilação íntima — somos premium" loading="lazy">
-      </div>
-      <div class="manifesto__text reveal">
-        <span class="eyebrow">Lindeza Premium</span>
-        <h2 class="section-title">Somos especialistas.<br><em>Somos premium.</em></h2>
-        <p>No Studio Gisele Lima, nenhum procedimento é tratado como rotina. Da epilação íntima ao design de sobrancelha, cada atendimento é pensado para você sair se sentindo cuidada — com técnica, discrição e acabamento impecável.</p>
-        <p>Produtos selecionados, ambiente acolhedor e a atenção que a sua lindeza merece.</p>
-        <a href="servicos.html" class="btn btn-outline" style="margin-top:8px">Conhecer os serviços</a>
-      </div>
-    </div>
-  </section>
-
-  <!-- ═══════════ NOSSO TRABALHO ═══════════ -->
-  <section id="trabalho" class="section">
-    <div class="container">
-      <div class="section-head reveal">
-        <span class="eyebrow">Resultados reais</span>
-        <h2 class="section-title">Nosso trabalho</h2>
-        <div class="gold-line"></div>
-        <p class="section-sub" style="margin-top:14px">Cada olhar, um resultado feito sob medida.</p>
-      </div>
-      <div class="gallery">
-        <div class="gallery__item reveal-photo">
-          <img src="assets/fotos/sobrancelha-01.jpg" alt="Design de sobrancelha finalizado" loading="lazy">
-        </div>
-        <div class="gallery__item reveal-photo reveal-delay-1">
-          <img src="assets/fotos/sobrancelha-02.jpg" alt="Design de sobrancelha personalizado" loading="lazy">
-        </div>
-        <div class="gallery__item reveal-photo reveal-delay-2">
-          <img src="assets/fotos/sobrancelha-03.jpg" alt="Cliente após design de sobrancelha" loading="lazy">
-        </div>
-        <div class="gallery__item reveal-photo reveal-delay-3">
-          <img src="assets/fotos/facial-02.jpg" alt="Procedimento facial no Studio Gisele Lima" loading="lazy">
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ═══════════ SERVIÇOS EM DESTAQUE ═══════════ -->
-  <section id="servicos" class="section" style="background:var(--brand-light)">
-    <div class="container">
-      <div class="section-head reveal">
-        <span class="eyebrow">Experiências completas</span>
-        <h2 class="section-title">Serviços em destaque</h2>
-        <div class="gold-line"></div>
-      </div>
-      <div class="featured">
-        <div class="featured-card reveal">
-          <span class="badge-premium">Premium</span>
-          <h3 class="featured-card__name">Brow Lamination</h3>
-          <p class="featured-card__desc">Técnica premium de alinhamento e fixação dos fios — sobrancelhas alinhadas por semanas.</p>
-          <div class="featured-card__foot">
-            <span class="featured-card__price">R$ 110</span>
-            <span class="featured-card__time">60min</span>
-          </div>
-        </div>
-        <div class="featured-card reveal reveal-delay-1">
-          <span class="badge-premium">Premium</span>
-          <h3 class="featured-card__name">Limpeza de pele profunda</h3>
-          <p class="featured-card__desc">Limpeza facial completa para renovar a pele, com acabamento e cuidado de spa.</p>
-          <div class="featured-card__foot">
-            <span class="featured-card__price">R$ 110</span>
-            <span class="featured-card__time">1h 30min</span>
-          </div>
-        </div>
-        <div class="featured-card reveal reveal-delay-2">
-          <span class="badge-premium">Premium</span>
-          <h3 class="featured-card__name">Design personalizado + Henna</h3>
-          <p class="featured-card__desc">Design sob medida com aplicação de henna para um preenchimento natural e marcante.</p>
-          <div class="featured-card__foot">
-            <span class="featured-card__price">R$ 40</span>
-            <span class="featured-card__time">60min</span>
-          </div>
-        </div>
-      </div>
-      <div style="text-align:center;margin-top:36px" class="reveal">
-        <a href="servicos.html" class="btn btn-gold">Ver todos os serviços</a>
-      </div>
-    </div>
-  </section>
-
-  <!-- ═══════════ SOBRE ═══════════ -->
-  <section id="sobre" class="section">
-    <div class="container about">
-      <div class="about__photos">
-        <div class="about__photo-main reveal-photo">
-          <img src="assets/fotos/sobre-01.jpg" alt="Gisele Lima preparando a cera premium" loading="lazy">
-        </div>
-        <div class="about__photo-sm reveal-photo reveal-delay-1">
-          <img src="assets/fotos/sobre-02.jpg" alt="Gisele Lima no Brow Lash Congress" loading="lazy">
-        </div>
-        <div class="about__photo-sm reveal-photo reveal-delay-2">
-          <img src="assets/fotos/premio-01.jpg" alt="Prêmio Top of Mind Excelência Brasil 2025" loading="lazy">
-        </div>
-      </div>
-      <div class="about__text reveal">
-        <span class="eyebrow">O Studio</span>
-        <h2 class="section-title">Feito por quem <em>ama</em> o que faz</h2>
-        <p>À frente do Studio, Gisele Lima une técnica, atualização constante e um olhar atento a cada detalhe. Aqui, você não passa por um procedimento — vive uma experiência de cuidado pensada para você.</p>
-        <div class="award-note">
-          <span class="award-note__icon">✦</span>
-          <span><strong>Top of Mind Excelência Brasil 2025</strong> — destaque em Epilação, Pedreiras-MA.</span>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ═══════════ INFORMAÇÕES ═══════════ -->
-  <section id="info" class="section" style="background:var(--brand-light)">
-    <div class="container">
-      <div class="section-head reveal">
-        <span class="eyebrow">Visite o Studio</span>
-        <h2 class="section-title">Horários &amp; contato</h2>
-        <div class="gold-line"></div>
-      </div>
-      <div class="info-grid">
-        <div class="schedule-card reveal">
-          <div class="schedule-card__head">Horário de atendimento</div>
-          <div class="schedule-row"><span>Segunda-feira</span><span>14:00 – 19:00</span></div>
-          <div class="schedule-row"><span>Terça a sexta</span><span>09:30 – 20:00</span></div>
-          <div class="schedule-row"><span>Sábado</span><span>09:30 – 18:00</span></div>
-          <div class="schedule-row closed"><span>Domingo</span><span>Fechado</span></div>
-          <div class="schedule-card__foot">Pausa para almoço de terça a sábado: <strong>12:00 – 13:40</strong>. Segunda-feira já abrimos após o almoço.</div>
-        </div>
-        <div class="contact-card reveal reveal-delay-1">
-          <h3>Onde estamos</h3>
-          <p data-address>Endereço em atualização — consulte pelo WhatsApp</p>
-          <h3 style="margin-top:22px">Agendamento</h3>
-          <p>Escolha seus serviços e o horário — a confirmação é feita direto no WhatsApp, sem complicação.</p>
-          <a href="servicos.html" class="btn btn-gold">Agendar meu horário</a>
-        </div>
+      <div class="quick-info__col">
+        <p class="quick-info__label">Localização</p>
+        <p class="quick-info__address" data-address>Endereço em atualização — consulte pelo WhatsApp</p>
+        <button type="button" class="btn btn-map" onclick="openMaps()">Ver no mapa</button>
       </div>
     </div>
   </section>
@@ -244,15 +72,12 @@
   </div>
 </footer>
 
+<script src="js/calendar.js"></script>
 <script src="js/utils.js"></script>
 <script>
   window.addEventListener('scroll', function () {
     document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 60);
   });
-
-  function toggleMenu() {
-    document.getElementById('mobileMenu').classList.toggle('open');
-  }
 </script>
 
 </body>

@@ -91,11 +91,13 @@ var SERVICES = [
   }
 ];
 
+/* photo/alt: banner de contexto no topo de cada grupo de cards
+   (fotos reaproveitadas da antiga galeria da home)              */
 var CATS = [
-  { key: 'all',         label: 'Todos'       },
-  { key: 'sobrancelha', label: 'Sobrancelha' },
-  { key: 'epilacao',    label: 'Epilação'    },
-  { key: 'facial',      label: 'Facial'      }
+  { key: 'all',         label: 'Todos' },
+  { key: 'sobrancelha', label: 'Sobrancelha', photo: 'assets/fotos/sobrancelha-01.jpg', alt: 'Design de sobrancelha finalizado no Studio Gisele Lima' },
+  { key: 'epilacao',    label: 'Epilação',    photo: 'assets/fotos/epilacao-02.jpg',    alt: 'Epilação premium no Studio Gisele Lima' },
+  { key: 'facial',      label: 'Facial',      photo: 'assets/fotos/facial-02.jpg',      alt: 'Procedimento facial no Studio Gisele Lima' }
 ];
 
 function getByCategory(cat) {
