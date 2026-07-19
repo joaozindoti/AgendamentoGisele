@@ -30,13 +30,6 @@
   --sh-md: 0 8px 28px rgba(42, 31, 26, 0.08);
   --sh-lg: 0 18px 48px rgba(42, 31, 26, 0.12);
 
-  /* Respiro entre seções — luxo se comunica com espaço */
-  --sec-gap: 4rem;
-
   /* Transições */
   --t: all 0.3s ease;
-}
-
-@media (max-width: 720px) {
-  :root { --sec-gap: 2.5rem; }
 }

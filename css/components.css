@@ -24,8 +24,6 @@ body {
   .container { padding: 0 40px; }
 }
 
-.section { padding: var(--sec-gap) 0; }
-
 /* ── Tipografia ─────────────────────────────────────────── */
 
 .eyebrow {
@@ -36,35 +34,6 @@ body {
   text-transform: uppercase;
   color: var(--brand-gold);
   margin-bottom: 14px;
-}
-
-.section-title {
-  font-family: var(--f-display);
-  font-size: clamp(1.7rem, 4vw, 2.5rem);
-  font-weight: 600;
-  line-height: 1.2;
-  color: var(--brand-dark);
-  margin-bottom: 14px;
-}
-
-.section-title em { font-style: italic; color: var(--brand-rose); }
-
-.section-head { text-align: center; margin-bottom: 40px; }
-
-.section-sub {
-  font-size: 15px;
-  color: var(--brand-muted);
-  line-height: 1.8;
-  max-width: 540px;
-  margin: 0 auto;
-}
-
-.gold-line {
-  width: 44px;
-  height: 1.5px;
-  background: var(--brand-gold);
-  margin: 18px auto 0;
-  opacity: 0.7;
 }
 
 /* ── Botões — peso equilibrado, nem frágil nem genérico ── */
@@ -98,14 +67,6 @@ body {
   box-shadow: 0 8px 26px rgba(184, 147, 95, 0.42);
   transform: translateY(-1px);
 }
-
-.btn-outline {
-  background: transparent;
-  color: var(--brand-dark);
-  border: 1px solid var(--brand-gold);
-}
-
-.btn-outline:hover { background: var(--brand-gold); color: var(--brand-white); }
 
 .btn-sm { min-height: 42px; padding: 0 24px; font-size: 11px; }
 
@@ -257,8 +218,14 @@ body {
 }
 
 @media (max-width: 720px) {
-  .hero { min-height: 60vh; min-height: 60svh; }
+  /* Hero mais baixo no mobile — horário e localização entram na primeira dobra */
+  .hero { min-height: 56vh; min-height: 56svh; }
   .hero__content { padding-bottom: 36px; }
+}
+
+/* Telas muito estreitas: selo reduz para continuar em uma linha elegante */
+@media (max-width: 360px) {
+  .hero__award { font-size: 10px; letter-spacing: 0.05em; padding: 6px 13px; }
 }
 
 /* ── Barra de informação rápida (home) ─────────────────── */
@@ -268,13 +235,17 @@ body {
 .quick-info {
   background: var(--brand-dark);
   color: var(--brand-nude);
-  padding: 36px 0 40px;
+  padding: 30px 0 36px;
+}
+
+@media (min-width: 720px) {
+  .quick-info { padding: 36px 0 40px; }
 }
 
 .quick-info__grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 26px;
+  gap: 22px;
 }
 
 @media (min-width: 720px) {

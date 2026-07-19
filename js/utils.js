@@ -68,26 +68,6 @@ function isSunday(y, mo, d) {
   return new Date(y, mo, d).getDay() === 0;
 }
 
-/* ── Reveal ao rolar (fade + slight scale nas fotos) ── */
-
-function initReveal() {
-  var els = document.querySelectorAll('.reveal, .reveal-photo');
-  if (!els.length) return;
-  if (!('IntersectionObserver' in window)) {
-    els.forEach(function (el) { el.classList.add('in-view'); });
-    return;
-  }
-  var obs = new IntersectionObserver(function (entries) {
-    entries.forEach(function (entry) {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('in-view');
-        obs.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
-  els.forEach(function (el) { obs.observe(el); });
-}
-
 /* ── Injeta os placeholders nos elementos [data-address] ── */
 
 function initPlaceholders() {
@@ -151,7 +131,6 @@ function initOpenStatus() {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-  initReveal();
   initPlaceholders();
   initOpenStatus();
 });

@@ -7,11 +7,6 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
 @keyframes shimmer {
   0%   { background-position: 200% 0; }
   100% { background-position: -200% 0; }
@@ -23,32 +18,8 @@
 .d2 { animation-delay: 0.2s; }
 .d3 { animation-delay: 0.34s; }
 
-/* Reveal ao rolar — fade + slight scale (via IntersectionObserver em utils.js) */
-.reveal {
-  opacity: 0;
-  transform: translateY(16px);
-  transition: opacity 0.65s ease, transform 0.65s ease;
-}
-
-.reveal-photo {
-  opacity: 0;
-  transform: translateY(12px) scale(0.97);
-  transition: opacity 0.7s ease, transform 0.7s ease;
-}
-
-.reveal.in-view,
-.reveal-photo.in-view {
-  opacity: 1;
-  transform: none;
-}
-
-/* Atrasos em cascata para grids */
-.reveal-delay-1 { transition-delay: 0.08s; }
-.reveal-delay-2 { transition-delay: 0.16s; }
-.reveal-delay-3 { transition-delay: 0.24s; }
-
 @media (prefers-reduced-motion: reduce) {
-  .anim, .reveal, .reveal-photo {
+  .anim {
     animation: none;
     opacity: 1;
     transform: none;
