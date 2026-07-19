@@ -61,7 +61,7 @@ var SERVICES = [
     id: '7',
     name: 'Epilação completa',
     description: 'Íntima, axilas e pernas — pacote completo',
-    price: null, // CONFIRMAR VALOR COM A CLIENTE — não exibir preço até confirmar
+    price: 150, // íntima (60) + perna completa (60) + axilas (30), confirmado com a cliente
     duration: 120,
     category: 'epilacao'
   },
@@ -83,21 +83,30 @@ var SERVICES = [
   },
   {
     id: '10',
-    name: 'Epilação pernas',
-    description: 'Depilação completa das pernas',
-    price: 30, // CONFIRMAR se corresponde à "meia perna" do cardápio antigo (perna completa era R$60)
+    name: 'Epilação meia perna',
+    description: 'Depilação da região da meia perna',
+    price: 30,
+    duration: 30,
+    category: 'epilacao'
+  },
+  {
+    id: '11',
+    name: 'Epilação perna completa',
+    description: 'Depilação da perna completa',
+    price: 60, // mesma duração da meia perna — muda a área, não o tempo
     duration: 30,
     category: 'epilacao'
   }
 ];
 
 /* photo/alt: banner de contexto no topo de cada grupo de cards
-   (fotos reaproveitadas da antiga galeria da home)              */
+   (fotos reaproveitadas da antiga galeria da home)
+   sub: subtítulo herdado dos tiles da antiga seção Categorias   */
 var CATS = [
   { key: 'all',         label: 'Todos' },
-  { key: 'sobrancelha', label: 'Sobrancelha', photo: 'assets/fotos/sobrancelha-01.jpg', alt: 'Design de sobrancelha finalizado no Studio Gisele Lima' },
-  { key: 'epilacao',    label: 'Epilação',    photo: 'assets/fotos/epilacao-02.jpg',    alt: 'Epilação premium no Studio Gisele Lima' },
-  { key: 'facial',      label: 'Facial',      photo: 'assets/fotos/facial-02.jpg',      alt: 'Procedimento facial no Studio Gisele Lima' }
+  { key: 'sobrancelha', label: 'Sobrancelha', sub: 'Design & Brow Lamination', photo: 'assets/fotos/sobrancelha-01.jpg', alt: 'Design de sobrancelha finalizado no Studio Gisele Lima' },
+  { key: 'epilacao',    label: 'Epilação',    sub: 'Epilação Premium',         photo: 'assets/fotos/epilacao-02.jpg',    alt: 'Epilação premium no Studio Gisele Lima' },
+  { key: 'facial',      label: 'Facial',      sub: 'Limpeza de Pele',          photo: 'assets/fotos/facial-02.jpg',      alt: 'Procedimento facial no Studio Gisele Lima' }
 ];
 
 function getByCategory(cat) {

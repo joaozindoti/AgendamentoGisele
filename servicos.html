@@ -105,7 +105,8 @@ function renderCards() {
   document.getElementById('servicesGrid').innerHTML = groups.map(function (c) {
     var banner = c.photo
       ? '<div class="cat-banner"><img src="' + c.photo + '" alt="' + c.alt + '" loading="lazy">' +
-        '<span class="cat-banner__label">' + c.label + '</span></div>'
+        '<div class="cat-banner__caption"><span class="cat-banner__label">' + c.label + '</span>' +
+        (c.sub ? '<span class="cat-banner__sub">' + c.sub + '</span>' : '') + '</div></div>'
       : '';
     var cards = getByCategory(c.key).map(cardHtml).join('');
     return '<section class="cat-group">' + banner + '<div class="services-grid">' + cards + '</div></section>';

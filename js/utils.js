@@ -28,7 +28,7 @@ function fmtCurrency(val) {
   return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
-/* Preço pode ser null (ex.: Epilação completa) → "Consulte o valor" */
+/* Preço pode ser null (serviço ainda sem valor confirmado) → "Consulte o valor" */
 function fmtPrice(price) {
   return price === null ? 'Consulte o valor' : fmtCurrency(price);
 }
