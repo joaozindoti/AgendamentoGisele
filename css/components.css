@@ -1000,7 +1000,7 @@ footer {
   margin-bottom: 10px;
 }
 
-.precad-success p { font-size: 14px; color: var(--brand-muted); line-height: 1.75; }
+.precad-success p { font-size: 14px; color: var(--brand-muted); line-height: 1.75; margin-bottom: 28px; }
 
 /* ── Link discreto de pré-cadastro no rodapé ──────────────
    Fundo escuro (footer da home) vs. fundo claro (páginas do fluxo) —
