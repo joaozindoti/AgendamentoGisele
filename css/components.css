@@ -1019,26 +1019,4 @@ footer {
 }
 
 .footer-cta-link:hover { color: var(--brand-gold); }
-
-.mini-footer {
-  margin-top: 32px;
-  padding-top: 18px;
-  border-top: 1px solid var(--brand-border);
-  text-align: center;
-}
-
-.mini-footer__link {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: var(--brand-muted);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  transition: var(--t);
-}
-
-.mini-footer__link svg { flex-shrink: 0; }
-
-.mini-footer__link:hover { color: var(--brand-gold); }
 .sk-pills { display: flex; flex-wrap: wrap; gap: 8px; }
