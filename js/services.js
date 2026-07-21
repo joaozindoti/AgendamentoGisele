@@ -58,11 +58,27 @@ var SERVICES = [
     premium: true
   },
   {
-    id: '7',
-    name: 'Epilação completa',
-    description: 'Íntima, axilas e pernas — pacote completo',
-    price: 150, // íntima (60) + perna completa (60) + axilas (30), confirmado com a cliente
-    duration: 120,
+    id: '12',
+    name: 'Epilação completa (com perna completa)',
+    description: 'Íntima + axilas + perna completa',
+    price: 150, // 60 (íntima) + 30 (axilas) + 60 (perna completa), confirmado com a cliente
+    duration: 150, // soma das durações — mesma lógica do preço, ainda não confirmado com a cliente
+    category: 'epilacao'
+  },
+  {
+    id: '13',
+    name: 'Epilação completa (com meia perna)',
+    description: 'Íntima + axilas + meia perna',
+    price: 120, // 60 (íntima) + 30 (axilas) + 30 (meia perna), confirmado com a cliente
+    duration: 120, // soma das durações — mesma lógica do preço, ainda não confirmado com a cliente
+    category: 'epilacao'
+  },
+  {
+    id: '14',
+    name: 'Epilação completa (com sobrancelha)',
+    description: 'Íntima + axilas + design de sobrancelha',
+    price: 120, // 60 (íntima) + 30 (axilas) + 30 (design sobrancelha), confirmado com a cliente
+    duration: 120, // soma das durações — mesma lógica do preço, ainda não confirmado com a cliente
     category: 'epilacao'
   },
   {
@@ -93,8 +109,8 @@ var SERVICES = [
     id: '11',
     name: 'Epilação perna completa',
     description: 'Depilação da perna completa',
-    price: 60, // mesma duração da meia perna — muda a área, não o tempo
-    duration: 30,
+    price: 60,
+    duration: 60, // corrigido de 30 para 60 — a perna completa leva o dobro da meia perna
     category: 'epilacao'
   }
 ];
