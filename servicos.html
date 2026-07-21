@@ -104,7 +104,7 @@ function renderCards() {
   });
   document.getElementById('servicesGrid').innerHTML = groups.map(function (c) {
     var banner = c.photo
-      ? '<div class="cat-banner"><img src="' + c.photo + '" alt="' + c.alt + '" loading="lazy">' +
+      ? '<div class="cat-banner cat-banner--' + c.key + '"><img src="' + c.photo + '" alt="' + c.alt + '" loading="lazy">' +
         '<div class="cat-banner__caption"><span class="cat-banner__label">' + c.label + '</span>' +
         (c.sub ? '<span class="cat-banner__sub">' + c.sub + '</span>' : '') + '</div></div>'
       : '';

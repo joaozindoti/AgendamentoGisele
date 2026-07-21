@@ -122,7 +122,7 @@ var CATS = [
   { key: 'all',         label: 'Todos' },
   { key: 'sobrancelha', label: 'Sobrancelha', sub: 'Design & Brow Lamination', photo: 'assets/fotos/sobrancelha-01.webp', alt: 'Design de sobrancelha finalizado no Studio Gisele Lima' },
   { key: 'epilacao',    label: 'Epilação',    sub: 'Epilação Premium',         photo: 'assets/fotos/epilacao-02.webp',    alt: 'Epilação premium no Studio Gisele Lima' },
-  { key: 'facial',      label: 'Facial',      sub: 'Limpeza de Pele',          photo: 'assets/fotos/facial-02.webp',      alt: 'Procedimento facial no Studio Gisele Lima' }
+  { key: 'facial',      label: 'Facial',      sub: 'Limpeza de Pele',          photo: 'assets/fotos/facial-nova.webp',    alt: 'Máscara facial dourada com toalha personalizada Gisele Lima Estética Feminina' }
 ];
 
 function getByCategory(cat) {

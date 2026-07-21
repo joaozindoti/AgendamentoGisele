@@ -508,14 +508,15 @@ footer {
 
 .cat-banner {
   position: relative;
-  height: 108px;
+  height: 220px;
   border-radius: var(--r-photo);
   overflow: hidden;
   margin-bottom: 12px;
   box-shadow: var(--sh-sm);
 }
 
-@media (min-width: 520px) { .cat-banner { height: 132px; } }
+@media (min-width: 520px) { .cat-banner { height: 260px; } }
+@media (min-width: 720px) { .cat-banner { height: 300px; } }
 
 .cat-banner img {
   width: 100%;
@@ -524,11 +525,15 @@ footer {
   object-position: center 30%;
 }
 
+/* Foto vertical (rosto + toalha com logo) — enquadramento próprio
+   para manter o rosto e o logo da toalha visíveis no recorte largo */
+.cat-banner--facial img { object-position: center 48%; }
+
 .cat-banner::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(42, 31, 26, 0.62) 0%, transparent 58%);
+  background: linear-gradient(to top, rgba(42, 31, 26, 0.68) 0%, transparent 52%);
 }
 
 .cat-banner__caption {
