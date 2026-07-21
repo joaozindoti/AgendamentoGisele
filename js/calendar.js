@@ -16,7 +16,7 @@ var BUSINESS_HOURS = {
 /* Almoço — válido de terça a sábado (segunda já abre às 14h) */
 var LUNCH_BREAK = {
   start: '12:00',
-  end: '13:40',
+  end: '14:00', // corrigido de 13:40 para 14:00
   days: [2, 3, 4, 5, 6]
 };
 
@@ -33,7 +33,7 @@ function pad2(n) {
 
 /* Janelas de atendimento do dia, já pulando completamente o almoço.
    Segunda: janela única 14:00–19:00 (sem bloqueio de almoço).
-   Terça a sábado: manhã até 12:00, retorno às 13:40.               */
+   Terça a sábado: manhã até 12:00, retorno às 14:00.               */
 function getDayWindows(weekday) {
   var hours = BUSINESS_HOURS[weekday];
   if (!hours) return []; // domingo: fechado
