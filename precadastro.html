@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Aniversário | Studio Gisele Lima</title>
+    <meta name="description" content="Cadastre-se e receba descontos especiais direto no seu WhatsApp no mês do seu aniversário — Studio Gisele Lima.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/animations.css">
+</head>
+
+<body>
+
+    <!-- ═══════════ NAVBAR ═══════════ -->
+    <nav class="navbar" id="navbar">
+        <div class="container navbar__inner">
+            <a href="index.html">
+                <img src="assets/fotos/logo.webp" alt="Gisele Lima — Estética Feminina" class="navbar__logo">
+            </a>
+        </div>
+    </nav>
+
+    <main>
+
+        <!-- ═══════════ HERO ═══════════ -->
+        <section class="precad-hero" style="margin-top:84px">
+            <div class="container">
+                <span class="eyebrow">Clube Lindeza Premium</span>
+                <h1>Cadastre-se uma vez e receba descontos especiais direto no seu WhatsApp</h1>
+                <p>Todo ano, no mês do seu aniversário, a novidade chega direto para você — sem burocracia, sem complicação.</p>
+            </div>
+        </section>
+
+        <!-- ═══════════ FORMULÁRIO ═══════════ -->
+        <section class="precad-section">
+            <div class="container precad-wrap">
+
+                <form id="precadForm" novalidate>
+                    <div class="form-field">
+                        <label for="nome">Nome completo</label>
+                        <input type="text" id="nome" name="nome" autocomplete="name" required>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="whatsapp">WhatsApp</label>
+                        <input type="tel" id="whatsapp" name="whatsapp" placeholder="(99) 99999-9999" autocomplete="tel" inputmode="numeric" required>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="endereco">Endereço</label>
+                        <input type="text" id="endereco" name="endereco" autocomplete="street-address" required>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="dataNascimento">Data de nascimento</label>
+                        <input type="date" id="dataNascimento" name="dataNascimento" required>
+                    </div>
+
+                    <label class="form-check">
+                        <input type="checkbox" id="consentimento" name="consentimento" required>
+                        <span>Concordo em receber promoções e novidades do Studio Gisele Lima via WhatsApp.</span>
+                    </label>
+
+                    <p class="form-error" id="formError" hidden></p>
+
+                    <button type="submit" class="btn btn-gold precad-submit" id="submitBtn" disabled>Quero meu desconto de aniversário</button>
+                </form>
+
+                <div class="precad-success" id="successBox" hidden>
+                    <span class="precad-success__icon">
+                        <svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                    </span>
+                    <h2>Cadastro recebido!</h2>
+                    <p>Fique de olho no seu WhatsApp — descontos especiais chegam direto por lá.</p>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ═══════════ FOOTER ═══════════ -->
+    <footer>
+        <div class="container">
+            <p class="footer-logo">Studio Gisele Lima</p>
+            <p class="footer-tagline">Estética Feminina · Lindeza Premium</p>
+            <p class="footer-copy">© 2026 Studio Gisele Lima. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    <script src="js/utils.js"></script>
+    <script>
+        window.addEventListener('scroll', function () {
+            document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 60);
+        });
+
+        /* ── Máscara de telefone (99) 99999-9999 ── */
+        var whatsappInput = document.getElementById('whatsapp');
+        whatsappInput.addEventListener('input', function () {
+            var digits = whatsappInput.value.replace(/\D/g, '').slice(0, 11);
+            var out = digits;
+            if (digits.length > 2) out = '(' + digits.slice(0, 2) + ') ' + digits.slice(2);
+            if (digits.length > 7) out = '(' + digits.slice(0, 2) + ') ' + digits.slice(2, 7) + '-' + digits.slice(7);
+            whatsappInput.value = out;
+        });
+
+        /* ── Validação ── */
+        var form = document.getElementById('precadForm');
+        var submitBtn = document.getElementById('submitBtn');
+        var formError = document.getElementById('formError');
+        var successBox = document.getElementById('successBox');
+
+        var nomeInput = document.getElementById('nome');
+        var enderecoInput = document.getElementById('endereco');
+        var dataInput = document.getElementById('dataNascimento');
+        var consentimentoInput = document.getElementById('consentimento');
+
+        function isTelefoneValido(digits) {
+            return digits.length === 10 || digits.length === 11;
+        }
+
+        function isDataValida(value) {
+            if (!value) return false;
+            var ano = parseInt(value.split('-')[0], 10);
+            var data = new Date(value);
+            var hoje = new Date();
+            return ano >= 1900 && data <= hoje;
+        }
+
+        function formValido() {
+            var digits = whatsappInput.value.replace(/\D/g, '');
+            return (
+                nomeInput.value.trim().length > 0 &&
+                isTelefoneValido(digits) &&
+                enderecoInput.value.trim().length > 0 &&
+                isDataValida(dataInput.value) &&
+                consentimentoInput.checked
+            );
+        }
+
+        function atualizarEstadoBotao() {
+            submitBtn.disabled = !formValido();
+        }
+
+        [nomeInput, whatsappInput, enderecoInput, dataInput, consentimentoInput].forEach(function (el) {
+            el.addEventListener('input', atualizarEstadoBotao);
+            el.addEventListener('change', atualizarEstadoBotao);
+        });
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            formError.hidden = true;
+
+            if (!formValido()) {
+                formError.textContent = 'Preencha todos os campos corretamente e aceite o consentimento para continuar.';
+                formError.hidden = false;
+                return;
+            }
+
+            var digits = whatsappInput.value.replace(/\D/g, '');
+            var whatsappCompleto = digits.length === 11 || digits.length === 10 ? '55' + digits : digits;
+
+            var dados = {
+                nome: nomeInput.value.trim(),
+                whatsapp: whatsappCompleto,
+                endereco: enderecoInput.value.trim(),
+                dataNascimento: dataInput.value,
+                consentimento: true
+            };
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Enviando...';
+
+            enviarPreCadastro(dados).then(function () {
+                // Sucesso é sempre exibido para a cliente, mesmo que o
+                // webhook ainda não exista (falha registrada só no console).
+                form.hidden = true;
+                successBox.hidden = false;
+            });
+        });
+    </script>
+
+</body>
+
+</html>

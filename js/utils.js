@@ -15,6 +15,11 @@ var ADDRESS_PLACEHOLDER = 'Endereço em atualização — consulte pelo WhatsApp
       assim que a cliente confirmar a nova localização.             */
 var MAPS_URL_PLACEHOLDER = 'https://www.google.com/maps/search/?api=1&query=SUBSTITUIR_QUANDO_TIVER_ENDERECO';
 
+/* 4) WEBHOOK DE PRÉ-CADASTRO (n8n) — pendente até o fluxo de
+      automação + Google Sheets estar configurado. Quando existir,
+      trocar só esta URL — nenhuma outra mudança de código é necessária. */
+var PRECADASTRO_WEBHOOK_URL = 'SUBSTITUIR_QUANDO_TIVER_O_WEBHOOK_N8N';
+
 /* ════════════════════════════════════════════════════════════════ */
 
 /* Botão "Ver no mapa" da home */
@@ -66,6 +71,45 @@ function isToday(y, mo, d) {
 
 function isSunday(y, mo, d) {
   return new Date(y, mo, d).getDay() === 0;
+}
+
+/* ── Pré-cadastro (aniversário) — envio para o futuro webhook n8n ──
+
+   O percentual do desconto (30%) não aparece em nenhum texto visível do
+   site — só é revelado pela mensagem automática que o agente envia no
+   WhatsApp da cliente no mês do aniversário. Esta anotação é só para
+   referência de quem for montar o fluxo do n8n.
+
+   Estrutura do JSON enviado ao webhook n8n:
+   {
+     nome: "Maria Silva",
+     whatsapp: "5599999999999",
+     endereco: "Rua Exemplo, 123 - Bairro - Cidade/UF",
+     dataNascimento: "1995-03-20",
+     consentimento: true,
+     dataCadastro: "2026-07-21T14:32:00.000Z"
+   }
+
+   Espera-se que o n8n escreva uma linha correspondente em uma planilha
+   Google Sheets com as colunas:
+   Nome | WhatsApp | Endereço | Data de Nascimento | Data de Cadastro   */
+
+async function enviarPreCadastro(dados) {
+  // dados = { nome, whatsapp, endereco, dataNascimento, consentimento: true }
+  try {
+    var response = await fetch(PRECADASTRO_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(Object.assign({}, dados, {
+        dataCadastro: new Date().toISOString()
+      }))
+    });
+    if (!response.ok) throw new Error('Falha no envio');
+    return true;
+  } catch (error) {
+    console.warn('Webhook de pré-cadastro ainda não configurado:', error);
+    return false;
+  }
 }
 
 /* ── Injeta os placeholders nos elementos [data-address] ── */
