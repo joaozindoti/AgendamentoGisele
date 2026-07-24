@@ -2,11 +2,9 @@
    ⚠️⚠️⚠️  DADOS PENDENTES — ATUALIZAR AQUI ASSIM QUE CHEGAREM  ⚠️⚠️⚠️
    ════════════════════════════════════════════════════════════════
 
-   1) NÚMERO DO WHATSAPP — pendente até a criação formal do agente.
-      Formato: 55 + DDD + número, só dígitos. Ex.: '5599988887777'
-      Enquanto for placeholder, o site abre o WhatsApp com a mensagem
-      pronta, mas sem destinatário (a cliente escolhe o contato).     */
-var WHATSAPP_NUMBER = 'SUBSTITUIR_QUANDO_TIVER_O_NUMERO';
+   1) NÚMERO DO WHATSAPP — Número real do WhatsApp do agente.
+      Formato: 55 + DDD + número, só dígitos. Ex.: '5599988887777'     */
+var WHATSAPP_NUMBER = '5599984642562';
 
 /* 2) ENDEREÇO — cliente está mudando de local; definitivo pendente. */
 var ADDRESS_PLACEHOLDER = 'Endereço em atualização — consulte pelo WhatsApp';

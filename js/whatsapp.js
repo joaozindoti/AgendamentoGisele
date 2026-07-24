@@ -17,6 +17,7 @@ function buildMessage(services, y, mo, d, time) {
     + '\n\n📅 ' + fmtDateFull(y, mo, d)
     + '\n⏰ ' + time
     + '\n💰 Total: ' + total
+    + '\n⏱️ Duração: ' + Store.totalDuration(services) + ' min'
     + '\n\nPode confirmar?';
 }
 
