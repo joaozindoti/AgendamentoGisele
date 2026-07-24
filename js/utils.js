@@ -13,10 +13,8 @@ var ADDRESS_PLACEHOLDER = 'Endereço em atualização — consulte pelo WhatsApp
       assim que a cliente confirmar a nova localização.             */
 var MAPS_URL_PLACEHOLDER = 'https://www.google.com/maps/search/?api=1&query=SUBSTITUIR_QUANDO_TIVER_ENDERECO';
 
-/* 4) WEBHOOK DE PRÉ-CADASTRO (n8n) — pendente até o fluxo de
-      automação + Google Sheets estar configurado. Quando existir,
-      trocar só esta URL — nenhuma outra mudança de código é necessária. */
-var PRECADASTRO_WEBHOOK_URL = 'SUBSTITUIR_QUANDO_TIVER_O_WEBHOOK_N8N';
+/* 4) WEBHOOK DE PRÉ-CADASTRO (n8n) */
+var PRECADASTRO_WEBHOOK_URL = 'https://179.197.229.103.nip.io/webhook/precadastro';
 
 /* ════════════════════════════════════════════════════════════════ */
 
