@@ -180,35 +180,56 @@ function selectDay(y, mo, d) {
   var sec = document.getElementById('timesSection');
   sec.style.display = 'block';
   document.getElementById('dateLabel').textContent = fmtDateFull(y, mo, d);
-  document.getElementById('timesGrid').innerHTML =
-    '<div class="sk-pills"><div class="sk sk-pill"></div><div class="sk sk-pill"></div><div class="sk sk-pill"></div><div class="sk sk-pill"></div></div>';
   setTimeout(function () { sec.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 60);
-  setTimeout(function () { renderSlots(y, mo, d); }, 240);
+  loadSlots(y, mo, d);
 }
 
-function renderSlots(y, mo, d) {
-  var avail = generateSlots(y, mo, d, totalDur).filter(function (s) { return s.available; });
-  var grid = document.getElementById('timesGrid');
-  if (!avail.length) {
-    grid.innerHTML = '<div class="no-slots">Nenhum horário disponível neste dia.<strong>Escolha outra data.</strong></div>';
-    return;
-  }
+/* ── Horários do dia — via webhook real de disponibilidade ── */
 
+function renderTimesLoading() {
+  document.getElementById('timesGrid').innerHTML =
+    '<p class="times-loading">Carregando horários disponíveis...</p>';
+}
+
+function renderTimesError(y, mo, d) {
+  document.getElementById('timesGrid').innerHTML =
+    '<div class="no-slots">Não foi possível carregar os horários agora.<strong>Tente novamente.</strong>' +
+    '<button type="button" class="btn btn-gold btn-sm" style="margin-top:16px" onclick="loadSlots(' + y + ',' + mo + ',' + d + ')">Tentar novamente</button></div>';
+}
+
+function renderTimesEmpty() {
+  document.getElementById('timesGrid').innerHTML =
+    '<div class="no-slots">Não há horários disponíveis neste dia.<strong>Escolha outra data.</strong></div>';
+}
+
+function renderSlots(times) {
   // manhã = antes do almoço; tarde = após retorno (Seg: tudo é tarde)
   var lunchStart = 12 * 60;
-  var manha = avail.filter(function (s) { return s.minutes < lunchStart; });
-  var tarde = avail.filter(function (s) { return s.minutes >= lunchStart; });
+  var manha = times.filter(function (t) { return toMin(t) < lunchStart; });
+  var tarde = times.filter(function (t) { return toMin(t) >= lunchStart; });
 
   function pills(list) {
-    return list.map(function (s) {
-      return '<button class="time-pill" onclick="selectTime(\'' + s.time + '\')">' + s.time + '</button>';
+    return list.map(function (t) {
+      return '<button class="time-pill" onclick="selectTime(\'' + t + '\')">' + t + '</button>';
     }).join('');
   }
 
   var html = '';
   if (manha.length) html += '<p class="times-group-label">Manhã</p>' + pills(manha);
   if (tarde.length) html += '<p class="times-group-label" style="margin-top:' + (manha.length ? '16px' : '4px') + '">Tarde</p>' + pills(tarde);
-  grid.innerHTML = html;
+  document.getElementById('timesGrid').innerHTML = html;
+}
+
+async function loadSlots(y, mo, d) {
+  renderTimesLoading();
+  try {
+    var times = await fetchHorariosDisponiveis(y, mo + 1, d, totalDur);
+    if (!times.length) { renderTimesEmpty(); return; }
+    renderSlots(times);
+  } catch (e) {
+    console.warn('Falha ao buscar horários disponíveis:', e);
+    renderTimesError(y, mo, d);
+  }
 }
 
 function selectTime(time) {

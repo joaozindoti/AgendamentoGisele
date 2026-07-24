@@ -22,6 +22,10 @@ var PRECADASTRO_WEBHOOK_URL = 'SUBSTITUIR_QUANDO_TIVER_O_WEBHOOK_N8N';
 
 /* ════════════════════════════════════════════════════════════════ */
 
+/* Webhook de disponibilidade — retorna os horários livres de um dia
+   específico (usado em horario.html, ver js/calendar.js). */
+var DISPONIBILIDADE_API = 'https://179.197.229.103.nip.io/webhook/disponibilidade';
+
 /* Botão "Ver no mapa" da home */
 function openMaps() {
   window.open(MAPS_URL_PLACEHOLDER, '_blank');

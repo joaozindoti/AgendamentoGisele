@@ -79,6 +79,29 @@ function generateSlots(y, mo, d, serviceDuration) {
   return slots;
 }
 
+/* Busca os horários livres de um dia específico no webhook real de
+   disponibilidade (DISPONIBILIDADE_API, em js/utils.js). Usado só no
+   clique de um dia já selecionado no calendário — getAvailableDays()
+   acima continua 100% local, sem rede, para decidir quais dias ficam
+   clicáveis no mês.
+   mes: 1-12 (calendário humano, não o índice 0-11 do Date do JS). */
+async function fetchHorariosDisponiveis(ano, mes, dia, duracaoMinutos) {
+  var dataStr = ano + '-' + pad2(mes) + '-' + pad2(dia);
+  var url = DISPONIBILIDADE_API + '?data=' + dataStr + '&duracao=' + duracaoMinutos;
+  var controller = new AbortController();
+  var timeoutId = setTimeout(function () { controller.abort(); }, 8000);
+  try {
+    var res = await fetch(url, { signal: controller.signal, cache: 'no-store' });
+    clearTimeout(timeoutId);
+    if (!res.ok) throw new Error('Resposta não OK');
+    var data = await res.json();
+    return data.horarios || [];
+  } catch (e) {
+    clearTimeout(timeoutId);
+    throw e;
+  }
+}
+
 function getAvailableDays(y, mo, serviceDuration) {
   var total = new Date(y, mo + 1, 0).getDate();
   var result = [];
