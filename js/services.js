@@ -6,14 +6,6 @@
 
 var SERVICES = [
   {
-    id: '1',
-    name: 'Buço',
-    description: 'Depilação premium da região do buço',
-    price: 12,
-    duration: 10,
-    category: 'epilacao'
-  },
-  {
     id: '2',
     name: 'Design personalizado',
     description: 'Design de sobrancelha sob medida para o seu formato de rosto',
@@ -43,7 +35,7 @@ var SERVICES = [
     id: '5',
     name: 'Brow Lamination',
     description: 'Técnica premium de alinhamento e fixação dos fios',
-    price: 110,
+    price: 120,
     duration: 60,
     category: 'sobrancelha',
     premium: true
@@ -52,7 +44,7 @@ var SERVICES = [
     id: '6',
     name: 'Limpeza de pele profunda',
     description: 'Limpeza facial completa para renovar a pele',
-    price: 110,
+    price: 120,
     duration: 90,
     category: 'facial',
     premium: true
