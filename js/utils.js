@@ -6,12 +6,11 @@
       Formato: 55 + DDD + número, só dígitos. Ex.: '5599988887777'     */
 var WHATSAPP_NUMBER = '5599984994873';
 
-/* 2) ENDEREÇO — cliente está mudando de local; definitivo pendente. */
-var ADDRESS_PLACEHOLDER = 'Endereço em atualização — consulte pelo WhatsApp';
+/* 2) ENDEREÇO */
+var ADDRESS_PLACEHOLDER = 'Av. Zeca Branco - Mutirão, Pedreiras - MA, 65725-000';
 
-/* 3) LINK DO GOOGLE MAPS — atualizar a query junto com o item 2,
-      assim que a cliente confirmar a nova localização.             */
-var MAPS_URL_PLACEHOLDER = 'https://www.google.com/maps/search/?api=1&query=SUBSTITUIR_QUANDO_TIVER_ENDERECO';
+/* 3) LINK DO GOOGLE MAPS */
+var MAPS_URL_PLACEHOLDER = 'https://share.google/ZL5nk044N2o113GlP';
 
 /* 4) WEBHOOK DE PRÉ-CADASTRO (n8n) */
 var PRECADASTRO_WEBHOOK_URL = 'https://179.197.229.103.nip.io/webhook/precadastro';
