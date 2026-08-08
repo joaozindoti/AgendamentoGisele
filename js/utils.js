@@ -4,7 +4,7 @@
 
    1) NÚMERO DO WHATSAPP — Número real do WhatsApp do agente.
       Formato: 55 + DDD + número, só dígitos. Ex.: '5599988887777'     */
-var WHATSAPP_NUMBER = '5599984183784';
+var WHATSAPP_NUMBER = '5599984927914';
 
 /* 2) ENDEREÇO */
 var ADDRESS_PLACEHOLDER = 'Av. Zeca Branco - Mutirão, Pedreiras - MA, 65725-000';
