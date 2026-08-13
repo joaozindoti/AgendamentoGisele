@@ -5,10 +5,10 @@
 
 var BUSINESS_HOURS = {
   1: { start: '14:00', end: '19:00' },  // Segunda (abre após o almoço)
-  2: { start: '09:30', end: '20:00' },  // Terça
-  3: { start: '09:30', end: '20:00' },  // Quarta
-  4: { start: '09:30', end: '20:00' },  // Quinta
-  5: { start: '09:30', end: '20:00' },  // Sexta
+  2: { start: '09:30', end: '19:00' },  // Terça
+  3: { start: '09:30', end: '19:00' },  // Quarta
+  4: { start: '09:30', end: '19:00' },  // Quinta
+  5: { start: '09:30', end: '19:00' },  // Sexta
   6: { start: '09:30', end: '18:00' }   // Sábado
   // 0 (domingo): fechado
 };
