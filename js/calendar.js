@@ -13,14 +13,18 @@ var BUSINESS_HOURS = {
   // 0 (domingo): fechado
 };
 
-/* Almoço — válido de terça a sábado (segunda já abre às 14h) */
+/* Almoço — válido de terça a sábado (segunda já abre às 14h)
+   ATENÇÃO: estas constantes (BUSINESS_HOURS, LUNCH_BREAK, SLOT_INTERVAL)
+   também existem no workflow n8n do endpoint de disponibilidade
+   (ver INSTRUCOES-N8N.md). Qualquer mudança aqui precisa ser replicada
+   lá, senão o site e o backend divergem sobre quais horários existem. */
 var LUNCH_BREAK = {
-  start: '12:00',
-  end: '14:00', // corrigido de 13:40 para 14:00
+  start: '12:30',
+  end: '14:00',
   days: [2, 3, 4, 5, 6]
 };
 
-var SLOT_INTERVAL = 30; // minutos entre inícios de horário
+var SLOT_INTERVAL = 15; // minutos entre inícios de horário
 
 function toMin(str) {
   var p = str.split(':');
