@@ -49,6 +49,7 @@
                     <div class="form-field">
                         <label for="whatsapp">WhatsApp</label>
                         <input type="tel" id="whatsapp" name="whatsapp" placeholder="(99) 99999-9999" autocomplete="tel" inputmode="numeric" required>
+                        <small class="form-hint">Digite o DDD e o número. Não precisa colocar o 55.</small>
                     </div>
 
                     <div class="form-field">
@@ -94,16 +95,33 @@
         </div>
     </footer>
 
-    <script src="js/utils.js?v=20260802"></script>
+    <script src="js/utils.js?v=20260820"></script>
     <script>
-        window.addEventListener('scroll', function () {
+        window.addEventListener('scroll', function() {
             document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 60);
         });
 
-        /* ── Máscara de telefone (99) 99999-9999 ── */
         var whatsappInput = document.getElementById('whatsapp');
-        whatsappInput.addEventListener('input', function () {
-            var digits = whatsappInput.value.replace(/\D/g, '').slice(0, 11);
+
+        /* ── Normalização do telefone ──────────────────────────────
+           A cliente pode digitar com ou sem o 55 na frente. Aqui a
+           gente devolve SEMPRE só DDD + número (10 ou 11 dígitos).
+           Isso é feito ANTES de qualquer corte — cortar primeiro
+           fazia perder os dois últimos dígitos de quem digitava o 55. */
+        function soDDDeNumero(valor) {
+            var d = String(valor).replace(/\D/g, '');
+
+            // remove o código do país quando ele veio junto
+            if (d.length > 11 && d.slice(0, 2) === '55') {
+                d = d.slice(2);
+            }
+
+            return d.slice(0, 11);
+        }
+
+        /* ── Máscara (99) 99999-9999 ── */
+        whatsappInput.addEventListener('input', function() {
+            var digits = soDDDeNumero(whatsappInput.value);
             var out = digits;
             if (digits.length > 2) out = '(' + digits.slice(0, 2) + ') ' + digits.slice(2);
             if (digits.length > 7) out = '(' + digits.slice(0, 2) + ') ' + digits.slice(2, 7) + '-' + digits.slice(7);
@@ -134,7 +152,7 @@
         }
 
         function formValido() {
-            var digits = whatsappInput.value.replace(/\D/g, '');
+            var digits = soDDDeNumero(whatsappInput.value);
             return (
                 nomeInput.value.trim().length > 0 &&
                 isTelefoneValido(digits) &&
@@ -148,12 +166,12 @@
             submitBtn.disabled = !formValido();
         }
 
-        [nomeInput, whatsappInput, enderecoInput, dataInput, consentimentoInput].forEach(function (el) {
+        [nomeInput, whatsappInput, enderecoInput, dataInput, consentimentoInput].forEach(function(el) {
             el.addEventListener('input', atualizarEstadoBotao);
             el.addEventListener('change', atualizarEstadoBotao);
         });
 
-        form.addEventListener('submit', function (e) {
+        form.addEventListener('submit', function(e) {
             e.preventDefault();
             formError.hidden = true;
 
@@ -163,8 +181,11 @@
                 return;
             }
 
-            var digits = whatsappInput.value.replace(/\D/g, '');
-            var whatsappCompleto = digits.length === 11 || digits.length === 10 ? '55' + digits : digits;
+            var digits = soDDDeNumero(whatsappInput.value);
+
+            /* Formato único gravado no CRM: 55 + DDD + número.
+               O agente no n8n busca exatamente nesse formato. */
+            var whatsappCompleto = '55' + digits;
 
             var dados = {
                 nome: nomeInput.value.trim(),
@@ -177,7 +198,7 @@
             submitBtn.disabled = true;
             submitBtn.textContent = 'Enviando...';
 
-            enviarPreCadastro(dados).then(function () {
+            enviarPreCadastro(dados).then(function() {
                 // Sucesso é sempre exibido para a cliente, mesmo que o
                 // webhook ainda não exista (falha registrada só no console).
                 form.hidden = true;
