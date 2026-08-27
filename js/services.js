@@ -1,6 +1,10 @@
 /* ════════════════════════════════════════════════════════════════
    Serviços — dados reais e definitivos da cliente
-   Durações medidas com cronômetro pela Gisele (ago/2026).
+
+   As durações incluem folga proposital: o tempo de execução medido
+   é menor, mas o bloco é maior para absorver atraso de cliente sem
+   empurrar a agenda inteira. Não são erro de medição.
+
    Combos de "Epilação completa" removidos: a cliente monta a
    combinação selecionando os serviços separadamente.
    ════════════════════════════════════════════════════════════════ */
@@ -54,7 +58,7 @@ var SERVICES = [{
         name: 'Epilação íntima',
         description: 'Depilação completa da região íntima',
         price: 60,
-        duration: 45,
+        duration: 60,
         category: 'epilacao'
     },
     {
@@ -62,7 +66,7 @@ var SERVICES = [{
         name: 'Epilação axilas',
         description: 'Depilação completa das axilas',
         price: 30,
-        duration: 15,
+        duration: 30,
         category: 'epilacao'
     },
     {
@@ -78,7 +82,7 @@ var SERVICES = [{
         name: 'Epilação perna completa',
         description: 'Depilação da perna completa',
         price: 60,
-        duration: 45,
+        duration: 60,
         category: 'epilacao'
     }
 ];
