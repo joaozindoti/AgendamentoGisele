@@ -200,11 +200,24 @@
             submitBtn.disabled = true;
             submitBtn.textContent = 'Enviando...';
 
-            enviarPreCadastro(dados).then(function() {
-                // Sucesso é sempre exibido para a cliente, mesmo que o
-                // webhook ainda não exista (falha registrada só no console).
-                form.hidden = true;
-                successBox.hidden = false;
+            /* ── CORREÇÃO ──────────────────────────────────────────
+               enviarPreCadastro devolve true (webhook confirmou) ou
+               false (falhou ou deu erro de rede). Antes esse valor
+               era ignorado e a tela de sucesso aparecia sempre,
+               mesmo quando o cadastro não tinha sido salvo em
+               lugar nenhum. Agora só mostramos sucesso quando o
+               valor é realmente true, e em caso de falha a cliente
+               vê um erro claro e pode tentar de novo. */
+            enviarPreCadastro(dados).then(function(sucesso) {
+                if (sucesso) {
+                    form.hidden = true;
+                    successBox.hidden = false;
+                } else {
+                    formError.textContent = 'Não foi possível enviar seu cadastro agora. Verifique sua conexão e tente novamente em instantes.';
+                    formError.hidden = false;
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Quero meu desconto de aniversário';
+                }
             });
         });
     </script>
