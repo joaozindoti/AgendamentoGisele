@@ -12,8 +12,8 @@
 -- destacam serviços premium com selo dourado (seção 9: gold é pra "selo de
 -- destaque"). O schema da seção 3 não tinha onde guardar isso; as duas
 -- colunas são aditivas e opcionais, não mudam nenhuma regra existente.
-alter table servicos add column categoria text;
-alter table servicos add column destaque boolean not null default false;
+alter table servicos add column if not exists categoria text;
+alter table servicos add column if not exists destaque boolean not null default false;
 
 -- =============================================================
 -- 2. Configurações do motor (ajustáveis pela Gisele no painel)
@@ -263,6 +263,7 @@ begin
 end;
 $$;
 
+drop trigger if exists agendamentos_valida_horario on agendamentos;
 create trigger agendamentos_valida_horario
   before insert or update on agendamentos
   for each row execute function public.valida_agendamento();
@@ -283,6 +284,7 @@ begin
 end;
 $$;
 
+drop trigger if exists agendamentos_reseta_lembretes on agendamentos;
 create trigger agendamentos_reseta_lembretes
   after update of periodo on agendamentos
   for each row

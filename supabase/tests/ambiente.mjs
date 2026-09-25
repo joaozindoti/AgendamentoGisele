@@ -60,8 +60,11 @@ grant execute on function storage.foldername(text) to anon, authenticated, servi
 -- pg_cron / pg_net
 create schema cron;
 create table cron.job (jobid serial primary key, jobname text unique, schedule text, command text);
+-- como no pg_cron real: agendar um nome que já existe atualiza o job
 create function cron.schedule(nome text, quando text, comando text) returns bigint language sql as $$
-  insert into cron.job (jobname, schedule, command) values (nome, quando, comando) returning jobid
+  insert into cron.job (jobname, schedule, command) values (nome, quando, comando)
+  on conflict (jobname) do update set schedule = excluded.schedule, command = excluded.command
+  returning jobid
 $$;
 -- pg_net: guarda cada POST (URL, headers, corpo) pra os testes conferirem.
 -- Mesma assinatura da extensão real (os parâmetros são passados por nome).

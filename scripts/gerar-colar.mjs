@@ -2,7 +2,8 @@
 // Gera supabase/colar/: tudo que o PENDENCIAS.md manda colar no dashboard.
 //
 //   - 01..03: as migrations de supabase/migrations com os secrets já
-//     preenchidos e embrulhadas em begin/commit (ou roda tudo, ou nada).
+//     preenchidos. Embrulhadas em begin/commit, mas a proteção de verdade é
+//     serem idempotentes: dá pra colar de novo depois de parar no meio.
 //   - 04: seed de produção.
 //   - 05: importação da planilha a partir de uma tabela criada pelo import
 //     de CSV do Table Editor (sem Node, sem terminal).
@@ -52,7 +53,8 @@ const PLACEHOLDERS = {
 
 const aviso = (origem) =>
   `-- GERADO por scripts/gerar-colar.mjs a partir de ${origem}.\n` +
-  `-- Contém secrets: não commitar, não compartilhar. Colar inteiro no SQL Editor e rodar.\n\n`;
+  `-- Contém secrets: não commitar, não compartilhar. Colar inteiro no SQL Editor e rodar.\n` +
+  `-- Pode colar de novo quantas vezes precisar: se parar no meio, cole inteiro de novo.\n\n`;
 
 // ---------- migrations ----------
 const migrations = readdirSync(join(SUPA, "migrations")).filter((f) => f.endsWith(".sql")).sort();
