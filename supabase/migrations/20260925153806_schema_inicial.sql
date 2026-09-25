@@ -7,9 +7,11 @@
 -- =============================================================
 create extension if not exists "uuid-ossp";
 create extension if not exists btree_gist; -- exclusion constraint da seção 3.1
--- pg_net não precisa ser criada aqui: o Database Webhook da seção 7 usa
--- supabase_functions.http_request, já provisionada pelo projeto, que cuida
--- disso internamente.
+-- pg_net: os triggers que chamam Edge Functions (seção 7 abaixo e
+-- notificar-agendamento na migration 20260925160000) fazem o POST direto por
+-- ela. Forma documentada pelo Supabase pra habilitar por SQL; se der erro de
+-- permissão, ligar pg_net em Database → Extensions e rodar de novo.
+create extension if not exists pg_net with schema extensions;
 
 -- =============================================================
 -- 2. Tipos
@@ -634,15 +636,43 @@ create policy "staff_apaga_propria_foto" on storage.objects
 -- primeiros bytes do arquivo já salvo e apaga do bucket qualquer objeto cujo
 -- conteúdo real não bata com um magic number de JPEG/PNG/WEBP.
 --
--- Database Webhook de verdade: usa a função supabase_functions.http_request
--- que todo projeto Supabase já provisiona (schema supabase_functions), sem
--- GUC manual (app.settings) e sem pg_net direto.
+-- O POST sai por dispara_webhook() (abaixo), que chama pg_net direto. Não
+-- usa supabase_functions.http_request (a função por trás dos "Database
+-- Webhooks" do dashboard): esse schema só existe em projeto onde a
+-- integração de webhooks foi ativada pela tela, e aqui tudo roda por SQL.
+-- O corpo enviado é o mesmo formato dos Database Webhooks
+-- ({type, table, schema, record, old_record}), que é o que as Edge
+-- Functions leem. O envio é assíncrono: sai depois do commit e, se falhar,
+-- não desfaz o insert que o disparou.
 --
--- A validar-foto roda com verify_jwt = false (ver supabase/config.toml),
--- porque quem chama é o Postgres, não um usuário logado — não faz sentido
--- exigir JWT de sessão aqui. Em vez disso, o header x-webhook-secret abaixo
--- autentica a chamada: só passa quem sabe o segredo, que a própria função
--- confere contra a env var WEBHOOK_VALIDAR_FOTO_SECRET.
+-- A validar-foto roda com a verificação de JWT desligada, porque quem chama
+-- é o Postgres, não um usuário logado. Em vez disso, o header
+-- x-webhook-secret autentica a chamada: só passa quem sabe o segredo, que a
+-- própria função confere contra a env var WEBHOOK_VALIDAR_FOTO_SECRET.
+create or replace function public.dispara_webhook()
+returns trigger
+language plpgsql
+security definer
+set search_path = public, extensions
+as $$
+begin
+  -- tg_argv[0] = URL da Edge Function, tg_argv[1] = secret do header
+  perform net.http_post(
+    url := tg_argv[0],
+    headers := jsonb_build_object('Content-Type', 'application/json', 'x-webhook-secret', tg_argv[1]),
+    body := jsonb_build_object(
+      'type', tg_op,
+      'table', tg_table_name,
+      'schema', tg_table_schema,
+      'record', to_jsonb(new),
+      'old_record', case when tg_op = 'UPDATE' then to_jsonb(old) end
+    ),
+    timeout_milliseconds := 5000
+  );
+  return new;
+end;
+$$;
+
 --
 -- ANTES DE RODAR ESTA MIGRATION: gere um valor você mesmo (ex: no seu
 -- terminal, `openssl rand -hex 32`), troque '<COLE_O_SECRET_AQUI>' abaixo por
@@ -654,10 +684,7 @@ create trigger on_foto_uploaded
   after insert on storage.objects
   for each row
   when (new.bucket_id = 'fotos')
-  execute function supabase_functions.http_request(
+  execute function public.dispara_webhook(
     'https://pjbcgyzykvidbwdjlnvp.supabase.co/functions/v1/validar-foto',
-    'POST',
-    '{"Content-Type":"application/json","x-webhook-secret":"<COLE_O_SECRET_AQUI>"}',
-    '{}',
-    '5000'
+    '<COLE_O_SECRET_AQUI>'
   );

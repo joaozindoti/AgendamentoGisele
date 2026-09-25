@@ -1,4 +1,4 @@
-// Fase 1 — Database Webhook em INSERT/UPDATE de agendamentos (seção 6).
+// Chamada pelo trigger on_agendamento_notificar (pg_net) em INSERT/UPDATE de agendamentos (seção 6).
 // Manda aviso pra cliente e pra profissional responsável em três eventos:
 // agendamento criado, remarcado (horário mudou e continua confirmado) e
 // cancelado. Remarcação entrou junto com o app da cliente (seção 7), que

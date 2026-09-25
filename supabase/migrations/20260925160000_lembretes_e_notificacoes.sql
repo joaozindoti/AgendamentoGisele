@@ -132,12 +132,9 @@ grant execute on function public.concluidos_para_lembrete_pos_procedimento() to 
 -- =============================================================
 -- 4. Trigger de notificação (seção 6: notificar-agendamento)
 -- =============================================================
--- Mesmo mecanismo de Database Webhook já usado em on_foto_uploaded
--- (migration 20260925153806, seção 7): supabase_functions.http_request
--- envia {type, table, schema, record, old_record} no body — NÃO as colunas
--- soltas na raiz. Confirmado contra a documentação oficial do Supabase
--- nesta sessão porque validar-foto tinha esse exato bug (lia a raiz em vez
--- de `record`, corrigido agora também).
+-- Mesmo mecanismo do on_foto_uploaded (migration 20260925153806, seção 7):
+-- dispara_webhook() faz o POST por pg_net com {type, table, schema, record,
+-- old_record} no body — NÃO as colunas soltas na raiz.
 --
 -- ANTES DE RODAR ESTA MIGRATION: gere um secret novo (ex: `openssl rand
 -- -hex 32`) e troque '<COLE_O_WEBHOOK_NOTIFICAR_SECRET_AQUI>' abaixo por
@@ -146,12 +143,9 @@ grant execute on function public.concluidos_para_lembrete_pos_procedimento() to 
 create trigger on_agendamento_notificar
   after insert or update on agendamentos
   for each row
-  execute function supabase_functions.http_request(
+  execute function public.dispara_webhook(
     'https://pjbcgyzykvidbwdjlnvp.supabase.co/functions/v1/notificar-agendamento',
-    'POST',
-    '{"Content-Type":"application/json","x-webhook-secret":"<COLE_O_WEBHOOK_NOTIFICAR_SECRET_AQUI>"}',
-    '{}',
-    '5000'
+    '<COLE_O_WEBHOOK_NOTIFICAR_SECRET_AQUI>'
   );
 
 -- =============================================================
