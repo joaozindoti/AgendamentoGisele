@@ -49,9 +49,12 @@ Cada arquivo roda **inteiro ou nada**: se algum der erro, nada daquele
 arquivo fica gravado. Copie a mensagem de erro e mande pro Claude Code; depois
 do ajuste, é só rodar o mesmo arquivo de novo.
 
-Único erro com solução conhecida: se o **02** reclamar de permissão em
-`pg_cron` ou `pg_net`, vá em **Database → Extensions**, ligue `pg_cron` e
-`pg_net`, e rode o 02 de novo.
+Único erro com solução conhecida: se o **01** ou o **02** reclamar de
+permissão em `pg_net` ou `pg_cron`, vá em **Database → Extensions**, ligue
+`pg_net` e `pg_cron`, e rode de novo o arquivo que falhou.
+
+Nada neste passo depende da tela de "Database Webhooks" do dashboard: os
+avisos de agendamento e a checagem de foto são disparados por SQL (pg_net).
 
 Pra conferir, cole e rode:
 
@@ -356,6 +359,12 @@ escrever o app e confirmados nos testes automáticos):
 - `pre-cadastro` fazia upsert por WhatsApp: qualquer pessoa sobrescrevia o
   cadastro de outra só sabendo o número. Agora só insere. Também ganhou CORS
   (sem isso, o navegador bloqueava a chamada do formulário).
+- Os triggers `on_foto_uploaded` e `on_agendamento_notificar` usavam
+  `supabase_functions.http_request`, que só existe em projeto onde os
+  "Database Webhooks" foram ativados pela tela do dashboard. O arquivo 01
+  falhava com "schema supabase_functions does not exist". Agora os dois
+  chamam a função `dispara_webhook()`, que faz o POST direto por `pg_net`,
+  com o mesmo corpo de antes (`{type, table, schema, record, old_record}`).
 - `notificar-agendamento` passava o horário no formato do Postgres
   (`2026-09-26 13:00:00+00`, que não é ISO) direto pro `new Date()`.
 

@@ -424,7 +424,7 @@ s3_secret_key = "env(S3_SECRET_KEY)"
 [experimental.pgdelta]
 enabled = true
 
-# validar-foto é chamada pelo Database Webhook em storage.objects (migration
+# validar-foto é chamada pelo trigger on_foto_uploaded (pg_net) em storage.objects (migration
 # 20260925153806, seção 7), não por um usuário logado — não tem JWT de
 # sessão pra verificar. A autenticação real é o header x-webhook-secret,
 # checado dentro da própria função contra WEBHOOK_VALIDAR_FOTO_SECRET.
@@ -450,7 +450,7 @@ verify_jwt = true
 [functions.enviar-otp-whatsapp]
 verify_jwt = false
 
-# notificar-agendamento é chamada pelo Database Webhook em agendamentos
+# notificar-agendamento é chamada pelo trigger on_agendamento_notificar (pg_net) em agendamentos
 # (migration 20260925160000), sem JWT de sessão — autenticação real é
 # x-webhook-secret contra WEBHOOK_NOTIFICAR_AGENDAMENTO_SECRET.
 [functions.notificar-agendamento]

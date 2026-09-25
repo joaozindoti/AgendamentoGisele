@@ -39,6 +39,17 @@ describe("arquivos de supabase/colar", { skip: !existe && "supabase/colar não g
     assert.equal(jobs.length, 3);
     assert.ok(jobs.every((j) => j.command.includes(cron)));
     assert.ok(readFileSync(join(COLAR, "06-disparar-lembretes-agora.sql"), "utf8").includes(cron));
+
+    const foto = secrets.match(/WEBHOOK_VALIDAR_FOTO_SECRET\n([0-9a-f]{64})/)[1];
+    const notificar = secrets.match(/WEBHOOK_NOTIFICAR_AGENDAMENTO_SECRET\n([0-9a-f]{64})/)[1];
+    const defs = Object.fromEntries(
+      (await db.query(`select tgname, pg_get_triggerdef(oid) as d from pg_trigger where tgname in ('on_foto_uploaded', 'on_agendamento_notificar')`)).rows.map(
+        (r) => [r.tgname, r.d],
+      ),
+    );
+    assert.ok(defs.on_foto_uploaded.includes(foto), "trigger de foto usa o WEBHOOK_VALIDAR_FOTO_SECRET");
+    assert.ok(defs.on_agendamento_notificar.includes(notificar), "trigger de agendamento usa o WEBHOOK_NOTIFICAR_AGENDAMENTO_SECRET");
+    assert.ok(!Object.values(defs).some((d) => d.includes("supabase_functions")), "nenhum trigger depende de supabase_functions");
   });
 
   test("se um arquivo falha no meio, nada dele fica gravado (begin/commit)", async () => {

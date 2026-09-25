@@ -174,9 +174,16 @@ describe("cliente", () => {
     assert.equal(a.canal, "app");
   });
 
-  test("dispara o Database Webhook de notificação", async () => {
-    const w = (await db.query(`select url from webhooks_disparados where tabela = 'agendamentos'`)).rows;
-    assert.ok(w.some((x) => x.url.endsWith("/notificar-agendamento")));
+  test("dispara notificar-agendamento por pg_net, no formato que a function lê", async () => {
+    const w = (await db.query(`select url, headers, corpo from webhooks_disparados where corpo->'record'->>'id' = $1`, [agA])).rows;
+    assert.equal(w.length, 1);
+    assert.ok(w[0].url.endsWith("/functions/v1/notificar-agendamento"));
+    assert.equal(w[0].corpo.type, "INSERT");
+    assert.equal(w[0].corpo.table, "agendamentos");
+    assert.equal(w[0].corpo.old_record, null);
+    assert.equal(w[0].corpo.record.status, "confirmado");
+    assert.match(w[0].corpo.record.periodo, /^\["\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}[+-]\d{2}","/); // o formato que _shared/periodo.ts lê; o offset depende do fuso da sessão (UTC no Supabase)
+    assert.ok(w[0].headers["x-webhook-secret"], "manda o header de autenticação");
   });
 
   test("horário ocupado some da grade pra outra cliente", async () => {
@@ -242,6 +249,15 @@ describe("cliente", () => {
     const c = como(db, "authenticated", clienteA);
     await assert.rejects(c(`update agendamentos set servico_id = $2 where id = $1`, [agA, henna]), /cliente só pode/);
     await assert.rejects(c(`update agendamentos set status = 'concluido' where id = $1`, [agA]), /cliente só pode cancelar/);
+  });
+
+  test("UPDATE dispara com old_record (é com ele que notificar-agendamento detecta remarcação e cancelamento)", async () => {
+    await sr(`update agendamentos set observacoes = 'teste' where id = $1`, [agA]);
+    const [w] = (
+      await db.query(`select corpo from webhooks_disparados where corpo->'record'->>'id' = $1 and corpo->>'type' = 'UPDATE' order by id desc limit 1`, [agA])
+    ).rows;
+    assert.equal(w.corpo.old_record.id, agA);
+    assert.equal(w.corpo.record.observacoes, "teste");
   });
 
   test("remarca pela RPC pra outro horário livre, e os lembretes 24h/1h rearmam", async () => {
@@ -475,6 +491,18 @@ describe("owner (Gisele)", () => {
     assert.ok(m.por_status.concluido >= 1);
     assert.ok(Number(m.receita_estimada) >= 40); // henna concluído com a staff
     assert.ok(Array.isArray(m.por_dia));
+  });
+});
+
+describe("upload de foto", () => {
+  test("foto no bucket 'fotos' dispara validar-foto com o nome do arquivo em record", async () => {
+    await sr(`insert into storage.objects (bucket_id, name) values ('fotos', 'servicos/abc/foto.webp'), ('outro', 'x.webp')`);
+    const w = (await db.query(`select url, headers, corpo from webhooks_disparados where corpo->>'table' = 'objects'`)).rows;
+    assert.equal(w.length, 1, "só o bucket 'fotos' dispara");
+    assert.ok(w[0].url.endsWith("/functions/v1/validar-foto"));
+    assert.equal(w[0].corpo.record.bucket_id, "fotos");
+    assert.equal(w[0].corpo.record.name, "servicos/abc/foto.webp");
+    assert.ok(w[0].headers["x-webhook-secret"]);
   });
 });
 

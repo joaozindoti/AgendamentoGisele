@@ -1,7 +1,7 @@
 // Sobe um Postgres de verdade (PGlite, em WASM — sem Docker) com o mínimo
 // do ambiente Supabase que as migrations usam: roles anon/authenticated/
-// service_role, auth.users + auth.uid(), storage, supabase_functions,
-// pg_cron e pg_net. Depois aplica as migrations reais de supabase/migrations
+// service_role, auth.users + auth.uid(), storage, pg_cron e pg_net.
+// Depois aplica as migrations reais de supabase/migrations
 // e o seed de produção, na ordem.
 //
 // Os stubs imitam o comportamento que importa pra RLS: auth.uid() lê o
@@ -57,23 +57,24 @@ create function storage.foldername(name text) returns text[] language sql immuta
 $$;
 grant execute on function storage.foldername(text) to anon, authenticated, service_role;
 
--- Database Webhook: só registra que foi chamado (e com que URL)
-create schema supabase_functions;
-create table public.webhooks_disparados (id serial, url text, tabela text, operacao text, em timestamptz default now());
-create function supabase_functions.http_request() returns trigger language plpgsql security definer as $$
-begin
-  insert into public.webhooks_disparados (url, tabela, operacao) values (tg_argv[0], tg_table_name, tg_op);
-  return coalesce(new, old);
-end $$;
-
 -- pg_cron / pg_net
 create schema cron;
 create table cron.job (jobid serial primary key, jobname text unique, schedule text, command text);
 create function cron.schedule(nome text, quando text, comando text) returns bigint language sql as $$
   insert into cron.job (jobname, schedule, command) values (nome, quando, comando) returning jobid
 $$;
+-- pg_net: guarda cada POST (URL, headers, corpo) pra os testes conferirem.
+-- Mesma assinatura da extensão real (os parâmetros são passados por nome).
 create schema net;
-create function net.http_post(url text, headers jsonb default '{}', body jsonb default '{}') returns bigint language sql as $$ select 1::bigint $$;
+create table public.webhooks_disparados (id serial, url text, headers jsonb, corpo jsonb, em timestamptz default now());
+create function net.http_post(
+  url text, body jsonb default '{}', params jsonb default '{}',
+  headers jsonb default '{}', timeout_milliseconds int default 5000
+) returns bigint language plpgsql as $$
+begin
+  insert into public.webhooks_disparados (url, headers, corpo) values (url, headers, body);
+  return 1;
+end $$;
 `;
 
 function migrations() {

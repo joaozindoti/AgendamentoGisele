@@ -10,7 +10,7 @@
 // hardcoded aqui (seção 12 do documento de arquitetura).
 //
 // Roda com a verificação de JWT desligada: quem chama é o
-// Database Webhook do Postgres, não um usuário logado. Em troca, exige o
+// trigger on_foto_uploaded do Postgres (via pg_net), não um usuário logado. Em troca, exige o
 // header x-webhook-secret batendo com WEBHOOK_VALIDAR_FOTO_SECRET — sem
 // isso, qualquer um na internet poderia forçar a exclusão de fotos do bucket
 // chamando este endpoint direto.
@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: "unauthorized" }), { status: 401 });
     }
 
-    // Database Webhook do Supabase envolve a linha em "record", não manda
+    // O trigger (dispara_webhook, mesmo formato dos Database Webhooks do Supabase) envolve a linha em "record", não manda
     // as colunas na raiz do payload (confirmado contra a doc oficial —
     // {type, table, schema, record, old_record}). Bug real encontrado nesta
     // sessão: antes, isto lia bucket_id/name direto da raiz, então dava
