@@ -45,9 +45,11 @@ propósito).
    celular pessoal dela, que já vem preenchido nesse arquivo), os 9 serviços
    e a grade de horários.
 
-Cada arquivo roda **inteiro ou nada**: se algum der erro, nada daquele
-arquivo fica gravado. Copie a mensagem de erro e mande pro Claude Code; depois
-do ajuste, é só rodar o mesmo arquivo de novo.
+**Pode colar o mesmo arquivo de novo quantas vezes precisar.** Se um arquivo
+der erro ou parar no meio, o que já tinha sido criado é reaproveitado na
+próxima vez, sem erro de "already exists" e sem duplicar nada. Então,
+diante de qualquer erro: copie a mensagem e mande pro Claude Code; depois do
+ajuste, cole **o mesmo arquivo inteiro** de novo e siga pro próximo.
 
 Único erro com solução conhecida: se o **01** ou o **02** reclamar de
 permissão em `pg_net` ou `pg_cron`, vá em **Database → Extensions**, ligue
@@ -365,6 +367,11 @@ escrever o app e confirmados nos testes automáticos):
   falhava com "schema supabase_functions does not exist". Agora os dois
   chamam a função `dispara_webhook()`, que faz o POST direto por `pg_net`,
   com o mesmo corpo de antes (`{type, table, schema, record, old_record}`).
+- As migrations e o seed quebravam com "already exists" quando eram colados
+  de novo depois de uma execução que parou no meio. Agora são idempotentes:
+  tabela e índice com `if not exists`, function com `or replace`, trigger e
+  policy com `drop ... if exists` antes de criar, e inserts que pulam o que
+  já existe.
 - `notificar-agendamento` passava o horário no formato do Postgres
   (`2026-09-26 13:00:00+00`, que não é ISO) direto pro `new Date()`.
 
@@ -400,9 +407,10 @@ Nada disto é necessário pra colocar o sistema no ar.
   a pasta `_shared`. Ao mudar qualquer original, rode o gerador de novo e cole
   o arquivo novo. Os secrets ficam em `supabase/colar/.segredos.json` e são
   reaproveitados.
-- **Testes do banco** (59 testes: RLS papel por papel, motor de agendamento,
-  e os próprios arquivos de `supabase/colar/`, incluindo o importador da
-  planilha, rodando num Postgres local, sem Docker):
+- **Testes do banco** (81 testes num Postgres local, sem Docker: RLS papel
+  por papel, motor de agendamento, os próprios arquivos de `supabase/colar/`
+  incluindo o importador da planilha, e o cenário de colar de novo um arquivo
+  que parou no meio):
   `cd supabase/tests && npm install && npm test`.
 - **Rodar o app local:** `cd web && cp .env.example .env.local`, preencher a
   `NEXT_PUBLIC_SUPABASE_ANON_KEY`, e `npm install && npm run dev`.

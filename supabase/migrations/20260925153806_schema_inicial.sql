@@ -1,6 +1,11 @@
 -- Studio Gisele Lima 2.0 — schema inicial + RLS completa + storage
 -- Referência: studio-gisele-2.0-arquitetura.md, seções 3, 4 e 12.
 -- Fase 1 de 10 (seção 14).
+--
+-- Idempotente: pode rodar de novo inteiro, inclusive depois de uma execução
+-- que parou no meio (tabela/índice "if not exists", function "or replace",
+-- trigger e policy com "drop ... if exists" antes de criar). O mesmo vale
+-- pras outras duas migrations e pro seed.
 
 -- =============================================================
 -- 1. Extensões
@@ -16,8 +21,14 @@ create extension if not exists pg_net with schema extensions;
 -- =============================================================
 -- 2. Tipos
 -- =============================================================
-create type papel as enum ('owner', 'staff');
-create type status_agendamento as enum ('confirmado', 'cancelado', 'concluido', 'no_show');
+do $$ begin
+  create type papel as enum ('owner', 'staff');
+exception when duplicate_object then null;
+end $$;
+do $$ begin
+  create type status_agendamento as enum ('confirmado', 'cancelado', 'concluido', 'no_show');
+exception when duplicate_object then null;
+end $$;
 
 -- =============================================================
 -- 3. Tabelas (seção 3 do documento)
@@ -30,7 +41,7 @@ create type status_agendamento as enum ('confirmado', 'cancelado', 'concluido', 
 -- auth.users -> profissionais (seção 4, ponto 5) precisa de algo pra
 -- casar o telefone que chega no login OTP com a linha certa. Sem essa
 -- coluna, staff/owner nunca conseguem logar pela primeira vez.
-create table profissionais (
+create table if not exists profissionais (
   id uuid primary key default uuid_generate_v4(),
   user_id uuid references auth.users(id) unique,
   nome text not null,
@@ -43,7 +54,7 @@ create table profissionais (
 );
 
 -- disponibilidade recorrente (dia da semana + janela de horário)
-create table disponibilidade_profissional (
+create table if not exists disponibilidade_profissional (
   id uuid primary key default uuid_generate_v4(),
   profissional_id uuid not null references profissionais(id) on delete cascade,
   dia_semana smallint not null check (dia_semana between 0 and 6),
@@ -53,7 +64,7 @@ create table disponibilidade_profissional (
 );
 
 -- bloqueios pontuais: férias, folga, ajuste de um dia específico
-create table bloqueios_agenda (
+create table if not exists bloqueios_agenda (
   id uuid primary key default uuid_generate_v4(),
   profissional_id uuid not null references profissionais(id) on delete cascade,
   periodo tstzrange not null,
@@ -61,7 +72,7 @@ create table bloqueios_agenda (
 );
 
 -- serviços do studio
-create table servicos (
+create table if not exists servicos (
   id uuid primary key default uuid_generate_v4(),
   nome text not null,
   descricao text,
@@ -73,7 +84,7 @@ create table servicos (
 );
 
 -- quais profissionais fazem quais serviços, com override opcional de preço/duração
-create table profissional_servicos (
+create table if not exists profissional_servicos (
   profissional_id uuid not null references profissionais(id) on delete cascade,
   servico_id uuid not null references servicos(id) on delete cascade,
   preco_override numeric(10,2),
@@ -82,7 +93,7 @@ create table profissional_servicos (
 );
 
 -- clientes
-create table clientes (
+create table if not exists clientes (
   id uuid primary key default uuid_generate_v4(),
   user_id uuid references auth.users(id) unique,
   nome text not null,
@@ -98,7 +109,7 @@ create table clientes (
 );
 
 -- o núcleo do sistema
-create table agendamentos (
+create table if not exists agendamentos (
   id uuid primary key default uuid_generate_v4(),
   cliente_id uuid not null references clientes(id),
   profissional_id uuid not null references profissionais(id),
@@ -115,11 +126,11 @@ create table agendamentos (
   exclude using gist (profissional_id with =, periodo with &&) where (status = 'confirmado')
 );
 
-create index agendamentos_cliente_idx on agendamentos (cliente_id);
-create index agendamentos_periodo_idx on agendamentos using gist (periodo);
+create index if not exists agendamentos_cliente_idx on agendamentos (cliente_id);
+create index if not exists agendamentos_periodo_idx on agendamentos using gist (periodo);
 
 -- log de lembretes já disparados, pra nunca duplicar
-create table lembretes_enviados (
+create table if not exists lembretes_enviados (
   id uuid primary key default uuid_generate_v4(),
   agendamento_id uuid references agendamentos(id) on delete cascade,
   cliente_id uuid references clientes(id) on delete cascade,
@@ -129,26 +140,27 @@ create table lembretes_enviados (
 );
 
 -- configurações ajustáveis pela própria Gisele, sem precisar de deploy
-create table configuracoes (
+create table if not exists configuracoes (
   chave text primary key,
   valor jsonb not null
 );
 
 insert into configuracoes (chave, valor) values
-  ('horas_minimas_remarcacao', '2');
+  ('horas_minimas_remarcacao', '2')
+on conflict (chave) do nothing;
 
 -- rate limit do pré-cadastro público (usada só pela Edge Function
 -- `pre-cadastro`, via service role; nunca lida/escrita por anon/authenticated
 -- diretamente — ver RLS mais abaixo).
-create table pre_cadastro_tentativas (
+create table if not exists pre_cadastro_tentativas (
   id uuid primary key default uuid_generate_v4(),
   ip text not null,
   telefone text,
   criado_em timestamptz not null default now()
 );
 
-create index pre_cadastro_tentativas_ip_idx on pre_cadastro_tentativas (ip, criado_em);
-create index pre_cadastro_tentativas_telefone_idx on pre_cadastro_tentativas (telefone, criado_em);
+create index if not exists pre_cadastro_tentativas_ip_idx on pre_cadastro_tentativas (ip, criado_em);
+create index if not exists pre_cadastro_tentativas_telefone_idx on pre_cadastro_tentativas (telefone, criado_em);
 
 -- trigger simples de atualizado_em em agendamentos
 create or replace function public.set_atualizado_em()
@@ -161,6 +173,7 @@ begin
 end;
 $$;
 
+drop trigger if exists agendamentos_atualizado_em on agendamentos;
 create trigger agendamentos_atualizado_em
   before update on agendamentos
   for each row execute function public.set_atualizado_em();
@@ -216,6 +229,7 @@ begin
 end;
 $$;
 
+drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_user();
@@ -242,6 +256,7 @@ begin
 end;
 $$;
 
+drop trigger if exists profissionais_vincula_usuario on profissionais;
 create trigger profissionais_vincula_usuario
   before insert or update of telefone on profissionais
   for each row execute function public.vincula_profissional_a_usuario_existente();
@@ -333,25 +348,31 @@ alter table pre_cadastro_tentativas enable row level security;
 -- ---- configuracoes ----
 -- a policy de agendamentos (seção 4) usa a janela mínima de remarcação,
 -- e o app mostra essa regra pra cliente, então a leitura é pública.
+drop policy if exists "leitura_publica_configuracoes" on configuracoes;
 create policy "leitura_publica_configuracoes" on configuracoes
   for select using (true);
 
+drop policy if exists "owner_gerencia_configuracoes" on configuracoes;
 create policy "owner_gerencia_configuracoes" on configuracoes
   for all using (public.eh_owner()) with check (public.eh_owner());
 
 -- ---- profissionais ----
 -- perfil público (nome/bio/foto) de quem está ativo, pra marketing e pra tela de
 -- escolha de profissional funcionar sem exigir login.
+drop policy if exists "leitura_publica_profissionais_ativos" on profissionais;
 create policy "leitura_publica_profissionais_ativos" on profissionais
   for select using (ativo = true);
 
+drop policy if exists "staff_ve_proprio_registro" on profissionais;
 create policy "staff_ve_proprio_registro" on profissionais
   for select using (user_id = auth.uid());
 
+drop policy if exists "staff_atualiza_proprio_perfil" on profissionais;
 create policy "staff_atualiza_proprio_perfil" on profissionais
   for update using (user_id = auth.uid())
   with check (user_id = auth.uid());
 
+drop policy if exists "owner_gerencia_profissionais" on profissionais;
 create policy "owner_gerencia_profissionais" on profissionais
   for all using (public.eh_owner()) with check (public.eh_owner());
 
@@ -395,49 +416,61 @@ begin
 end;
 $$;
 
+drop trigger if exists profissionais_protege_campos_privilegiados on profissionais;
 create trigger profissionais_protege_campos_privilegiados
   before update on profissionais
   for each row execute function public.protege_campos_privilegiados_profissionais();
 
 -- ---- disponibilidade_profissional ----
+drop policy if exists "leitura_publica_disponibilidade" on disponibilidade_profissional;
 create policy "leitura_publica_disponibilidade" on disponibilidade_profissional
   for select using (true);
 
+drop policy if exists "staff_gerencia_propria_disponibilidade" on disponibilidade_profissional;
 create policy "staff_gerencia_propria_disponibilidade" on disponibilidade_profissional
   for all using (profissional_id = public.meu_profissional_id())
   with check (profissional_id = public.meu_profissional_id());
 
+drop policy if exists "owner_gerencia_disponibilidade" on disponibilidade_profissional;
 create policy "owner_gerencia_disponibilidade" on disponibilidade_profissional
   for all using (public.eh_owner()) with check (public.eh_owner());
 
 -- ---- bloqueios_agenda ----
+drop policy if exists "staff_gerencia_proprios_bloqueios" on bloqueios_agenda;
 create policy "staff_gerencia_proprios_bloqueios" on bloqueios_agenda
   for all using (profissional_id = public.meu_profissional_id())
   with check (profissional_id = public.meu_profissional_id());
 
+drop policy if exists "owner_gerencia_bloqueios" on bloqueios_agenda;
 create policy "owner_gerencia_bloqueios" on bloqueios_agenda
   for all using (public.eh_owner()) with check (public.eh_owner());
 
 -- ---- servicos ----
+drop policy if exists "leitura_publica_servicos_ativos" on servicos;
 create policy "leitura_publica_servicos_ativos" on servicos
   for select using (ativo = true);
 
 -- `for all` inclui SELECT: o owner precisa enxergar serviço desativado no
 -- painel pra poder reativar.
+drop policy if exists "owner_gerencia_servicos" on servicos;
 create policy "owner_gerencia_servicos" on servicos
   for all using (public.eh_owner()) with check (public.eh_owner());
 
 -- ---- profissional_servicos ----
+drop policy if exists "leitura_publica_profissional_servicos" on profissional_servicos;
 create policy "leitura_publica_profissional_servicos" on profissional_servicos
   for select using (true);
 
+drop policy if exists "owner_gerencia_profissional_servicos" on profissional_servicos;
 create policy "owner_gerencia_profissional_servicos" on profissional_servicos
   for all using (public.eh_owner()) with check (public.eh_owner());
 
 -- ---- clientes ----
+drop policy if exists "cliente_le_proprio_registro" on clientes;
 create policy "cliente_le_proprio_registro" on clientes
   for select using (user_id = auth.uid());
 
+drop policy if exists "cliente_atualiza_proprio_registro" on clientes;
 create policy "cliente_atualiza_proprio_registro" on clientes
   for update using (user_id = auth.uid())
   with check (user_id = auth.uid());
@@ -449,9 +482,11 @@ create policy "cliente_atualiza_proprio_registro" on clientes
 -- service role — que ignora RLS. Nenhum client anônimo escreve direto na
 -- tabela clientes.
 
+drop policy if exists "staff_le_proprios_clientes" on clientes;
 create policy "staff_le_proprios_clientes" on clientes
   for select using (public.staff_atende_cliente(id));
 
+drop policy if exists "owner_acesso_total_clientes" on clientes;
 create policy "owner_acesso_total_clientes" on clientes
   for all using (public.eh_owner()) with check (public.eh_owner());
 
@@ -481,11 +516,13 @@ begin
 end;
 $$;
 
+drop trigger if exists clientes_protege_campos on clientes;
 create trigger clientes_protege_campos
   before insert or update on clientes
   for each row execute function public.protege_campos_cliente();
 
 -- ---- agendamentos ----
+drop policy if exists "cliente_le_proprios_agendamentos" on agendamentos;
 create policy "cliente_le_proprios_agendamentos" on agendamentos
   for select using (cliente_id = public.meu_cliente_id());
 
@@ -493,6 +530,7 @@ create policy "cliente_le_proprios_agendamentos" on agendamentos
 -- duração bate com o serviço) é feita pelo trigger valida_agendamento
 -- (migration 20260925170000), não aqui — a policy só garante que a cliente
 -- não cria agendamento em nome de outra, nem já "concluído".
+drop policy if exists "cliente_cria_proprio_agendamento" on agendamentos;
 create policy "cliente_cria_proprio_agendamento" on agendamentos
   for insert with check (
     cliente_id = public.meu_cliente_id()
@@ -500,6 +538,7 @@ create policy "cliente_cria_proprio_agendamento" on agendamentos
     and canal = 'app'
   );
 
+drop policy if exists "cliente_remarca_proprio_agendamento" on agendamentos;
 create policy "cliente_remarca_proprio_agendamento" on agendamentos
   for update using (
     cliente_id = public.meu_cliente_id()
@@ -515,10 +554,12 @@ create policy "cliente_remarca_proprio_agendamento" on agendamentos
     and (status = 'cancelado' or lower(periodo) > now() + public.horas_minimas_remarcacao())
   );
 
+drop policy if exists "staff_gerencia_proprios_agendamentos" on agendamentos;
 create policy "staff_gerencia_proprios_agendamentos" on agendamentos
   for all using (profissional_id = public.meu_profissional_id())
   with check (profissional_id = public.meu_profissional_id());
 
+drop policy if exists "owner_acesso_total_agendamentos" on agendamentos;
 create policy "owner_acesso_total_agendamentos" on agendamentos
   for all using (public.eh_owner()) with check (public.eh_owner());
 
@@ -565,6 +606,7 @@ begin
 end;
 $$;
 
+drop trigger if exists agendamentos_protege_campos_cliente on agendamentos;
 create trigger agendamentos_protege_campos_cliente
   before update on agendamentos
   for each row execute function public.protege_campos_agendamento_cliente();
@@ -572,6 +614,7 @@ create trigger agendamentos_protege_campos_cliente
 -- ---- lembretes_enviados ----
 -- ninguém autenticado via app lê ou escreve aqui; só as Edge Functions
 -- (service role, que ignora RLS) e o owner, pra depuração.
+drop policy if exists "owner_le_lembretes" on lembretes_enviados;
 create policy "owner_le_lembretes" on lembretes_enviados
   for select using (public.eh_owner());
 
@@ -593,18 +636,23 @@ values (
 on conflict (id) do nothing;
 
 -- caminho esperado: servicos/{servico_id}/arquivo.webp | profissionais/{profissional_id}/arquivo.webp
+drop policy if exists "leitura_publica_fotos" on storage.objects;
 create policy "leitura_publica_fotos" on storage.objects
   for select using (bucket_id = 'fotos');
 
+drop policy if exists "owner_upload_fotos" on storage.objects;
 create policy "owner_upload_fotos" on storage.objects
   for insert with check (bucket_id = 'fotos' and public.eh_owner());
 
+drop policy if exists "owner_atualiza_fotos" on storage.objects;
 create policy "owner_atualiza_fotos" on storage.objects
   for update using (bucket_id = 'fotos' and public.eh_owner());
 
+drop policy if exists "owner_apaga_fotos" on storage.objects;
 create policy "owner_apaga_fotos" on storage.objects
   for delete using (bucket_id = 'fotos' and public.eh_owner());
 
+drop policy if exists "staff_upload_propria_foto" on storage.objects;
 create policy "staff_upload_propria_foto" on storage.objects
   for insert with check (
     bucket_id = 'fotos'
@@ -612,6 +660,7 @@ create policy "staff_upload_propria_foto" on storage.objects
     and (storage.foldername(name))[2] = public.meu_profissional_id()::text
   );
 
+drop policy if exists "staff_atualiza_propria_foto" on storage.objects;
 create policy "staff_atualiza_propria_foto" on storage.objects
   for update using (
     bucket_id = 'fotos'
@@ -619,6 +668,7 @@ create policy "staff_atualiza_propria_foto" on storage.objects
     and (storage.foldername(name))[2] = public.meu_profissional_id()::text
   );
 
+drop policy if exists "staff_apaga_propria_foto" on storage.objects;
 create policy "staff_apaga_propria_foto" on storage.objects
   for delete using (
     bucket_id = 'fotos'
@@ -680,6 +730,7 @@ $$;
 --   supabase secrets set WEBHOOK_VALIDAR_FOTO_SECRET=<mesmo valor>
 -- Não reaproveite nenhum token/chave que já existe no projeto — este é um
 -- segredo novo, só para autenticar este webhook interno.
+drop trigger if exists on_foto_uploaded on storage.objects;
 create trigger on_foto_uploaded
   after insert on storage.objects
   for each row

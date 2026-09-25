@@ -140,6 +140,7 @@ grant execute on function public.concluidos_para_lembrete_pos_procedimento() to 
 -- -hex 32`) e troque '<COLE_O_WEBHOOK_NOTIFICAR_SECRET_AQUI>' abaixo por
 -- esse valor; depois configure o mesmo valor com:
 --   supabase secrets set WEBHOOK_NOTIFICAR_AGENDAMENTO_SECRET=<mesmo valor>
+drop trigger if exists on_agendamento_notificar on agendamentos;
 create trigger on_agendamento_notificar
   after insert or update on agendamentos
   for each row
