@@ -1,0 +1,75 @@
+@import "tailwindcss";
+
+/* Design system "Lindeza Premium" — seção 9 do documento de arquitetura.
+   Hex extraídos por inspeção visual dos mockups em design/referencias/.
+   Um design system só, usado pelo site público, app da cliente e painel. */
+
+@theme {
+  --color-base: #fbeaec; /* fundo blush/rosa claro */
+  --color-surface: #ffffff; /* cards */
+  --color-ink: #2b1a1f; /* texto principal, tom quente escuro */
+  --color-ink-muted: #6e5a60; /* texto secundário (derivado do ink) */
+  --color-line: #ecd4d8; /* divisórias e bordas finas (derivado do base) */
+  --color-accent: #7a2e3e; /* bordô — ação, tab ativa, ícone ativo */
+  --color-accent-hover: #6b2836;
+  --color-gold: #b8934a; /* dourado — preço, selo de destaque, "Lindeza Premium" */
+  --color-gold-soft: #d9be8c;
+  /* O gold da seção 9 fica abaixo de 3:1 de contraste sobre o blush em texto
+     pequeno; texto dourado miúdo (eyebrow, selo) usa este tom mais fechado. */
+  --color-gold-ink: #86662a;
+  --color-ok: #3f7d4e; /* status "atendido" nas listas do painel */
+  --color-alerta: #9a3b2f; /* erro de formulário */
+
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+  /* Radius da seção 9, como nos mockups aprovados. Cada token vira uma
+     classe do Tailwind: rounded-card (cards, painéis, listas), rounded-input
+     (campos de formulário, chips de horário, blocos da agenda) e rounded-pill
+     (botões). */
+  --radius-card: 16px;
+  --radius-input: 12px;
+  --radius-pill: 980px;
+
+  /* Única sombra do sistema, só pra elemento flutuante (modal, dropdown). */
+  --shadow-overlay: 3px 5px 30px 0px rgba(0, 0, 0, 0.22);
+}
+
+html {
+  background: var(--color-base);
+  color: var(--color-ink);
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background: var(--color-base);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Navbar fixa translúcida (seção 9). */
+.navbar-blur {
+  background: color-mix(in srgb, var(--color-base) 78%, transparent);
+  backdrop-filter: saturate(1.8) blur(20px);
+  -webkit-backdrop-filter: saturate(1.8) blur(20px);
+}
+
+/* Espaço pro tab bar inferior + home indicator do iPhone. */
+.pb-tabbar {
+  padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"] {
+  min-height: 2.75rem;
+}

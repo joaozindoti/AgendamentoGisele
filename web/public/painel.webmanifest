@@ -1,0 +1,18 @@
+{
+  "id": "/painel",
+  "name": "Painel Studio Gisele Lima",
+  "short_name": "Painel Gisele",
+  "description": "Agenda, clientes e serviços do Studio Gisele Lima.",
+  "start_url": "/painel",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fbeaec",
+  "theme_color": "#fbeaec",
+  "lang": "pt-BR",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
