@@ -1,0 +1,17 @@
+# Supabase
+.branches
+.temp
+
+# dotenvx
+.env.keys
+.env.local
+.env.*.local
+
+# testes de banco (PGlite)
+tests/node_modules
+
+# saída do scripts/migrar-planilha.mjs — dado real de cliente, não vai pro git
+dados-migrados/
+
+# gerado por scripts/gerar-colar.mjs — contém secrets (o repositório é público)
+colar/
