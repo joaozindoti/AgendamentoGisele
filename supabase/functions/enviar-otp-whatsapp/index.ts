@@ -19,13 +19,17 @@ interface EventoSendSms {
   sms?: { otp?: string };
 }
 
+// O Supabase Auth só aceita a resposta do hook com Content-Type
+// application/json — inclusive a de sucesso. Sem o header, ele trata como
+// falha e descarta o código, mesmo com o WhatsApp já enviado.
+function responder(corpo: unknown, status: number) {
+  return new Response(JSON.stringify(corpo), { status, headers: { "Content-Type": "application/json" } });
+}
+
 Deno.serve(async (req) => {
   const secret = Deno.env.get("SEND_SMS_HOOK_SECRET");
   if (!secret) {
-    return new Response(
-      JSON.stringify({ error: { http_code: 500, message: "hook não configurado" } }),
-      { status: 500 },
-    );
+    return responder({ error: { http_code: 500, message: "hook não configurado" } }, 500);
   }
 
   const payload = await req.text();
@@ -36,25 +40,17 @@ Deno.serve(async (req) => {
     const wh = new Webhook(secret.replace(/^v1,whsec_/, ""));
     evento = wh.verify(payload, headers) as EventoSendSms;
   } catch {
-    return new Response(
-      JSON.stringify({ error: { http_code: 401, message: "assinatura inválida" } }),
-      { status: 401 },
-    );
+    return responder({ error: { http_code: 401, message: "assinatura inválida" } }, 401);
   }
 
   const telefoneCru = evento.user?.phone;
   const otp = evento.sms?.otp;
 
   if (!telefoneCru || !otp) {
-    return new Response(
-      JSON.stringify({ error: { http_code: 400, message: "payload sem phone/otp" } }),
-      { status: 400 },
-    );
+    return responder({ error: { http_code: 400, message: "payload sem phone/otp" } }, 400);
   }
 
-  // auth.users.phone chega sem "+" — mesma observação já registrada no
-  // trigger handle_new_user (migration 20260925153806, seção 4). Confirmar
-  // em teste real com número de verdade.
+  // auth.users.phone chega sem "+" (mesmo tratamento do handle_new_user)
   const telefone = telefoneCru.startsWith("+") ? telefoneCru : `+${telefoneCru}`;
 
   const mensagem =
@@ -64,11 +60,8 @@ Deno.serve(async (req) => {
   try {
     await enviarWhatsApp(telefone, mensagem);
   } catch (err) {
-    return new Response(
-      JSON.stringify({ error: { http_code: 500, message: `falha ao enviar WhatsApp: ${err}` } }),
-      { status: 500 },
-    );
+    return responder({ error: { http_code: 500, message: `falha ao enviar WhatsApp: ${err}` } }, 500);
   }
 
-  return new Response(JSON.stringify({}), { status: 200 });
+  return responder({}, 200);
 });
