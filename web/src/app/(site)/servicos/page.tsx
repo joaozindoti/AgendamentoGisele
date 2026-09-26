@@ -20,7 +20,7 @@ export default async function PaginaServicos() {
       <Titulo eyebrow="Lindeza Premium" sub="Escolha o seu cuidado e agende no horário que preferir.">
         Serviços
       </Titulo>
-      <CatalogoServicos servicos={(data ?? []) as Servico[]} hrefServico={(id) => `/cliente/agendar?servico=${id}`} />
+      <CatalogoServicos servicos={(data ?? []) as Servico[]} hrefBase="/cliente/agendar?servico=" />
     </div>
   );
 }

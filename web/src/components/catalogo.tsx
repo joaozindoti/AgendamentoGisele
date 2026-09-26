@@ -60,7 +60,9 @@ export function CartaoServico({ servico, href }: { servico: Servico; href: strin
   );
 }
 
-export function CatalogoServicos({ servicos, hrefServico }: { servicos: Servico[]; hrefServico: (id: string) => string }) {
+// hrefBase é texto, não função: este é um Client Component e o Next.js não
+// deixa um Server Component passar função como prop pra ele.
+export function CatalogoServicos({ servicos, hrefBase }: { servicos: Servico[]; hrefBase: string }) {
   const [ativa, setAtiva] = useState("todos");
   const categoriasPresentes = [...new Set(servicos.map((s) => s.categoria).filter(Boolean))] as string[];
 
@@ -94,7 +96,7 @@ export function CatalogoServicos({ servicos, hrefServico }: { servicos: Servico[
               )}
               <div className="grid gap-3 sm:grid-cols-2">
                 {itens.map((s) => (
-                  <CartaoServico key={s.id} servico={s} href={hrefServico(s.id)} />
+                  <CartaoServico key={s.id} servico={s} href={`${hrefBase}${s.id}`} />
                 ))}
               </div>
             </section>
