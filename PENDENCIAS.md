@@ -220,26 +220,36 @@ Toda vez que algo entrar na `main` do GitHub, a Vercel publica sozinha.
 ## Passo 8 — Clientes da planilha
 
 1. Na planilha "CRM Studio Gisele Lima", aba **Página1**: **Arquivo → Fazer
-   download → Valores separados por vírgula (.csv)**.
-2. No Supabase: **Table Editor** → **New table**:
-   - Name: `planilha_importada` (exatamente assim).
-   - Clique em **Import data from CSV** e arraste o arquivo baixado.
-   - Deixe as colunas como o Supabase sugerir e clique em **Save**. Se ele
-     reclamar de falta de chave primária, confirme mesmo assim.
-3. **SQL Editor** → colar e rodar `supabase/colar/05-importar-planilha.sql`.
-4. O resultado é uma lista: a primeira linha (**RESUMO**) diz quantas
-   clientes entraram; as outras mostram cada linha da planilha que ficou de
-   fora ou entrou incompleta, e o motivo (telefone inválido, data que não deu
-   pra ler, número repetido). Quem ficou de fora pode ser cadastrada à mão
-   depois em **Painel → Clientes → + Nova**.
-5. Depois de conferir, apague a tabela temporária. Cole e rode:
-   ```sql
-   drop table public.planilha_importada;
-   ```
+   download → Valores separados por vírgula (.csv)**. Não precisa editar
+   nada no arquivo.
+2. **SQL Editor** → colar e rodar `supabase/colar/05-preparar-planilha.sql`.
+   Ele cria a tabela `planilha_importada`, vazia, já com as colunas da
+   planilha (inclusive a coluna "bloqueado " com espaço no nome, que é o que
+   fazia o import automático do Supabase falhar).
+3. **Table Editor** → abrir a tabela **`planilha_importada`** → **Insert** →
+   **Import data from CSV** → arrastar o arquivo baixado → **Import data**.
+   Importe pra dentro dessa tabela; **não** use "New table".
+4. **SQL Editor** → colar e rodar `supabase/colar/06-importar-planilha.sql`.
+5. O resultado é uma lista. A primeira linha (**RESUMO**) diz quantas
+   clientes entraram. As outras mostram cada linha da planilha que ficou de
+   fora ou entrou incompleta, com o motivo:
+   - linhas vazias (sem nome) e a linha **"Teste"**: ficam de fora;
+   - clientes marcadas na coluna **bloqueado** da planilha: ficam de fora (o
+     sistema novo não tem bloqueio). Decida caso a caso e, se quiser,
+     cadastre à mão em **Painel → Clientes → + Nova**;
+   - telefone inválido: fica de fora;
+   - data de nascimento que não deu pra ler: entra sem data;
+   - número repetido na planilha: vale a última linha.
 
-O script tolera os problemas comuns da planilha: número com ou sem 55, com
-parênteses e traço; data em 15/03/1990 ou 1990-03-15. Quem já estiver
-cadastrada (mesmo WhatsApp) é atualizada, não duplicada. Todas entram com
+   O 06 apaga sozinho a tabela `planilha_importada` no fim, pra não deixar a
+   cópia da planilha com dado pessoal sobrando no banco.
+
+Deu errado ou quer refazer? Repita do item 2. Rodar de novo não duplica
+nada: quem já estiver cadastrada (mesmo WhatsApp) é atualizada. Se o RESUMO
+disser "(planilha vazia)", o CSV não chegou a entrar na tabela no item 3.
+
+O importador tolera os problemas comuns da planilha: número com ou sem 55,
+com parênteses e traço; data em 15/03/1990 ou 1990-03-15. Todas entram com
 consentimento de promoção **desligado**. Cada uma liga quando aceitar no app
 ou no pré-cadastro.
 
@@ -275,7 +285,7 @@ de reserva até o novo estar comprovado (seção 13).
       horário acabou de ser ocupado", e não uma tela de erro (seção 15).
 - [ ] Lembretes sem esperar o relógio: criar pelo painel um agendamento pra
       daqui a ~24h, e no **SQL Editor** colar e rodar
-      `supabase/colar/06-disparar-lembretes-agora.sql`. A mensagem de
+      `supabase/colar/07-disparar-lembretes-agora.sql`. A mensagem de
       lembrete chega. O detalhe de cada envio fica em **Edge Functions →
       enviar-lembretes → Logs**. O mesmo arquivo dispara também o de
       aniversário (teste com uma cliente que faça aniversário hoje) e o de
@@ -402,7 +412,7 @@ Nada disto é necessário pra colocar o sistema no ar.
 
 - **De onde vem `supabase/colar/`:** `node scripts/gerar-colar.mjs` monta a
   pasta a partir de `supabase/migrations/`, `supabase/seed-producao.sql`,
-  `scripts/importar-planilha.sql` e `supabase/functions/`. As functions saem
+  `scripts/preparar-planilha.sql`, `scripts/importar-planilha.sql` e `supabase/functions/`. As functions saem
   em arquivo único porque o editor do dashboard cria uma função por vez, sem
   a pasta `_shared`. Ao mudar qualquer original, rode o gerador de novo e cole
   o arquivo novo. Os secrets ficam em `supabase/colar/.segredos.json` e são

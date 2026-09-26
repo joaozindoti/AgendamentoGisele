@@ -5,9 +5,10 @@
 //     preenchidos. Embrulhadas em begin/commit, mas a proteção de verdade é
 //     serem idempotentes: dá pra colar de novo depois de parar no meio.
 //   - 04: seed de produção.
-//   - 05: importação da planilha a partir de uma tabela criada pelo import
-//     de CSV do Table Editor (sem Node, sem terminal).
-//   - 06: dispara os 3 lembretes na hora (pra teste).
+//   - 05: cria a tabela que recebe o CSV da planilha (com os nomes exatos do
+//     cabeçalho, inclusive a coluna "bloqueado " com espaço).
+//   - 06: importação da planilha pra `clientes` (sem Node, sem terminal).
+//   - 07: dispara os 3 lembretes na hora (pra teste).
 //   - functions/<nome>.ts: cada Edge Function num arquivo só (o editor do
 //     dashboard cria uma função por vez; imports de ../_shared não existem lá).
 //   - SECRETS.txt: nome = valor de cada secret das Edge Functions.
@@ -22,7 +23,7 @@
 //   node scripts/gerar-colar.mjs
 
 import { randomBytes } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -89,14 +90,17 @@ writeFileSync(
 );
 
 // ---------- importação da planilha ----------
-writeFileSync(join(SAIDA, "05-importar-planilha.sql"), aviso("scripts/gerar-colar.mjs") + readFileSync(join(RAIZ, "scripts", "importar-planilha.sql"), "utf8"));
+// numeração antiga (antes do arquivo de preparação da planilha)
+for (const velho of ["05-importar-planilha.sql", "06-disparar-lembretes-agora.sql"]) rmSync(join(SAIDA, velho), { force: true });
+writeFileSync(join(SAIDA, "05-preparar-planilha.sql"), aviso("scripts/preparar-planilha.sql") + readFileSync(join(RAIZ, "scripts", "preparar-planilha.sql"), "utf8"));
+writeFileSync(join(SAIDA, "06-importar-planilha.sql"), aviso("scripts/importar-planilha.sql") + readFileSync(join(RAIZ, "scripts", "importar-planilha.sql"), "utf8"));
 
 // ---------- disparo manual dos lembretes ----------
 const url = (f) => `https://pjbcgyzykvidbwdjlnvp.supabase.co/functions/v1/${f}`;
 const disparo = (f) =>
   `select net.http_post(\n  url := '${url(f)}',\n  headers := jsonb_build_object('Content-Type', 'application/json', 'x-cron-secret', '${segredos.CRON_SECRET}'),\n  body := '{}'::jsonb\n) as ${f.replaceAll("-", "_")};`;
 writeFileSync(
-  join(SAIDA, "06-disparar-lembretes-agora.sql"),
+  join(SAIDA, "07-disparar-lembretes-agora.sql"),
   aviso("scripts/gerar-colar.mjs") +
     "-- Faz na hora o que o pg_cron faz sozinho (lembretes 24h/1h, aniversários,\n" +
     "-- manutenção de 28 dias). O resultado de cada chamada aparece em\n" +
