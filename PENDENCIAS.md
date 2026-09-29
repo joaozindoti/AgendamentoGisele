@@ -316,6 +316,26 @@ pós-atendimento** (só dos serviços que ela atende). Em branco = não envia.
 Faz o lembrete de manutenção de 28 dias sair só pra atendimentos da Gisele.
 Não tem senha dentro e pode ser colado de novo sem problema.
 
+## Passo 8e — Conta de dona de TESTE pro João revisar o painel
+
+> ⚠️ **Conta de teste. Remover antes do lançamento pra Gisele** (passo 11, item 0).
+
+1. **SQL Editor** → colar e rodar `supabase/colar/90-conta-teste-joao.sql`.
+   Cria a dona de teste "TESTE João (dona de teste)" com o celular do João
+   (+55 99 98499-4873). Não mexe na Gisele nem na equipe real.
+2. O João entra em `<endereço do passo 7>/entrar` com o celular dele e o
+   código que chega no WhatsApp, e cai no painel como dona.
+3. Pra revisar o painel da profissional: em **Equipe → + Nova**, criar uma
+   profissional fictícia com o **nome começando com "TESTE"** (ex: "TESTE
+   Profissional") e um celular de teste; entrar com esse celular em outro
+   navegador. Clientes criadas pra teste também com nome começando com
+   "TESTE".
+
+O nome "TESTE…" é o que o script de remoção usa pra achar o que apagar. A
+dona de teste não tem serviço vinculado, então não aparece pra cliente. A
+profissional fictícia, se tiver serviço, **aparece** no app da cliente
+enquanto existir: não deixe ela ativa depois da revisão.
+
 ## Passo 9 — Primeiro acesso da Gisele e montagem da equipe
 
 1. No celular da Gisele, abrir `<endereço do passo 7>/entrar`, digitar o
@@ -383,6 +403,10 @@ de reserva até o novo estar comprovado (seção 13).
 
 ## Passo 11 — Virada (quando a lista acima estiver toda marcada)
 
+0. **Remover a conta de teste do João** (passo 8e): SQL Editor → colar e
+   rodar `supabase/colar/91-remover-conta-teste.sql`. Apaga a dona de teste,
+   toda profissional e cliente com nome começando com "TESTE" e os
+   agendamentos delas. O resultado tem que ser `0 | 0`.
 1. Na Vercel, **projeto antigo** → Settings → Domains → remover o domínio
    (`studio-gisele-lima.vercel.app` ou o domínio próprio). No **projeto
    novo** → Settings → Domains → adicionar esse domínio. Os links antigos

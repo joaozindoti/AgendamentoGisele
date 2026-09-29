@@ -33,18 +33,22 @@ export default async function InicioCliente({ searchParams }: PageProps<"/client
       .limit(3),
     lerConfigNumero(supabase, "horas_minimas_remarcacao", 2),
     // leitura pública (sem telefone): mesma que a tela de escolher profissional usa
-    supabase.from("profissionais").select("id, nome, bio, foto_url, papel").eq("ativo", true).order("papel").order("nome"),
+    supabase.from("profissionais").select("id, nome, bio, foto_url, papel, criado_em").eq("ativo", true).order("papel").order("criado_em"),
     supabase.from("profissional_servicos").select("profissional_id, servico:servicos(categoria)"),
   ]);
 
   const categoriasPorProfissional = new Map<string, Set<string>>();
   for (const v of (vinculos ?? []) as unknown as { profissional_id: string; servico: { categoria: string | null } | null }[]) {
-    if (!v.servico?.categoria) continue;
+    if (!v.servico) continue; // serviço inativo
+    if (!categoriasPorProfissional.has(v.profissional_id)) categoriasPorProfissional.set(v.profissional_id, new Set());
+    if (!v.servico.categoria) continue;
     const set = categoriasPorProfissional.get(v.profissional_id) ?? new Set<string>();
     set.add(v.servico.categoria);
     categoriasPorProfissional.set(v.profissional_id, set);
   }
-  const profissionais: ProfissionalHome[] = (equipe ?? []).map((p) => ({
+  // Só quem atende algum serviço ativo aparece pra cliente (tira da vitrine
+  // quem é só administração, como a conta de teste do João).
+  const profissionais: ProfissionalHome[] = (equipe ?? []).filter((p) => categoriasPorProfissional.has(p.id)).map((p) => ({
     id: p.id,
     papel: p.papel,
     nome: p.nome,
@@ -52,6 +56,7 @@ export default async function InicioCliente({ searchParams }: PageProps<"/client
     foto_url: p.foto_url,
     categorias: [...(categoriasPorProfissional.get(p.id) ?? [])],
   }));
+  // a Gisele é a dona cadastrada primeiro (seed); a lista já vem por criado_em
   const fotoGisele = (equipe ?? []).find((p) => p.papel === "owner")?.foto_url ?? null;
 
   const agora = agoraMs();
@@ -70,18 +75,11 @@ export default async function InicioCliente({ searchParams }: PageProps<"/client
 
   return (
     <div className="space-y-6">
-      <HeroStudio
-        fotoGisele={fotoGisele}
-        saudacao={
-          primeiroNome ? (
-            <>
-              {saudacao()}, <span className="text-gold-soft">{primeiroNome}</span>
-            </>
-          ) : (
-            `${saudacao()}!`
-          )
-        }
-      />
+      {primeiroNome ? (
+        <HeroStudio fotoGisele={fotoGisele} chamada="Studio Gisele Lima" titulo={`${saudacao()},`} destaque={<>{primeiroNome}.</>} />
+      ) : (
+        <HeroStudio fotoGisele={fotoGisele} chamada={saudacao()} titulo="Seja uma" destaque="Lindeza Premium." />
+      )}
 
       {typeof aviso === "string" && avisos[aviso] && <Caixa tipo="ok">{avisos[aviso]}</Caixa>}
 
@@ -92,26 +90,43 @@ export default async function InicioCliente({ searchParams }: PageProps<"/client
       )}
 
       {proximo ? (
-        <Card className="p-5">
-          <Eyebrow>Seu próximo momento VIP</Eyebrow>
-          <p className="mt-2 text-[22px] leading-snug font-semibold">{proximo.servico?.nome}</p>
-          <p className="mt-2 text-[15px] text-ink">com {proximo.profissional?.nome}</p>
-          <p className="text-[15px] text-ink">
-            {dataLonga(proximo.inicio)} · {hora(proximo.inicio)}
-          </p>
+        <Card className="overflow-hidden border-0 p-0 shadow-soft">
+          <div className="flex items-stretch">
+            {/* bloco da data: o que a cliente procura primeiro */}
+            <div className="flex w-[84px] shrink-0 flex-col items-center justify-center bg-ink py-5 text-white">
+              <span className="font-display text-[11px] font-bold uppercase tracking-[0.18em] text-gold-soft">
+                {dataLonga(proximo.inicio).split(",")[0].slice(0, 3)}
+              </span>
+              <span className="font-display text-[32px] leading-none font-extrabold tracking-[-0.03em]">
+                {proximo.inicio.toLocaleDateString("pt-BR", { day: "2-digit", timeZone: "America/Fortaleza" })}
+              </span>
+              <span className="mt-1 text-[13px] font-medium text-white/80">{hora(proximo.inicio)}</span>
+            </div>
+            <div className="min-w-0 flex-1 p-4">
+              <Eyebrow>Seu próximo horário</Eyebrow>
+              <p className="mt-1 font-display text-[19px] leading-snug font-bold tracking-[-0.02em]">{proximo.servico?.nome}</p>
+              <p className="mt-0.5 text-[14px] text-ink-muted">
+                com {proximo.profissional?.nome} · {dataLonga(proximo.inicio)}
+              </p>
+            </div>
+          </div>
+          <div className="border-t border-line px-4 pb-4">
           <AcoesAgendamentoCliente
             agendamentoId={proximo.id}
             podeAlterar={podeAlterar}
             horasMinimas={horasMinimas}
             whatsappStudio={WHATSAPP_STUDIO}
           />
+          </div>
         </Card>
-      ) : (
-        <Card className="p-5">
-          <p className="text-[16px] font-medium">Você não tem nenhum horário marcado.</p>
-          <p className="mt-1 text-[14px] text-ink-muted">Que tal reservar seu próximo momento de cuidado?</p>
+      ) : clienteId ? (
+        <Card className="flex items-center justify-between gap-4 border-dashed bg-transparent p-5">
+          <p className="text-[15px] text-ink-muted">Nenhum horário marcado por enquanto.</p>
+          <Link href="/cliente/agendar" className="shrink-0 font-display text-[14px] font-bold text-accent">
+            Agendar →
+          </Link>
         </Card>
-      )}
+      ) : null}
 
       <EquipeStudio profissionais={profissionais} />
 
@@ -119,8 +134,8 @@ export default async function InicioCliente({ searchParams }: PageProps<"/client
         <section>
           <div className="mb-3 flex items-end justify-between">
             <div>
-              <Eyebrow>Menu exclusivo</Eyebrow>
-              <h2 className="mt-1 text-[20px] font-semibold tracking-tight">Experiências do Studio</h2>
+              <Eyebrow className="tracking-[0.22em]">Menu exclusivo</Eyebrow>
+              <h2 className="mt-1.5 text-[24px] leading-tight font-extrabold tracking-[-0.03em]">Experiências do Studio</h2>
             </div>
             <Link href="/cliente/agendar" className="text-[14px] text-accent">
               Ver catálogo →

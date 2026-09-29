@@ -58,7 +58,7 @@ export default async function PaginaFaturamento({ searchParams }: PageProps<"/pa
         ))}
         <input type="date" name="de" defaultValue={de} className="min-h-9 rounded-input border border-line bg-surface px-2 text-[13px]" aria-label="De" />
         <input type="date" name="ate" defaultValue={ate} className="min-h-9 rounded-input border border-line bg-surface px-2 text-[13px]" aria-label="Até" />
-        <button type="submit" className="rounded-pill bg-base px-3 py-1.5 text-[13px] text-accent">
+        <button type="submit" className="rounded-pill bg-blush px-3 py-1.5 text-[13px] font-medium text-accent">
           Aplicar
         </button>
       </form>
@@ -67,26 +67,38 @@ export default async function PaginaFaturamento({ searchParams }: PageProps<"/pa
         <Caixa tipo="erro">{mensagemDeErro(error)}</Caixa>
       ) : (
         <>
-          <div className="rounded-card border border-line bg-surface p-4">
-            <p className="text-[12px] text-ink-muted">Total do studio</p>
-            <p className="mt-1 text-[32px] font-semibold tracking-tight tabular-nums">{moeda(Number(total.total))}</p>
-            <p className="mt-0.5 text-[12px] text-ink-muted">
-              {Number(total.atendimentos)} atendimento(s) concluído(s)
+          {/* o número que a Gisele abre a tela pra ver: bloco escuro, o maior da página */}
+          <div className="relative overflow-hidden rounded-card bg-ink p-5 text-white shadow-soft">
+            <div aria-hidden className="absolute -top-16 -right-16 h-44 w-44 rounded-full border border-gold/40" />
+            <p className="font-display text-[11px] font-bold uppercase tracking-[0.2em] text-gold-soft">Total do studio</p>
+            <p className="mt-2 font-display text-[38px] leading-none font-extrabold tracking-[-0.03em] tabular-nums">
+              {moeda(Number(total.total))}
             </p>
+            <p className="mt-2 text-[13px] text-white/70">{Number(total.atendimentos)} atendimento(s) concluído(s)</p>
           </div>
 
           <section>
-            <h2 className="mb-2 text-[15px] font-semibold">Por profissional</h2>
-            <ul className="divide-y divide-line overflow-hidden rounded-card border border-line bg-surface">
-              {equipe.map((l) => (
-                <li key={l.profissional_id} className="flex items-center justify-between gap-3 px-4 py-3">
-                  <span className="min-w-0">
-                    <span className="block truncate text-[15px] font-medium">{l.profissional_nome}</span>
-                    <span className="block text-[13px] text-ink-muted">{Number(l.atendimentos)} atendimento(s)</span>
-                  </span>
-                  <span className="shrink-0 text-[15px] font-semibold tabular-nums">{moeda(Number(l.total))}</span>
-                </li>
-              ))}
+            <h2 className="mb-3 text-[17px] font-bold">Por profissional</h2>
+            <ul className="space-y-2">
+              {equipe.map((l) => {
+                const parte = Number(total.total) > 0 ? Number(l.total) / Number(total.total) : 0;
+                return (
+                  <li key={l.profissional_id} className="rounded-card border border-line bg-surface px-4 py-3">
+                    <div className="flex items-baseline justify-between gap-3">
+                      <span className="min-w-0 truncate font-display text-[15px] font-bold">{l.profissional_nome}</span>
+                      <span className="shrink-0 font-display text-[16px] font-extrabold tabular-nums">{moeda(Number(l.total))}</span>
+                    </div>
+                    {/* barra = fatia dela no total do período */}
+                    <div className="mt-2 h-1.5 overflow-hidden rounded-pill bg-base">
+                      <div className="h-full rounded-pill bg-gold" style={{ width: `${Math.round(parte * 100)}%` }} />
+                    </div>
+                    <p className="mt-1.5 flex justify-between text-[12px] text-ink-muted">
+                      <span>{Number(l.atendimentos)} atendimento(s)</span>
+                      <span className="tabular-nums">{Math.round(parte * 100)}% do total</span>
+                    </p>
+                  </li>
+                );
+              })}
             </ul>
           </section>
 

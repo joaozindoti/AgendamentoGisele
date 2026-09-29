@@ -6,6 +6,10 @@ import { LinkBotao } from "./ui";
 // Blocos da home da cliente (redesign "Lindeza Premium", 30/09/2026).
 // Tudo aqui é Server Component e lê só dado público: nome, bio e foto de
 // profissional ativa, e a categoria dos serviços que cada uma faz.
+//
+// Assinatura visual: foto em ARCO (o espelho do salão), com um contorno
+// dourado deslocado atrás pra dar profundidade. O mesmo arco se repete,
+// pequeno, nas fotos da equipe.
 
 // Foto do hero: a da Gisele (perfil dela em Mais → Meu perfil). Enquanto ela
 // não tiver foto, usa a foto dela do hero do site antigo.
@@ -13,36 +17,61 @@ const FOTO_HERO_PADRAO = "/fotos/hero-nova.webp";
 
 export function HeroStudio({
   fotoGisele,
-  saudacao,
-  children,
+  chamada,
+  titulo,
+  destaque,
 }: {
   fotoGisele: string | null;
-  saudacao: ReactNode;
-  children?: ReactNode;
+  /** linha pequena acima do título (saudação ou "Lindeza Premium") */
+  chamada: string;
+  /** primeira linha do título, em peso leve */
+  titulo: string;
+  /** segunda linha do título, em peso forte */
+  destaque: ReactNode;
 }) {
   return (
-    <section className="relative overflow-hidden rounded-card bg-ink">
-      <div className="relative aspect-[5/6] w-full sm:aspect-[16/11]">
-        <Image
-          src={fotoGisele ?? FOTO_HERO_PADRAO}
-          alt="Gisele Lima, fundadora do Studio"
-          fill
-          priority
-          sizes="(max-width: 640px) 100vw, 576px"
-          className="object-cover object-top"
-        />
-        <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/35 to-ink/5" />
-        <SeloTopOfMind className="absolute top-4 right-4" />
-        <div className="absolute inset-x-0 bottom-0 p-5 text-white">
-          <p className="font-display text-[11px] font-semibold uppercase tracking-[0.18em] text-gold-soft">Lindeza Premium</p>
-          <h1 className="mt-1.5 text-[30px] leading-[1.1] font-bold tracking-tight">{saudacao}</h1>
-          <p className="mt-2 max-w-sm text-[15px] leading-snug text-white/85">
-            Estética feminina em Pedreiras - MA. Sobrancelha, pele e epilação com o cuidado da Gisele e da equipe.
+    <section className="relative -mx-4 overflow-hidden px-4 pt-3 pb-8">
+      {/* brilho rosado bem suave atrás do arco: único rosa "de área" da tela */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute top-0 left-1/2 h-[340px] w-[340px] -translate-x-1/2 rounded-full bg-[radial-gradient(closest-side,rgba(244,225,229,0.95),rgba(247,245,244,0))]"
+      />
+
+      <div className="relative mx-auto w-[64%] max-w-[250px]">
+        {/* contorno dourado deslocado: a camada de trás */}
+        <div aria-hidden className="absolute inset-0 translate-x-3 -translate-y-3 rounded-t-full rounded-b-[22px] border border-gold/70" />
+        <div className="relative aspect-[4/5] overflow-hidden rounded-t-full rounded-b-[22px] bg-ink shadow-soft">
+          <Image
+            src={fotoGisele ?? FOTO_HERO_PADRAO}
+            alt="Gisele Lima, fundadora do Studio"
+            fill
+            loading="eager"
+            fetchPriority="high"
+            sizes="250px"
+            className="object-cover object-[50%_18%]"
+          />
+          <div aria-hidden className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-ink/35 to-transparent" />
+        </div>
+        <SeloTopOfMind className="absolute -bottom-3 -left-9 -rotate-[8deg]" />
+      </div>
+
+      <div className="relative mt-9 text-center">
+        <p className="font-display text-[11px] font-bold uppercase tracking-[0.22em] text-gold-ink">{chamada}</p>
+        <h1 className="mt-2 text-[40px] leading-[1.02] tracking-[-0.04em] text-ink">
+          <span className="block font-extralight">{titulo}</span>
+          <span className="block font-extrabold">{destaque}</span>
+        </h1>
+        <p className="mx-auto mt-3 max-w-[19rem] text-[15px] leading-relaxed text-ink-muted">
+          Sobrancelha, pele e epilação em Pedreiras&nbsp;-&nbsp;MA, com o cuidado da Gisele e da equipe.
+        </p>
+        <LinkBotao href="/cliente/agendar" className="mt-5 min-h-12 px-8 text-[16px]">
+          Agendar horário
+        </LinkBotao>
+        <div className="mt-7 flex flex-col items-center gap-2.5">
+          <span aria-hidden className="h-px w-10 bg-gold/70" />
+          <p className="max-w-[17rem] text-[11px] leading-relaxed font-medium text-balance uppercase tracking-[0.12em] text-ink-muted">
+            Atendimento exclusivo para o público feminino
           </p>
-          {children}
-          <LinkBotao href="/cliente/agendar" variante="secundario" className="mt-4">
-            Agendar horário
-          </LinkBotao>
         </div>
       </div>
     </section>
@@ -57,12 +86,17 @@ export function SeloTopOfMind({ className = "" }: { className?: string }) {
     <div
       role="img"
       aria-label="Top of Mind Excelência Brasil 2025"
-      className={`flex h-[92px] w-[92px] flex-col items-center justify-center rounded-full border-2 border-gold bg-surface/95 text-center shadow-[0_6px_20px_rgba(43,26,31,0.25)] ring-4 ring-gold-soft/35 ${className}`}
+      className={`flex h-[88px] w-[88px] items-center justify-center rounded-full bg-surface shadow-soft ${className}`}
     >
-      <span className="font-display text-[10px] leading-none font-extrabold tracking-[0.12em] text-gold-ink">TOP OF</span>
-      <span className="font-display text-[10px] leading-tight font-extrabold tracking-[0.12em] text-gold-ink">MIND</span>
-      <span className="mt-0.5 text-[8px] leading-tight font-medium text-ink-muted">Excelência Brasil</span>
-      <span className="font-display text-[15px] leading-none font-bold text-accent">2025</span>
+      <div className="flex h-[78px] w-[78px] flex-col items-center justify-center rounded-full border border-gold text-center">
+        <span className="font-display text-[9px] leading-none font-extrabold tracking-[0.16em] text-gold-ink">TOP OF MIND</span>
+        <span className="mt-1 font-display text-[18px] leading-none font-extrabold tracking-[-0.02em] text-accent">2025</span>
+        <span className="mt-1 text-[7.5px] leading-tight font-semibold uppercase tracking-[0.08em] text-ink-muted">
+          Excelência
+          <br />
+          Brasil
+        </span>
+      </div>
     </div>
   );
 }
@@ -84,15 +118,19 @@ function especialidade(p: ProfissionalHome) {
   return rotulos.join(" · ");
 }
 
-function FotoProfissional({ p, tamanho }: { p: ProfissionalHome; tamanho: string }) {
+function FotoArco({ p, tamanho, className = "" }: { p: ProfissionalHome; tamanho: string; className?: string }) {
   // Gisele sem foto de perfil: a foto dela do site antigo (a mesma do hero)
   const foto = p.foto_url ?? (p.papel === "owner" ? FOTO_HERO_PADRAO : null);
-  return foto ? (
-    <Image src={foto} alt={p.nome} fill sizes={tamanho} className="object-cover object-top" />
-  ) : (
-    <span className="flex h-full w-full items-center justify-center font-display text-[36px] font-bold text-accent/70">
-      {p.nome.charAt(0)}
-    </span>
+  return (
+    <div className={`relative overflow-hidden rounded-t-full rounded-b-[14px] bg-blush ${className}`}>
+      {foto ? (
+        <Image src={foto} alt={p.nome} fill sizes={tamanho} className="object-cover object-[50%_18%]" />
+      ) : (
+        <span className="flex h-full w-full items-center justify-center font-display text-[34px] font-extralight text-accent">
+          {p.nome.charAt(0)}
+        </span>
+      )}
+    </div>
   );
 }
 
@@ -103,32 +141,26 @@ export function EquipeStudio({ profissionais }: { profissionais: ProfissionalHom
 
   return (
     <section>
-      <p className="font-display text-[12px] font-semibold uppercase tracking-[0.14em] text-gold-ink">Nossa equipe</p>
-      <h2 className="mt-1 mb-3 text-[20px] font-bold tracking-tight">Quem cuida de você</h2>
+      <p className="font-display text-[11px] font-bold uppercase tracking-[0.22em] text-gold-ink">Nossa equipe</p>
+      <h2 className="mt-1.5 mb-4 text-[24px] leading-tight font-extrabold tracking-[-0.03em]">Quem cuida de você</h2>
 
       {profissionais.length === 1 ? (
-        <div className="flex items-center gap-4 rounded-card border border-line bg-surface p-3">
-          <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-input bg-base">
-            <FotoProfissional p={profissionais[0]} tamanho="96px" />
-          </div>
+        <div className="flex items-center gap-4 rounded-card bg-surface p-4 shadow-soft">
+          <FotoArco p={profissionais[0]} tamanho="88px" className="h-[110px] w-[88px] shrink-0" />
           <div className="min-w-0">
-            <p className="font-display text-[17px] font-bold">{profissionais[0].nome}</p>
+            <p className="font-display text-[18px] font-bold tracking-[-0.02em]">{profissionais[0].nome}</p>
             {especialidade(profissionais[0]) && (
-              <p className="mt-0.5 line-clamp-3 text-[14px] text-ink-muted">{especialidade(profissionais[0])}</p>
+              <p className="mt-1 line-clamp-3 text-[14px] text-ink-muted">{especialidade(profissionais[0])}</p>
             )}
           </div>
         </div>
       ) : (
-        <ul className="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <ul className="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {profissionais.map((p) => (
-            <li key={p.id} className="w-[62%] max-w-56 shrink-0 snap-start overflow-hidden rounded-card border border-line bg-surface">
-              <div className="relative aspect-[4/5] bg-base">
-                <FotoProfissional p={p} tamanho="224px" />
-              </div>
-              <div className="p-3">
-                <p className="font-display text-[16px] font-bold leading-tight">{p.nome}</p>
-                {especialidade(p) && <p className="mt-1 line-clamp-2 text-[13px] text-ink-muted">{especialidade(p)}</p>}
-              </div>
+            <li key={p.id} className="w-[44%] max-w-44 shrink-0 snap-start">
+              <FotoArco p={p} tamanho="176px" className="aspect-[4/5] w-full shadow-soft" />
+              <p className="mt-3 font-display text-[16px] leading-tight font-bold tracking-[-0.02em]">{p.nome}</p>
+              {especialidade(p) && <p className="mt-1 line-clamp-2 text-[13px] leading-snug text-ink-muted">{especialidade(p)}</p>}
             </li>
           ))}
         </ul>

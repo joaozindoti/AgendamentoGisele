@@ -1,15 +1,18 @@
 @import "tailwindcss";
 
 /* Design system "Lindeza Premium" — seção 9 do documento de arquitetura.
-   Hex extraídos por inspeção visual dos mockups em design/referencias/.
-   Um design system só, usado pelo site público, app da cliente e painel. */
+   Um design system só, usado pelo site público, app da cliente e painel.
+   Revisão de 30/09/2026: a base deixou de ser rosa. Fundo neutro
+   ("porcelana") e cartões brancos; o rosa/bordô e o dourado ficam pra
+   ação, selo e poucos detalhes, e aparecem mais por contraste. */
 
 @theme {
-  --color-base: #fbeaec; /* fundo blush/rosa claro */
+  --color-base: #f7f5f4; /* fundo "porcelana": neutro levemente quente */
   --color-surface: #ffffff; /* cards */
-  --color-ink: #2b1a1f; /* texto principal, tom quente escuro */
-  --color-ink-muted: #6e5a60; /* texto secundário (derivado do ink) */
-  --color-line: #ecd4d8; /* divisórias e bordas finas (derivado do base) */
+  --color-ink: #231a1d; /* texto principal, tom quente escuro */
+  --color-ink-muted: #6f6468; /* texto secundário */
+  --color-line: #e8e3e2; /* divisórias e bordas finas, neutras */
+  --color-blush: #f4e1e5; /* rosa claro: só fundo de destaque pequeno (botão secundário, aba ativa) */
   --color-accent: #7a2e3e; /* bordô — ação, tab ativa, ícone ativo */
   --color-accent-hover: #6b2836;
   --color-gold: #b8934a; /* dourado — preço, selo de destaque, "Lindeza Premium" */
@@ -29,8 +32,10 @@
   --radius-input: 12px;
   --radius-pill: 980px;
 
-  /* Única sombra do sistema, só pra elemento flutuante (modal, dropdown). */
+  /* Sombras: overlay pra elemento flutuante; soft pra dar profundidade ao
+     hero e a cartões de destaque (nunca em lista comum). */
   --shadow-overlay: 3px 5px 30px 0px rgba(0, 0, 0, 0.22);
+  --shadow-soft: 0 1px 2px rgba(35, 26, 29, 0.04), 0 18px 40px -22px rgba(35, 26, 29, 0.28);
 }
 
 /* Fontes: as variáveis --font-manrope/--font-inter vêm do next/font no
@@ -60,6 +65,15 @@ h1,
 h2,
 h3 {
   font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+/* O logo é uma imagem com fundo rosado claro. O filtro leva esse fundo pra
+   quase branco e o multiply o apaga sobre o neutro, sem precisar de outro
+   arquivo. Quando vier o logo com fundo transparente, dá pra tirar isto. */
+.logo-marca {
+  filter: brightness(1.08) contrast(1.15);
+  mix-blend-mode: multiply;
 }
 
 /* Navbar fixa translúcida (seção 9). */

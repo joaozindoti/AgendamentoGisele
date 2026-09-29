@@ -12,7 +12,8 @@ export default async function Home() {
   const supabase = await criarClienteServidor();
 
   const [{ data: owner }, { data: destaques }] = await Promise.all([
-    supabase.from("profissionais").select("id").eq("papel", "owner").eq("ativo", true).limit(1).maybeSingle(),
+    // a Gisele é a dona cadastrada primeiro (pode haver outra dona, ex: conta de teste)
+    supabase.from("profissionais").select("id").eq("papel", "owner").eq("ativo", true).order("criado_em").limit(1).maybeSingle(),
     supabase
       .from("servicos")
       .select("id, nome, descricao, preco, duracao_min, destaque")

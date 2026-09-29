@@ -134,7 +134,7 @@ export function CadastroCliente({
           type="file"
           accept={TIPOS_FOTO.join(",")}
           onChange={(e) => setFoto(e.target.files?.[0] ?? null)}
-          className="block w-full text-[14px] text-ink-muted file:mr-3 file:rounded-pill file:border-0 file:bg-base file:px-4 file:py-2 file:text-accent"
+          className="block w-full text-[14px] text-ink-muted file:mr-3 file:rounded-pill file:border-0 file:bg-blush file:px-4 file:py-2 file:text-accent"
         />
         <span className="block text-[12px] text-ink-muted">Ajuda a equipe a te reconhecer na agenda.</span>
       </label>

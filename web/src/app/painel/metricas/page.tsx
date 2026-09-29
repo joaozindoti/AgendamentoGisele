@@ -62,7 +62,7 @@ export default async function PaginaMetricas({ searchParams }: PageProps<"/paine
         ))}
         <input type="date" name="de" defaultValue={de} className="min-h-9 rounded-input border border-line bg-surface px-2 text-[13px]" aria-label="De" />
         <input type="date" name="ate" defaultValue={ate} className="min-h-9 rounded-input border border-line bg-surface px-2 text-[13px]" aria-label="Até" />
-        <button type="submit" className="rounded-pill bg-base px-3 py-1.5 text-[13px] text-accent">
+        <button type="submit" className="rounded-pill bg-blush px-3 py-1.5 text-[13px] font-medium text-accent">
           Aplicar
         </button>
       </form>
@@ -120,8 +120,8 @@ export default async function PaginaMetricas({ searchParams }: PageProps<"/paine
 function Numero({ rotulo, valor, nota, alerta }: { rotulo: string; valor: string; nota: string; alerta?: boolean }) {
   return (
     <div className="bg-surface p-4">
-      <p className="text-[12px] text-ink-muted">{rotulo}</p>
-      <p className="mt-1 text-[26px] font-semibold tracking-tight tabular-nums">{valor}</p>
+      <p className="text-[12px] font-medium text-ink-muted">{rotulo}</p>
+      <p className="mt-1.5 font-display text-[26px] leading-none font-extrabold tracking-[-0.03em] tabular-nums">{valor}</p>
       <p className={`mt-0.5 text-[12px] ${alerta ? "text-alerta" : "text-ink-muted"}`}>{nota}</p>
     </div>
   );
