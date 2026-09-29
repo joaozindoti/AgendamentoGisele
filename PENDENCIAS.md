@@ -253,6 +253,29 @@ com parênteses e traço; data em 15/03/1990 ou 1990-03-15. Todas entram com
 consentimento de promoção **desligado**. Cada uma liga quando aceitar no app
 ou no pré-cadastro.
 
+## Passo 8b — Faturamento no painel da Gisele (SQL Editor)
+
+Libera a tela **Mais → Faturamento**, que só a Gisele vê: total do studio e
+total por profissional, com os atalhos Hoje, Esta semana e Este mês, ou um
+período escolhido.
+
+**SQL Editor** → **New query** → colar e rodar
+`supabase/colar/08-faturamento-periodo.sql`. Esse arquivo só tem estrutura,
+sem senha, e pode ser colado de novo sem problema.
+
+Pra conferir, rode:
+
+```sql
+select count(*) from pg_proc where proname = 'faturamento_periodo';
+```
+
+Tem que dar `1`. Se a tela Faturamento abrir antes deste passo, ela mostra
+um erro; depois dele, os valores aparecem.
+
+O faturamento soma só os atendimentos marcados como **atendido**, pelo preço
+do serviço (ou pelo preço próprio da profissional, se ela tiver um). Serviço
+sem preço conta como R$ 0 e a tela avisa quantos são.
+
 ## Passo 9 — Primeiro acesso da Gisele e montagem da equipe
 
 1. No celular da Gisele, abrir `<endereço do passo 7>/entrar`, digitar o
@@ -297,6 +320,10 @@ de reserva até o novo estar comprovado (seção 13).
 - [ ] Profissional (staff) logada: vê só a própria agenda e as próprias
       clientes; não vê Equipe, Serviços nem Métricas.
 - [ ] Métricas batem com a agenda de uma semana conhecida.
+- [ ] **Mais → Faturamento** (Gisele): o total e o valor de cada profissional
+      batem com os atendimentos marcados como atendido. Logada como a
+      profissional, a opção Faturamento não aparece, e abrir
+      `<endereço>/painel/faturamento` volta pra agenda.
 - [ ] Instalar o app da cliente no celular, abrir o próximo agendamento,
       ligar o modo avião e reabrir: o agendamento continua aparecendo.
 - [ ] "Sair" e reabrir sem internet: não mostra mais os dados da cliente.
@@ -417,7 +444,7 @@ Nada disto é necessário pra colocar o sistema no ar.
   a pasta `_shared`. Ao mudar qualquer original, rode o gerador de novo e cole
   o arquivo novo. Os secrets ficam em `supabase/colar/.segredos.json` e são
   reaproveitados.
-- **Testes do banco** (81 testes num Postgres local, sem Docker: RLS papel
+- **Testes do banco** (85 testes num Postgres local, sem Docker: RLS papel
   por papel, motor de agendamento, os próprios arquivos de `supabase/colar/`
   incluindo o importador da planilha, e o cenário de colar de novo um arquivo
   que parou no meio):
@@ -427,7 +454,8 @@ Nada disto é necessário pra colocar o sistema no ar.
 - **Se um dia usar a CLI do Supabase:** as migrations aplicadas pelo SQL
   Editor não ficam registradas no histórico da CLI. Antes do primeiro
   `supabase db push`, rode `supabase migration repair --status applied`
-  para as três (`20260925153806`, `20260925160000`, `20260925170000`); senão
+  para as quatro (`20260925153806`, `20260925160000`, `20260925170000`,
+  `20260929120000`); senão
   a CLI tenta aplicar de novo. O `config.toml` já descreve a verificação de
   JWT de cada função e o hook de SMS.
 - **Importar a planilha por terminal** (alternativa ao passo 8):

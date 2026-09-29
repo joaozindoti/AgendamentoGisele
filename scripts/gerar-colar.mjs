@@ -78,7 +78,9 @@ migrations.forEach((arquivo, i) => {
   sql = linhas.join("\n");
   for (const [ph, valor] of Object.entries(PLACEHOLDERS)) sql = sql.replaceAll(ph, valor);
   if (/<COLE_[A-Z_]+>/.test(sql)) throw new Error(`placeholder não preenchido em ${arquivo}`);
-  const nome = `${String(i + 1).padStart(2, "0")}-${arquivo.replace(/^\d+_/, "").replaceAll("_", "-")}`;
+  // 01..03 são as migrations da implantação inicial; as que vieram depois
+  // entram depois dos arquivos 04..07 (seed, planilha, disparo), a partir do 08.
+  const nome = `${String(i < 3 ? i + 1 : i + 5).padStart(2, "0")}-${arquivo.replace(/^\d+_/, "").replaceAll("_", "-")}`;
   writeFileSync(join(SAIDA, nome), `${aviso(`supabase/migrations/${arquivo}`)}begin;\n\n${sql}\n\ncommit;\n`);
 });
 

@@ -17,6 +17,7 @@ export default async function Mais() {
     { href: "/painel/novo", rotulo: "Novo agendamento" },
     ...(ehOwner
       ? [
+          { href: "/painel/faturamento", rotulo: "Faturamento" },
           { href: "/painel/metricas", rotulo: "Métricas e relatórios" },
           { href: "/painel/configuracoes", rotulo: "Configurações" },
         ]
