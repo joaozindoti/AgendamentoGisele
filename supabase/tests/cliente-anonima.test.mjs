@@ -162,6 +162,23 @@ describe("mesmo número em outro aparelho", () => {
     await assert.rejects(como(db, "authenticated", s)(`select cadastrar_cliente('Ana', '+5599977770000')`), /muitas_trocas_de_aparelho/);
   });
 
+  test("cada troca avisa o número por WhatsApp (notificar-agendamento, com o secret)", async () => {
+    const avisos = (
+      await db.query(
+        `select url, headers, corpo from webhooks_disparados where corpo->>'table' = 'clientes_trocas_aparelho' and corpo->'record'->>'cliente_id' = $1`,
+        [anaId],
+      )
+    ).rows;
+    assert.equal(avisos.length, 3); // as 3 trocas que passaram; a 4ª foi recusada e não avisa
+    assert.ok(avisos.every((a) => a.url.endsWith("/functions/v1/notificar-agendamento")));
+    assert.ok(avisos.every((a) => a.headers["x-webhook-secret"]));
+    assert.ok(avisos.every((a) => a.corpo.type === "INSERT" && a.corpo.record.user_id_anterior));
+    // cadastro de número novo não é troca: não avisa
+    const bia = (await db.query(`select id from clientes where whatsapp = '+5599966660000'`)).rows[0].id;
+    const nenhum = (await db.query(`select 1 from webhooks_disparados where corpo->>'table' = 'clientes_trocas_aparelho' and corpo->'record'->>'cliente_id' = $1`, [bia])).rows;
+    assert.equal(nenhum.length, 0);
+  });
+
   test("trocas de aparelho: só a Gisele lê o registro", async () => {
     assert.ok((await como(db, "authenticated", gisele)(`select id from clientes_trocas_aparelho`)).length >= 3);
     assert.equal((await como(db, "authenticated", anaSessao)(`select id from clientes_trocas_aparelho`)).length, 0);
@@ -311,5 +328,15 @@ describe("lembrete de 28 dias com cliente anônima", () => {
     const minha = linhas.find((l) => l.agendamento_id === id);
     assert.ok(minha, "aparece no lembrete");
     assert.equal(minha.cliente_whatsapp, "+5599977770000");
+  });
+
+  test("só vale pros atendimentos da Gisele: o da staff não entra", async () => {
+    const [{ id }] = await sr(
+      `insert into agendamentos (cliente_id, profissional_id, servico_id, periodo, status, canal)
+       values ($1, $2, $3, tstzrange(now() - interval '28 days' - interval '3 hours', now() - interval '28 days' - interval '2 hours'), 'concluido', 'painel') returning id`,
+      [anaId, idStaff, henna],
+    );
+    const ids = (await sr(`select agendamento_id from concluidos_para_lembrete_pos_procedimento()`)).map((l) => l.agendamento_id);
+    assert.ok(!ids.includes(id));
   });
 });

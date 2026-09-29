@@ -310,6 +310,26 @@ por celular + código em `/entrar`, que agora é a "Área da equipe".
 Cada profissional escreve os protocolos em **Mais → Protocolos
 pós-atendimento** (só dos serviços que ela atende). Em branco = não envia.
 
+## Passo 8d — Aviso de troca de aparelho e lembrete de 28 dias só da Gisele
+
+1. **SQL Editor** → colar e rodar `supabase/colar/10-aviso-troca-aparelho-e-28-dias.sql`.
+   Tem o secret do aviso de agendamento dentro. Pode colar de novo sem
+   problema.
+2. **Edge Functions** → abrir `notificar-agendamento` → trocar todo o código
+   pelo de `supabase/colar/functions/notificar-agendamento.ts` → **Deploy**.
+   Depois, em **Details**, conferir que a verificação de JWT continua
+   **desligada** (o bug do passo 3 religa ao editar).
+
+A partir daqui:
+- quando um WhatsApp já cadastrado é usado num aparelho novo, esse número
+  recebe "Seu cadastro no app do Studio Gisele Lima foi acessado de um novo
+  aparelho. Se foi você, está tudo certo. Se não foi, fale com a Gisele por
+  aqui.";
+- na primeira vez que um cadastro que veio da planilha, do pré-cadastro ou do
+  painel é aberto no app, a mensagem diz "foi ativado em um aparelho", no
+  mesmo tom;
+- o lembrete de manutenção de 28 dias só sai pra atendimentos da Gisele.
+
 ## Passo 9 — Primeiro acesso da Gisele e montagem da equipe
 
 1. No celular da Gisele, abrir `<endereço do passo 7>/entrar`, digitar o
@@ -336,8 +356,8 @@ de reserva até o novo estar comprovado (seção 13).
       chega no WhatsApp. Nenhum código é pedido.
 - [ ] Fechar e reabrir o navegador: continua cadastrada (não pede os dados
       de novo). Em outro navegador, cadastrar com o **mesmo** número: o
-      cadastro e os agendamentos vão pro aparelho novo, e o primeiro perde
-      o acesso.
+      cadastro e os agendamentos vão pro aparelho novo, o primeiro perde
+      o acesso, e o número recebe o aviso de "novo aparelho" no WhatsApp.
 - [ ] Foto no cadastro: aparece na agenda do painel, ao lado do nome.
 - [ ] Protocolo: escrever um em **Mais → Protocolos**, marcar pelo painel um
       atendimento de 10 minutos que já terminou há uns 15, e esperar até 5
@@ -494,8 +514,8 @@ verificação. O que isso abre, e o que já está coberto:
   e remarcação avisam a dona do número pelo WhatsApp; no máximo 3 trocas de
   aparelho por número a cada 24h; cada troca fica registrada em
   `clientes_trocas_aparelho` (só a Gisele lê); quem assume não sobrescreve
-  nome e nascimento. **Não coberto:** aviso no WhatsApp da dona do número
-  quando o cadastro muda de aparelho. É o próximo passo recomendado.
+  nome e nascimento. Desde o passo 8d, a dona do número também recebe um
+  WhatsApp a cada troca de aparelho ("se não foi você, fale com a Gisele").
 - **Qualquer pessoa vira "cliente" sem provar nada.** Coberto: teto de 3
   agendamentos futuros por cliente pelo app (Mais → Configurações), limite
   de sessões anônimas por IP (passo 8c.3), e todas as regras de RLS de
@@ -532,7 +552,7 @@ Nada disto é necessário pra colocar o sistema no ar.
   a pasta `_shared`. Ao mudar qualquer original, rode o gerador de novo e cole
   o arquivo novo. Os secrets ficam em `supabase/colar/.segredos.json` e são
   reaproveitados.
-- **Testes do banco** (120 testes num Postgres local, sem Docker: RLS papel
+- **Testes do banco** (126 testes num Postgres local, sem Docker: RLS papel
   por papel, motor de agendamento, os próprios arquivos de `supabase/colar/`
   incluindo o importador da planilha, e o cenário de colar de novo um arquivo
   que parou no meio):
@@ -542,8 +562,8 @@ Nada disto é necessário pra colocar o sistema no ar.
 - **Se um dia usar a CLI do Supabase:** as migrations aplicadas pelo SQL
   Editor não ficam registradas no histórico da CLI. Antes do primeiro
   `supabase db push`, rode `supabase migration repair --status applied`
-  para as cinco (`20260925153806`, `20260925160000`, `20260925170000`,
-  `20260929120000`, `20260929150000`); senão
+  para as seis (`20260925153806`, `20260925160000`, `20260925170000`,
+  `20260929120000`, `20260929150000`, `20260930120000`); senão
   a CLI tenta aplicar de novo. O `config.toml` já descreve a verificação de
   JWT de cada função e o hook de SMS.
 - **Importar a planilha por terminal** (alternativa ao passo 8):
