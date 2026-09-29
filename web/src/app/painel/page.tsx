@@ -60,6 +60,7 @@ export default async function Agenda({ searchParams }: PageProps<"/painel">) {
       fim: hora(a.fim),
       status: a.status,
       cliente: a.cliente?.nome ?? "",
+      clienteFoto: a.cliente?.foto_url ?? null,
       servico: a.servico?.nome ?? "",
       profissional: a.profissional?.nome ?? "",
       canal: a.canal,

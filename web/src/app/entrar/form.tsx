@@ -10,8 +10,8 @@ const REENVIO_SEGUNDOS = 60;
 
 // Seção 4: signInWithOtp({ phone }) -> Supabase Auth chama o hook send_sms
 // (Edge Function enviar-otp-whatsapp) -> código chega no WhatsApp ->
-// verifyOtp. Nenhuma senha. O mesmo login serve pra cliente e pra equipe;
-// quem é quem decide depois (meu_papel).
+// verifyOtp. Nenhuma senha. Só a equipe (Gisele e profissionais) entra por
+// aqui; a cliente usa sessão anônima, sem código.
 export function FormLogin({ destino }: { destino: string | null }) {
   const router = useRouter();
   const [etapa, setEtapa] = useState<"telefone" | "codigo">("telefone");

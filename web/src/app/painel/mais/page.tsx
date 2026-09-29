@@ -23,6 +23,7 @@ export default async function Mais() {
         ]
       : []),
     { href: "/painel/disponibilidade", rotulo: "Meus horários e folgas" },
+    { href: "/painel/protocolos", rotulo: "Protocolos pós-atendimento" },
     ...(papel?.cliente_id ? [{ href: "/cliente", rotulo: "Minha área de cliente" }] : []),
     { href: "/", rotulo: "Ver site do studio" },
   ];

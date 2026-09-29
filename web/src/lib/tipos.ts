@@ -40,6 +40,7 @@ export interface Cliente {
   whatsapp: string;
   endereco: string | null;
   data_nascimento: string | null;
+  foto_url: string | null;
   consentimento: boolean;
   consentimento_em: string | null;
   consentimento_versao: string | null;
@@ -117,6 +118,7 @@ export const CHAVES_CONFIG = [
   "passo_minutos",
   "dias_maximos_agendamento",
   "dias_lembrete_pos_procedimento",
+  "max_agendamentos_futuros_cliente",
 ] as const;
 
 export const DESCRICAO_CONFIG: Record<(typeof CHAVES_CONFIG)[number], { rotulo: string; dica: string; padrao: number }> = {
@@ -139,6 +141,11 @@ export const DESCRICAO_CONFIG: Record<(typeof CHAVES_CONFIG)[number], { rotulo: 
     rotulo: "Lembrete de manutenção (dias depois do atendimento)",
     dica: "Mensagem automática convidando a voltar.",
     padrao: 28,
+  },
+  max_agendamentos_futuros_cliente: {
+    rotulo: "Agendamentos futuros por cliente (pelo app)",
+    dica: "Freio contra quem tenta lotar a agenda. O studio pode encaixar mais pelo painel.",
+    padrao: 3,
   },
 };
 

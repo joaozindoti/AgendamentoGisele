@@ -2,10 +2,12 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from "@/lib/supabase/config";
 
-const AREAS_LOGADAS = ["/cliente", "/painel"];
+// Só o painel exige login. A área da cliente (/cliente) é aberta: ela
+// agenda sem login, com sessão anônima criada no primeiro cadastro.
+const AREAS_LOGADAS = ["/painel"];
 
 // Renova o token de sessão a cada navegação (Server Components não podem
-// escrever cookie) e manda pro login quem entra em área logada sem sessão.
+// escrever cookie) e manda pro login quem entra no painel sem sessão.
 // Quem pode ver o quê dentro dessas áreas é decidido nos layouts e, de
 // verdade, pela RLS — isto aqui é só o portão de entrada.
 export async function proxy(request: NextRequest) {

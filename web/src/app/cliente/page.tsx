@@ -1,26 +1,29 @@
 import Link from "next/link";
 import { AcoesAgendamentoCliente } from "@/components/acoes-agendamento";
 import { CartaoServico } from "@/components/catalogo";
-import { BotaoInstalar } from "@/components/pwa";
 import { Caixa, Card, Eyebrow, LinkBotao } from "@/components/ui";
-import { exigirCliente } from "@/lib/auth";
+import { obterAreaCliente } from "@/lib/auth";
 import { SELECT_AGENDAMENTO_CLIENTE, lerConfigNumero, type AgendamentoComDetalhes } from "@/lib/consultas";
 import { agoraMs, dataLonga, hora, lerPeriodo, saudacao } from "@/lib/formato";
 import { WHATSAPP_STUDIO } from "@/lib/studio";
 import type { Servico } from "@/lib/tipos";
 
 export default async function InicioCliente({ searchParams }: PageProps<"/cliente">) {
-  const { supabase, clienteId } = await exigirCliente();
+  const { supabase, clienteId } = await obterAreaCliente();
   const { aviso } = await searchParams;
 
   const [{ data: cliente }, { data: agendamentos }, { data: destaques }, horasMinimas] = await Promise.all([
-    supabase.from("clientes").select("nome, consentimento, data_nascimento").eq("id", clienteId).single(),
-    supabase
-      .from("agendamentos")
-      .select(SELECT_AGENDAMENTO_CLIENTE)
-      .eq("cliente_id", clienteId)
-      .eq("status", "confirmado")
-      .order("periodo"),
+    clienteId
+      ? supabase.from("clientes").select("nome, consentimento, data_nascimento").eq("id", clienteId).single()
+      : Promise.resolve({ data: null }),
+    clienteId
+      ? supabase
+          .from("agendamentos")
+          .select(SELECT_AGENDAMENTO_CLIENTE)
+          .eq("cliente_id", clienteId)
+          .eq("status", "confirmado")
+          .order("periodo")
+      : Promise.resolve({ data: [] }),
     supabase
       .from("servicos")
       .select("id, nome, descricao, foto_url, preco, duracao_min, ativo, categoria, destaque")
@@ -36,7 +39,7 @@ export default async function InicioCliente({ searchParams }: PageProps<"/client
     .find((a) => a.inicio.getTime() > agora);
 
   const primeiroNome = cliente?.nome && cliente.nome !== "Cliente" ? cliente.nome.split(" ")[0] : null;
-  const perfilIncompleto = !cliente || cliente.nome === "Cliente" || !cliente.data_nascimento;
+  const perfilIncompleto = Boolean(clienteId) && (!cliente || cliente.nome === "Cliente" || !cliente.data_nascimento);
   const podeAlterar = proximo ? proximo.inicio.getTime() - agora > horasMinimas * 3600_000 : false;
 
   const avisos: Record<string, string> = {
@@ -58,7 +61,9 @@ export default async function InicioCliente({ searchParams }: PageProps<"/client
             "!"
           )}
         </h1>
-        <p className="mt-1 text-[15px] text-ink-muted">Que bom ter você de volta ao seu momento de cuidado.</p>
+        <p className="mt-1 text-[15px] text-ink-muted">
+          {clienteId ? "Que bom ter você de volta ao seu momento de cuidado." : "Escolha seu cuidado e reserve em poucos toques, sem senha e sem código."}
+        </p>
       </header>
 
       {typeof aviso === "string" && avisos[aviso] && <Caixa tipo="ok">{avisos[aviso]}</Caixa>}
@@ -114,7 +119,6 @@ export default async function InicioCliente({ searchParams }: PageProps<"/client
         </section>
       )}
 
-      <BotaoInstalar nomeApp="o app do Studio" />
     </div>
   );
 }

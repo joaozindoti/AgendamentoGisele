@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { CadastroCliente } from "@/components/cadastro-cliente";
 import { FiltroCategorias } from "@/components/catalogo";
 import { SeletorHorario } from "@/components/seletor-horario";
 import { AreaTexto, Botao, Caixa, Card, Eyebrow, Selo, Vazio } from "@/components/ui";
@@ -11,17 +12,20 @@ import { dataLonga, duracao, hora, preco } from "@/lib/formato";
 import { criarClienteNavegador } from "@/lib/supabase/client";
 import type { ProfissionalDoServico, Servico } from "@/lib/tipos";
 
-type Etapa = 1 | 2 | 3 | 4;
+// 5 = cadastro, só na primeira vez (cliente sem cadastro nesta sessão)
+type Etapa = 1 | 2 | 3 | 4 | 5;
 const ROTULOS = ["Serviço", "Profissional", "Horário"];
 
 export function FluxoAgendar({
   servicos,
   servicoInicial,
   diasMaximos,
+  cadastrada,
 }: {
   servicos: Servico[];
   servicoInicial: string | null;
   diasMaximos: number;
+  cadastrada: boolean;
 }) {
   const router = useRouter();
   const inicial = servicos.find((s) => s.id === servicoInicial) ?? null;
@@ -36,6 +40,8 @@ export function FluxoAgendar({
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [versaoAgenda, setVersaoAgenda] = useState(0);
+  // vira true logo depois do cadastro, sem esperar o servidor recarregar a página
+  const [cadastroFeito, setCadastroFeito] = useState(cadastrada);
 
   useEffect(() => {
     if (!servico) return;
@@ -65,6 +71,16 @@ export function FluxoAgendar({
 
   async function confirmar() {
     if (!servico || !profissional || !inicio) return;
+    if (!cadastroFeito) {
+      setErro(null);
+      setEtapa(5);
+      return;
+    }
+    await agendar();
+  }
+
+  async function agendar() {
+    if (!servico || !profissional || !inicio) return;
     setEnviando(true);
     setErro(null);
     const { error } = await criarClienteNavegador().rpc("agendar", {
@@ -81,6 +97,8 @@ export function FluxoAgendar({
         setInicio(null);
         setVersaoAgenda((v) => v + 1);
         setEtapa(3);
+      } else if (etapa === 5) {
+        setEtapa(4);
       }
       return;
     }
@@ -287,6 +305,25 @@ export function FluxoAgendar({
           <Botao largo variante="fantasma" className="mt-2" onClick={() => setEtapa(3)} disabled={enviando}>
             Trocar horário
           </Botao>
+        </Card>
+      )}
+
+      {etapa === 5 && servico && profissional && inicio && (
+        <Card className="p-5">
+          <Eyebrow>Falta pouco</Eyebrow>
+          <p className="mt-2 text-[18px] leading-snug font-semibold">
+            {servico.nome} · {dataLonga(new Date(inicio))} às {hora(new Date(inicio))}
+          </p>
+          <p className="mt-1 mb-4 text-[14px] text-ink-muted">
+            Só na primeira vez: seus dados pra gente confirmar o horário no seu WhatsApp. Não tem senha nem código.
+          </p>
+          <CadastroCliente
+            textoBotao="Confirmar agendamento"
+            aoConcluir={async () => {
+              setCadastroFeito(true);
+              await agendar();
+            }}
+          />
         </Card>
       )}
     </div>

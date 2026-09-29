@@ -122,8 +122,9 @@ Repita para cada uma das 8 funções abaixo:
 | `enviar-lembretes` | `supabase/colar/functions/enviar-lembretes.ts` | **desligar** |
 | `enviar-aniversarios` | `supabase/colar/functions/enviar-aniversarios.ts` | **desligar** |
 | `lembrete-28-dias` | `supabase/colar/functions/lembrete-28-dias.ts` | **desligar** |
+| `enviar-protocolos` | `supabase/colar/functions/enviar-protocolos.ts` | **desligar** (passo 8c) |
 
-**[SÓ NO DASHBOARD] Desligar a verificação de JWT nas 6 marcadas.** Estas
+**[SÓ NO DASHBOARD] Desligar a verificação de JWT nas marcadas com "desligar".** Estas
 funções são chamadas pelo próprio Supabase (login, banco e agendador), não por
 uma pessoa logada. Cada uma tem a própria senha no código, então o bloqueio
 por JWT precisa estar desligado. Para cada uma das 6: **Edge Functions** →
@@ -141,8 +142,8 @@ param de sair, ou o código de login não chega.
 No Supabase, menu **Authentication**:
 
 1. **Sign In / Providers → Phone**: ligar.
-   - "Enable phone signup": **ligado** (o primeiro login de cada cliente é um
-     cadastro).
+   - "Enable phone signup": **ligado** (o primeiro login de cada
+     profissional é um cadastro; a cliente não usa login, ver passo 8c).
    - Se pedir um provedor de SMS (Twilio etc.), deixe qualquer um sem
      preencher: quem manda o código é o WhatsApp, pelo passo 5.
    - Validade do código (OTP expiry): **300** segundos. A tela de login
@@ -165,8 +166,9 @@ No Supabase, menu **Authentication**:
 5. Volte em **Edge Functions → Secrets** e adicione:
    `SEND_SMS_HOOK_SECRET` = o valor copiado.
 
-A partir daqui o login já funciona: pedir código em qualquer celular faz a
-mensagem chegar no WhatsApp.
+A partir daqui o login da equipe já funciona: pedir código com o celular da
+Gisele faz a mensagem chegar no WhatsApp. (Cliente não usa código: ver passo
+8c.)
 
 ## Passo 6 — Código no GitHub
 
@@ -276,6 +278,38 @@ O faturamento soma só os atendimentos marcados como **atendido**, pelo preço
 do serviço (ou pelo preço próprio da profissional, se ela tiver um). Serviço
 sem preço conta como R$ 0 e a tela avisa quantos são.
 
+## Passo 8c — Cliente sem login e protocolo pós-atendimento
+
+A partir daqui a cliente **não usa mais código de WhatsApp**: abre o app,
+escolhe o horário e, só no primeiro agendamento, informa nome, WhatsApp,
+nascimento e (se quiser) uma foto. Gisele e profissionais continuam entrando
+por celular + código em `/entrar`, que agora é a "Área da equipe".
+
+1. **SQL Editor** → colar e rodar `supabase/colar/09-cliente-sem-login-e-protocolo.sql`.
+   Esse arquivo tem o `CRON_SECRET` dentro (do agendamento do protocolo).
+   Pode colar de novo sem problema.
+2. **[SÓ NO DASHBOARD]** **Authentication → Sign In / Providers** → ligar
+   **"Allow anonymous sign-ins"** → Save. Sem isso, o cadastro da cliente
+   mostra "Não conseguimos iniciar seu cadastro agora".
+3. **[SÓ NO DASHBOARD]** **Authentication → Rate Limits** → conferir
+   **"Anonymous sign-ins"**: o padrão é 30 por hora por IP. Cada cliente
+   gasta um só no primeiro cadastro em cada aparelho, então 30 sobra.
+4. **Edge Functions → Deploy a new function → Via Editor**, nome
+   `enviar-protocolos`, colar `supabase/colar/functions/enviar-protocolos.ts`,
+   **Deploy**. Depois, em **Details**, **desligar** a verificação de JWT (igual
+   às outras 6 do passo 3).
+5. Conferir no SQL Editor:
+
+   ```sql
+   select (select count(*) from cron.job) as jobs,
+          (select count(*) from pg_proc where proname = 'cadastrar_cliente') as cadastro;
+   ```
+
+   Tem que dar `4 | 1`.
+
+Cada profissional escreve os protocolos em **Mais → Protocolos
+pós-atendimento** (só dos serviços que ela atende). Em branco = não envia.
+
 ## Passo 9 — Primeiro acesso da Gisele e montagem da equipe
 
 1. No celular da Gisele, abrir `<endereço do passo 7>/entrar`, digitar o
@@ -296,8 +330,19 @@ sem preço conta como R$ 0 e a tela avisa quantos são.
 Não desligue nada do sistema antigo antes de marcar a lista toda. O n8n fica
 de reserva até o novo estar comprovado (seção 13).
 
-- [ ] Login de cliente nova com um celular de teste: o código chega no
-      WhatsApp, ela entra e cai na área da cliente.
+- [ ] Cliente nova, sem login: abrir `<endereço>/cliente/agendar` numa aba
+      anônima, escolher serviço e horário, preencher o cadastro, conferir o
+      número na tela de confirmação. O agendamento é feito e a confirmação
+      chega no WhatsApp. Nenhum código é pedido.
+- [ ] Fechar e reabrir o navegador: continua cadastrada (não pede os dados
+      de novo). Em outro navegador, cadastrar com o **mesmo** número: o
+      cadastro e os agendamentos vão pro aparelho novo, e o primeiro perde
+      o acesso.
+- [ ] Foto no cadastro: aparece na agenda do painel, ao lado do nome.
+- [ ] Protocolo: escrever um em **Mais → Protocolos**, marcar pelo painel um
+      atendimento de 10 minutos que já terminou há uns 15, e esperar até 5
+      minutos: o texto chega no WhatsApp da cliente uma vez só.
+- [ ] `/entrar` com um celular que não é da equipe: não mostra o painel.
 - [ ] Agendar pelo app → a confirmação chega pra cliente **e** pra
       profissional.
 - [ ] Remarcar pelo app → chega "Horário remarcado" pras duas.
@@ -326,7 +371,9 @@ de reserva até o novo estar comprovado (seção 13).
       `<endereço>/painel/faturamento` volta pra agenda.
 - [ ] Instalar o app da cliente no celular, abrir o próximo agendamento,
       ligar o modo avião e reabrir: o agendamento continua aparecendo.
-- [ ] "Sair" e reabrir sem internet: não mostra mais os dados da cliente.
+- [ ] Painel: "Sair" e reabrir sem internet não mostra mais os dados.
+      (A cliente não tem botão Sair: a sessão dela é o próprio cadastro no
+      aparelho.)
 
 ## Passo 11 — Virada (quando a lista acima estiver toda marcada)
 
@@ -433,6 +480,47 @@ escrever o app e confirmados nos testes automáticos):
 
 ---
 
+## Riscos da cliente sem login (revisar antes do passo 8c)
+
+Decisão de 29/09/2026: zero fricção pra cliente, número de WhatsApp sem
+verificação. O que isso abre, e o que já está coberto:
+
+- **Quem digita o número de outra pessoa assume o cadastro dela.** A pessoa
+  passa a ver nome, nascimento, endereço (se veio da planilha) e os
+  agendamentos da dona do número, e pode remarcar ou cancelar. Isso é
+  consequência direta de "trocar de aparelho não pede código", e o iPhone
+  torna esse caso comum: o app instalado não compartilha dados com o Safari
+  nem com o navegador de dentro do WhatsApp. Coberto em parte: cancelamento
+  e remarcação avisam a dona do número pelo WhatsApp; no máximo 3 trocas de
+  aparelho por número a cada 24h; cada troca fica registrada em
+  `clientes_trocas_aparelho` (só a Gisele lê); quem assume não sobrescreve
+  nome e nascimento. **Não coberto:** aviso no WhatsApp da dona do número
+  quando o cadastro muda de aparelho. É o próximo passo recomendado.
+- **Qualquer pessoa vira "cliente" sem provar nada.** Coberto: teto de 3
+  agendamentos futuros por cliente pelo app (Mais → Configurações), limite
+  de sessões anônimas por IP (passo 8c.3), e todas as regras de RLS de
+  cliente continuam valendo (testado). Não coberto: alguém com muitos
+  números/IPs ainda consegue ocupar horários. Se acontecer, ligar CAPTCHA
+  (Authentication → Attack Protection, Cloudflare Turnstile), que exige um
+  ajuste pequeno no app.
+- **O WhatsApp do studio manda confirmação pra número digitado por
+  qualquer um.** Um número digitado errado recebe a confirmação e os
+  lembretes de outra pessoa (por isso a tela de conferência do número). Uso
+  malicioso em volume pode fazer o WhatsApp restringir o número do studio.
+  O teto por cliente e o limite por IP reduzem isso.
+- **O login por código continua aberto a qualquer celular** (a
+  configuração "Enable phone signup" precisa ficar ligada pra profissional
+  nova conseguir entrar). Qualquer pessoa pode pedir código em `/entrar` e
+  fazer o studio mandar WhatsApp pra um número; o limite de SMS por hora
+  (passo 4) segura. O hook `enviar-otp-whatsapp` não foi alterado. Se quiser
+  fechar de vez, dá pra fazer o hook só enviar pra telefones cadastrados em
+  Equipe.
+- **Foto da cliente:** só na pasta dela no bucket, no máximo 3 arquivos,
+  URL gravada só se for dessa pasta, e o `validar-foto` confere o conteúdo
+  como nas outras fotos.
+
+---
+
 ## Apêndice — só pra quem for mexer no código
 
 Nada disto é necessário pra colocar o sistema no ar.
@@ -444,7 +532,7 @@ Nada disto é necessário pra colocar o sistema no ar.
   a pasta `_shared`. Ao mudar qualquer original, rode o gerador de novo e cole
   o arquivo novo. Os secrets ficam em `supabase/colar/.segredos.json` e são
   reaproveitados.
-- **Testes do banco** (85 testes num Postgres local, sem Docker: RLS papel
+- **Testes do banco** (120 testes num Postgres local, sem Docker: RLS papel
   por papel, motor de agendamento, os próprios arquivos de `supabase/colar/`
   incluindo o importador da planilha, e o cenário de colar de novo um arquivo
   que parou no meio):
@@ -454,8 +542,8 @@ Nada disto é necessário pra colocar o sistema no ar.
 - **Se um dia usar a CLI do Supabase:** as migrations aplicadas pelo SQL
   Editor não ficam registradas no histórico da CLI. Antes do primeiro
   `supabase db push`, rode `supabase migration repair --status applied`
-  para as quatro (`20260925153806`, `20260925160000`, `20260925170000`,
-  `20260929120000`); senão
+  para as cinco (`20260925153806`, `20260925160000`, `20260925170000`,
+  `20260929120000`, `20260929150000`); senão
   a CLI tenta aplicar de novo. O `config.toml` já descreve a verificação de
   JWT de cada função e o hook de SMS.
 - **Importar a planilha por terminal** (alternativa ao passo 8):

@@ -1,11 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
 import { IconeCalendario, IconeHistorico, IconeInicio, IconePerfil } from "@/components/icones";
+import { AvisoInstalar } from "@/components/pwa";
 import { TabBar } from "@/components/tabbar";
-import { exigirCliente } from "@/lib/auth";
+import { obterAreaCliente } from "@/lib/auth";
 
 export default async function LayoutCliente({ children }: { children: React.ReactNode }) {
-  await exigirCliente();
+  // aberta pra quem ainda não se cadastrou; só redireciona profissional pro painel
+  await obterAreaCliente();
 
   return (
     <div className="pb-tabbar">
@@ -17,7 +19,10 @@ export default async function LayoutCliente({ children }: { children: React.Reac
           <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-gold-ink">Lindeza Premium</p>
         </div>
       </header>
-      <main className="mx-auto max-w-xl px-4 pt-5">{children}</main>
+      <main className="mx-auto max-w-xl px-4 pt-5">
+        <AvisoInstalar />
+        {children}
+      </main>
       <TabBar
         itens={[
           { href: "/cliente", rotulo: "Início", icone: <IconeInicio />, exato: true },

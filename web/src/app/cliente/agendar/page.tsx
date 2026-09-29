@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { exigirCliente } from "@/lib/auth";
+import { obterAreaCliente } from "@/lib/auth";
 import { lerConfigNumero } from "@/lib/consultas";
 import type { Servico } from "@/lib/tipos";
 import { FluxoAgendar } from "./fluxo";
@@ -7,7 +7,7 @@ import { FluxoAgendar } from "./fluxo";
 export const metadata: Metadata = { title: "Agendar" };
 
 export default async function PaginaAgendar({ searchParams }: PageProps<"/cliente/agendar">) {
-  const { supabase } = await exigirCliente();
+  const { supabase, clienteId } = await obterAreaCliente();
   const { servico } = await searchParams;
 
   const [{ data: servicos }, diasMaximos] = await Promise.all([
@@ -25,6 +25,7 @@ export default async function PaginaAgendar({ searchParams }: PageProps<"/client
       servicos={(servicos ?? []) as Servico[]}
       servicoInicial={typeof servico === "string" ? servico : null}
       diasMaximos={diasMaximos}
+      cadastrada={Boolean(clienteId)}
     />
   );
 }

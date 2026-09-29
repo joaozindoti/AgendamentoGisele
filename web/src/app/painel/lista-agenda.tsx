@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { PontoStatus, Vazio } from "@/components/ui";
@@ -11,6 +12,7 @@ export interface ItemAgenda {
   fim: string;
   status: StatusAgendamento;
   cliente: string;
+  clienteFoto: string | null;
   servico: string;
   profissional: string;
   canal: string;
@@ -66,6 +68,14 @@ export function ListaAgenda({
                 <span className="w-12 shrink-0 text-[14px] font-semibold tabular-nums">
                   {a.hora}
                   <span className="block text-[11px] font-normal text-ink-muted">{a.fim}</span>
+                </span>
+                {/* foto (opcional) que a cliente mandou no cadastro: ajuda a reconhecer quem chegou */}
+                <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-base">
+                  {a.clienteFoto ? (
+                    <Image src={a.clienteFoto} alt="" fill sizes="40px" className="object-cover" />
+                  ) : (
+                    <span className="flex h-full items-center justify-center text-[15px] font-semibold text-accent">{a.cliente.charAt(0)}</span>
+                  )}
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-[15px] font-medium">{a.cliente}</span>
