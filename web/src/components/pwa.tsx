@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { Botao } from "./ui";
 
@@ -31,7 +32,57 @@ const nadaAssinar = () => () => {};
 const lerStandalone = () =>
   window.matchMedia("(display-mode: standalone)").matches ||
   (navigator as Navigator & { standalone?: boolean }).standalone === true;
-const lerIos = () => /iphone|ipad|ipod/i.test(navigator.userAgent);
+const lerIos = () =>
+  /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+  (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1); // iPad com iPadOS se apresenta como Mac
+
+/** Plataforma pra escolher as instruções de instalação. */
+export function usePlataforma() {
+  const standalone = useSyncExternalStore(nadaAssinar, lerStandalone, () => true);
+  const ios = useSyncExternalStore(nadaAssinar, lerIos, () => false);
+  const android = useSyncExternalStore(nadaAssinar, () => /android/i.test(navigator.userAgent), () => false);
+  return { standalone, ios, android };
+}
+
+const CHAVE_AVISO = "aviso-instalar-fechado";
+const lerAvisoFechado = () => {
+  try {
+    return localStorage.getItem(CHAVE_AVISO) === "1";
+  } catch {
+    return false;
+  }
+};
+
+// Faixa discreta no topo da área da cliente pra quem abriu o link pelo
+// navegador e ainda não instalou. Some dentro do app instalado e quando a
+// cliente fecha (lembrado só neste aparelho).
+export function AvisoInstalar() {
+  const { standalone } = usePlataforma();
+  const fechadoAntes = useSyncExternalStore(nadaAssinar, lerAvisoFechado, () => true);
+  const [fechado, setFechado] = useState(false);
+  if (standalone || fechadoAntes || fechado) return null;
+
+  return (
+    <div className="mb-4 flex items-center gap-3 rounded-card border border-gold-soft bg-surface px-4 py-2.5 text-[14px]">
+      <Link href="/instalar" className="flex-1 text-ink">
+        Instale o app do Studio na tela inicial. <span className="text-accent">Como instalar →</span>
+      </Link>
+      <button
+        type="button"
+        aria-label="Fechar aviso"
+        className="px-1 text-[18px] leading-none text-ink-muted"
+        onClick={() => {
+          setFechado(true);
+          try {
+            localStorage.setItem(CHAVE_AVISO, "1");
+          } catch {}
+        }}
+      >
+        ×
+      </button>
+    </div>
+  );
+}
 
 export function BotaoInstalar({ nomeApp = "o app" }: { nomeApp?: string }) {
   const [evento, setEvento] = useState<EventoInstalacao | null>(null);

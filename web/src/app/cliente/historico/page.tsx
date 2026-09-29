@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { PontoStatus, Titulo, Vazio } from "@/components/ui";
-import { exigirCliente } from "@/lib/auth";
+import { obterAreaCliente } from "@/lib/auth";
 import { SELECT_AGENDAMENTO_CLIENTE, type AgendamentoComDetalhes } from "@/lib/consultas";
 import { agoraMs, dataCompleta, hora, lerPeriodo } from "@/lib/formato";
 import { ROTULO_STATUS } from "@/lib/tipos";
@@ -8,13 +8,15 @@ import { ROTULO_STATUS } from "@/lib/tipos";
 export const metadata: Metadata = { title: "Histórico" };
 
 export default async function Historico() {
-  const { supabase, clienteId } = await exigirCliente();
-  const { data } = await supabase
-    .from("agendamentos")
-    .select(SELECT_AGENDAMENTO_CLIENTE)
-    .eq("cliente_id", clienteId)
-    .order("periodo", { ascending: false })
-    .limit(100);
+  const { supabase, clienteId } = await obterAreaCliente();
+  const { data } = clienteId
+    ? await supabase
+        .from("agendamentos")
+        .select(SELECT_AGENDAMENTO_CLIENTE)
+        .eq("cliente_id", clienteId)
+        .order("periodo", { ascending: false })
+        .limit(100)
+    : { data: [] };
 
   const lista = ((data ?? []) as unknown as AgendamentoComDetalhes[]).map((a) => ({ ...a, ...lerPeriodo(a.periodo) }));
   const agora = agoraMs();

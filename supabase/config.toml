@@ -174,7 +174,9 @@ refresh_token_reuse_interval = 10
 # Allow/disallow new user signups to your project.
 enable_signup = true
 # Allow/disallow anonymous sign-ins to your project.
-enable_anonymous_sign_ins = false
+# Cliente entra sem login: o app cria uma sessão anônima no primeiro cadastro
+# (migration 20260929150000). Gisele e equipe continuam por telefone + código.
+enable_anonymous_sign_ins = true
 # Allow/disallow testing manual linking of accounts
 enable_manual_linking = false
 # Passwords shorter than this value will be rejected as weak. Minimum 6, recommended 8 or more.
@@ -254,8 +256,9 @@ otp_expiry = 3600
 # content_path = "./supabase/templates/password_changed_notification.html"
 
 [auth.sms]
-# Login do app é por telefone + OTP (seção 4): o primeiro login de cada
-# cliente é um signup por telefone. Com false, ninguém novo conseguiria entrar.
+# Login do painel é por telefone + OTP (seção 4): o primeiro login de cada
+# profissional é um signup por telefone. Com false, profissional nova não
+# conseguiria entrar. (Cliente não usa mais: entra por sessão anônima.)
 enable_signup = true
 # If enabled, users need to confirm their phone number before signing in.
 enable_confirmations = false
@@ -466,6 +469,10 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.lembrete-28-dias]
+verify_jwt = false
+
+# enviar-protocolos também só é chamada pelo pg_cron (migration 20260929150000)
+[functions.enviar-protocolos]
 verify_jwt = false
 # Directory under `supabase/` where declarative files are written.
 # declarative_schema_path = "./schemas"

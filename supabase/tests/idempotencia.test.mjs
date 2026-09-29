@@ -15,7 +15,7 @@ import { fileURLToPath } from "node:url";
 import { criarBancoVazio } from "./ambiente.mjs";
 
 const COLAR = join(dirname(fileURLToPath(import.meta.url)), "..", "colar");
-const ARQUIVOS = ["01-schema-inicial.sql", "02-lembretes-e-notificacoes.sql", "03-motor-agendamento-e-painel.sql", "04-seed-producao.sql"];
+const ARQUIVOS = ["01-schema-inicial.sql", "02-lembretes-e-notificacoes.sql", "03-motor-agendamento-e-painel.sql", "04-seed-producao.sql", "08-faturamento-periodo.sql", "09-cliente-sem-login-e-protocolo.sql", "10-aviso-troca-aparelho-e-28-dias.sql"];
 const existe = ARQUIVOS.every((f) => existsSync(join(COLAR, f)));
 const ler = (f) => readFileSync(join(COLAR, f), "utf8").replace(/create extension if not exists pg_(cron|net)[^;]*;/g, "");
 
@@ -93,10 +93,10 @@ describe("arquivos de supabase/colar podem ser colados de novo depois de parar n
     assert.equal(limpo.profissionais, 1);
     assert.equal(limpo.vinculos, 9);
     assert.equal(limpo.janelas, 11);
-    assert.equal(limpo.jobs, 3);
+    assert.equal(limpo.jobs, 4); // lembretes, aniversários, 28 dias, protocolo
     assert.equal(limpo.buckets, 1);
-    assert.equal(limpo.policies, 32); // todas as "create policy" da migration 01
-    assert.equal(limpo.triggers, 10);
+    assert.equal(limpo.policies, 35); // 32 da migration 01 + 3 da de cliente sem login
+    assert.equal(limpo.triggers, 12);
   });
 
   for (const [indice, arquivo] of ARQUIVOS.entries()) {
@@ -122,7 +122,7 @@ describe("arquivos de supabase/colar podem ser colados de novo depois de parar n
     }
   }
 
-  test("os 4 arquivos colados duas vezes seguidas, inteiros, não duplicam nada", async () => {
+  test("todos os arquivos colados duas vezes seguidas, inteiros, não duplicam nada", async () => {
     const db = await criarBancoVazio();
     for (const f of ARQUIVOS) await db.exec(ler(f));
     for (const f of ARQUIVOS) await db.exec(ler(f));

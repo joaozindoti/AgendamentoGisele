@@ -131,6 +131,13 @@ export async function criarLogin(db, telefoneE164) {
   return id;
 }
 
+/** Primeira abertura do app da cliente: supabase.auth.signInAnonymously() cria um auth.users sem telefone. */
+export async function criarLoginAnonimo(db) {
+  const id = crypto.randomUUID();
+  await db.query(`insert into auth.users (id) values ($1)`, [id]);
+  return id;
+}
+
 /** Próxima data (YYYY-MM-DD, fuso do studio) com o dia da semana pedido, a pelo menos `minDias` de hoje. */
 export function proximoDia(diaSemana, minDias = 3) {
   const fmt = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Fortaleza", year: "numeric", month: "2-digit", day: "2-digit" });

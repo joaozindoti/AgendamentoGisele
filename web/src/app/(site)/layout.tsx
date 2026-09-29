@@ -14,8 +14,8 @@ export default function LayoutSite({ children }: { children: React.ReactNode }) 
             <Link href="/servicos" className="hidden text-[14px] text-ink-muted hover:text-accent sm:inline">
               Serviços
             </Link>
-            <LinkBotao href="/entrar" variante="secundario" className="min-h-9 px-4 text-[14px]">
-              Entrar
+            <LinkBotao href="/cliente/agendar" variante="secundario" className="min-h-9 px-4 text-[14px]">
+              Agendar
             </LinkBotao>
           </div>
         </div>
@@ -28,6 +28,15 @@ export default function LayoutSite({ children }: { children: React.ReactNode }) 
           <Link href="/pre-cadastro" className="mt-4 inline-block text-[14px] text-accent underline-offset-4 hover:underline">
             Cadastre-se uma vez e receba descontos especiais direto no seu WhatsApp
           </Link>
+          <p className="mt-4 text-[13px]">
+            <Link href="/instalar" className="text-accent underline-offset-4 hover:underline">
+              Instalar o app no celular
+            </Link>
+            <span className="mx-2 text-ink-muted">·</span>
+            <Link href="/entrar" className="text-ink-muted underline-offset-4 hover:underline">
+              Área da equipe
+            </Link>
+          </p>
           <p className="mt-6 text-[12px] text-ink-muted">© {new Date().getFullYear()} Studio Gisele Lima. Todos os direitos reservados.</p>
         </div>
       </footer>

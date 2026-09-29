@@ -293,6 +293,9 @@ export async function salvarConfiguracoes(_: Estado, dados: FormData): Promise<E
     const n = Number(texto(dados, chave));
     if (!Number.isInteger(n) || n < 0 || n > 365) return { erro: "Use números inteiros entre 0 e 365." };
     if (chave === "passo_minutos" && (n < 5 || n > 120)) return { erro: "A grade precisa ficar entre 5 e 120 minutos." };
+    if (chave === "max_agendamentos_futuros_cliente" && (n < 1 || n > 20)) {
+      return { erro: "Agendamentos futuros por cliente: entre 1 e 20." };
+    }
     linhas.push({ chave, valor: n });
   }
   const { error } = await supabase.from("configuracoes").upsert(linhas, { onConflict: "chave" });
@@ -313,5 +316,18 @@ export async function salvarMeuPerfil(_: Estado, dados: FormData): Promise<Estad
     .eq("id", profissionalId);
   if (error) return { erro: mensagemDeErro(error) };
   revalidatePath("/painel", "layout");
+  return { ok: true };
+}
+
+// ---------- protocolo pós-atendimento (cada profissional, os próprios serviços) ----------
+
+export async function salvarProtocolo(servicoId: string, _: Estado, dados: FormData): Promise<Estado> {
+  const { supabase } = await exigirProfissional();
+  const { error } = await supabase.rpc("salvar_protocolo", {
+    p_servico_id: servicoId,
+    p_protocolo: String(dados.get("protocolo") ?? ""),
+  });
+  if (error) return { erro: mensagemDeErro(error) };
+  revalidatePath("/painel/protocolos");
   return { ok: true };
 }

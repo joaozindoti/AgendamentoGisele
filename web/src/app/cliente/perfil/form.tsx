@@ -1,6 +1,8 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useActionState } from "react";
+import { CadastroCliente } from "@/components/cadastro-cliente";
 import { Botao, Caixa, Campo } from "@/components/ui";
 import { chaveDia } from "@/lib/formato";
 import { TEXTO_CONSENTIMENTO, type Cliente } from "@/lib/tipos";
@@ -50,4 +52,9 @@ export function FormPerfil({
       </Botao>
     </form>
   );
+}
+
+export function CadastroPerfil() {
+  const router = useRouter();
+  return <CadastroCliente textoBotao="Salvar cadastro" aoConcluir={() => router.refresh()} />;
 }

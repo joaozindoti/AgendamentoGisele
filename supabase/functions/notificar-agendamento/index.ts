@@ -1,4 +1,6 @@
-// Chamada pelo trigger on_agendamento_notificar (pg_net) em INSERT/UPDATE de agendamentos (seção 6).
+// Chamada pelo trigger on_agendamento_notificar (pg_net) em INSERT/UPDATE de agendamentos (seção 6),
+// e pelo trigger on_troca_aparelho_notificar em INSERT de clientes_trocas_aparelho
+// (migration 20260930120000): aviso de cadastro aberto em outro aparelho.
 // Manda aviso pra cliente e pra profissional responsável em três eventos:
 // agendamento criado, remarcado (horário mudou e continua confirmado) e
 // cancelado. Remarcação entrou junto com o app da cliente (seção 7), que
@@ -43,7 +45,7 @@ function formataDataHora(periodo: string): { data: string; hora: string } {
 
 async function logAuditoria(
   supabase: ReturnType<typeof criarClienteAdmin>,
-  agendamentoId: string,
+  agendamentoId: string | null,
   clienteId: string,
   tipo: string,
 ) {
@@ -67,6 +69,10 @@ Deno.serve(async (req) => {
     body = await req.json();
   } catch {
     return new Response(JSON.stringify({ error: "json_invalido" }), { status: 400 });
+  }
+
+  if ((body as { table?: string }).table === "clientes_trocas_aparelho") {
+    return await avisarTrocaDeAparelho(body.record as unknown as TrocaAparelho | undefined);
   }
 
   const { type, record, old_record } = body;
@@ -156,3 +162,43 @@ Deno.serve(async (req) => {
     status: 200,
   });
 });
+
+interface TrocaAparelho {
+  cliente_id: string;
+  user_id_anterior: string | null;
+}
+
+// Transparência pra dona do número: a cliente não verifica o WhatsApp no
+// cadastro (sessão anônima), então quem digitar o número dela assume o
+// cadastro. A mensagem vai pro número, não pra quem fez a troca. Sem
+// user_id_anterior = primeira vez que o cadastro (planilha, pré-cadastro,
+// painel) é aberto no app.
+async function avisarTrocaDeAparelho(troca: TrocaAparelho | undefined) {
+  if (!troca?.cliente_id) {
+    return new Response(JSON.stringify({ skipped: true, motivo: "sem record" }), { status: 200 });
+  }
+  const supabase = criarClienteAdmin();
+  const { data: cliente, error } = await supabase
+    .from("clientes")
+    .select("nome, whatsapp")
+    .eq("id", troca.cliente_id)
+    .single();
+  if (error || !cliente) {
+    return new Response(JSON.stringify({ error: "falha_ao_buscar_cliente", detail: error?.message }), { status: 500 });
+  }
+
+  const primeiroNome = cliente.nome.split(" ")[0];
+  const mensagem = troca.user_id_anterior
+    ? `Oi, ${primeiroNome}! Seu cadastro no app do Studio Gisele Lima foi acessado de um novo aparelho. ` +
+      `Se foi você, está tudo certo. Se não foi, fale com a Gisele por aqui.`
+    : `Oi, ${primeiroNome}! Seu cadastro no app do Studio Gisele Lima foi ativado em um aparelho. ` +
+      `Se foi você, está tudo certo. Se não foi, fale com a Gisele por aqui.`;
+
+  try {
+    await enviarWhatsApp(cliente.whatsapp, mensagem);
+    await logAuditoria(supabase, null, troca.cliente_id, "troca_aparelho");
+    return new Response(JSON.stringify({ ok: true }), { status: 200 });
+  } catch (e) {
+    return new Response(JSON.stringify({ ok: false, falha: String(e) }), { status: 200 });
+  }
+}

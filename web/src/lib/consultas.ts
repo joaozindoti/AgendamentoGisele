@@ -12,7 +12,7 @@ export const SELECT_AGENDAMENTO_CLIENTE =
   "id, periodo, status, canal, observacoes, servico_id, profissional_id, servico:servicos(nome, duracao_min), profissional:profissionais(nome, foto_url)";
 
 export const SELECT_AGENDAMENTO_PAINEL =
-  "id, periodo, status, canal, observacoes, cliente_id, servico_id, profissional_id, cliente:clientes(nome, whatsapp), servico:servicos(nome), profissional:profissionais(nome)";
+  "id, periodo, status, canal, observacoes, cliente_id, servico_id, profissional_id, cliente:clientes(nome, whatsapp, foto_url), servico:servicos(nome), profissional:profissionais(nome)";
 
 export interface AgendamentoComDetalhes {
   id: string;
@@ -25,5 +25,5 @@ export interface AgendamentoComDetalhes {
   cliente_id?: string;
   servico: { nome: string; duracao_min?: number } | null;
   profissional: { nome: string; foto_url?: string | null } | null;
-  cliente?: { nome: string; whatsapp: string } | null;
+  cliente?: { nome: string; whatsapp: string; foto_url?: string | null } | null;
 }

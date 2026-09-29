@@ -38,3 +38,14 @@ export async function salvarPerfil(_: EstadoForm, dados: FormData): Promise<Esta
   revalidatePath("/cliente", "layout");
   return { ok: true };
 }
+
+// Foto já subiu pro Storage direto do navegador (policy: só a pasta
+// clientes/{id} da própria cliente); aqui só grava a URL. O trigger
+// protege_campos_cliente recusa URL que não seja dessa pasta.
+export async function salvarFotoCliente(url: string): Promise<{ erro?: string }> {
+  const { supabase, clienteId } = await exigirCliente();
+  const { error } = await supabase.from("clientes").update({ foto_url: url }).eq("id", clienteId);
+  if (error) return { erro: mensagemDeErro(error) };
+  revalidatePath("/cliente", "layout");
+  return {};
+}
