@@ -16,7 +16,7 @@ const VARIANTES: Record<Variante, string> = {
 };
 
 const BASE_BOTAO =
-  "inline-flex items-center justify-center gap-2 rounded-pill px-5 min-h-11 text-[15px] font-medium transition-colors disabled:cursor-not-allowed";
+  "inline-flex items-center justify-center gap-2 rounded-pill px-5 min-h-11 font-display text-[15px] font-semibold transition-colors disabled:cursor-not-allowed";
 
 export function Botao({
   variante = "primario",
@@ -45,7 +45,7 @@ export function Card({ className = "", ...props }: ComponentProps<"div">) {
 }
 
 export function Eyebrow({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return <p className={`text-[12px] font-semibold uppercase tracking-[0.14em] text-gold-ink ${className}`}>{children}</p>;
+  return <p className={`font-display text-[12px] font-semibold uppercase tracking-[0.14em] text-gold-ink ${className}`}>{children}</p>;
 }
 
 export function Titulo({
@@ -70,7 +70,7 @@ export function Titulo({
 
 export function Selo({ children }: { children: ReactNode }) {
   return (
-    <span className="inline-block bg-gold-soft/40 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-gold-ink">
+    <span className="inline-block bg-gold-soft/40 px-2 py-0.5 font-display text-[11px] font-semibold uppercase tracking-wider text-gold-ink">
       {children}
     </span>
   );

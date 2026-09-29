@@ -1,6 +1,14 @@
 import type { Metadata, Viewport } from "next";
+import { Inter, Manrope } from "next/font/google";
 import { RegistraServiceWorker } from "@/components/pwa";
 import "./globals.css";
+
+// Fontes do design system (tokens em globals.css): Manrope nos títulos,
+// botões e selos (--font-display); Inter no corpo (--font-sans). next/font
+// hospeda os arquivos junto do app — nenhuma requisição ao Google no
+// navegador da cliente, e funciona offline no PWA.
+const manrope = Manrope({ subsets: ["latin"], variable: "--font-manrope", display: "swap" });
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 
 export const metadata: Metadata = {
   title: {
@@ -28,7 +36,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" className={`${manrope.variable} ${inter.variable}`}>
       <body className="min-h-dvh">
         {children}
         <RegistraServiceWorker />

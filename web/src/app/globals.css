@@ -20,7 +20,6 @@
   --color-ok: #3f7d4e; /* status "atendido" nas listas do painel */
   --color-alerta: #9a3b2f; /* erro de formulário */
 
-  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 
   /* Radius da seção 9, como nos mockups aprovados. Cada token vira uma
      classe do Tailwind: rounded-card (cards, painéis, listas), rounded-input
@@ -34,6 +33,15 @@
   --shadow-overlay: 3px 5px 30px 0px rgba(0, 0, 0, 0.22);
 }
 
+/* Fontes: as variáveis --font-manrope/--font-inter vêm do next/font no
+   <html> (app/layout.tsx). `inline` faz o Tailwind usar a referência em vez
+   de congelar o valor. Classes: font-sans (corpo, padrão) e font-display
+   (títulos, botões, selos). Trocar a fonte do app = trocar aqui e no layout. */
+@theme inline {
+  --font-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-display: var(--font-manrope), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
 html {
   background: var(--color-base);
   color: var(--color-ink);
@@ -45,6 +53,13 @@ body {
   color: var(--color-ink);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+}
+
+/* Todo título usa a fonte de destaque, sem precisar marcar tela por tela. */
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
 }
 
 /* Navbar fixa translúcida (seção 9). */

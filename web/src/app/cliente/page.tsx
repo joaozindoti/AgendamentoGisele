@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { AcoesAgendamentoCliente } from "@/components/acoes-agendamento";
 import { CartaoServico } from "@/components/catalogo";
-import { Caixa, Card, Eyebrow, LinkBotao } from "@/components/ui";
+import { EquipeStudio, HeroStudio, type ProfissionalHome } from "@/components/home-cliente";
+import { Caixa, Card, Eyebrow } from "@/components/ui";
 import { obterAreaCliente } from "@/lib/auth";
 import { SELECT_AGENDAMENTO_CLIENTE, lerConfigNumero, type AgendamentoComDetalhes } from "@/lib/consultas";
 import { agoraMs, dataLonga, hora, lerPeriodo, saudacao } from "@/lib/formato";
@@ -12,7 +13,7 @@ export default async function InicioCliente({ searchParams }: PageProps<"/client
   const { supabase, clienteId } = await obterAreaCliente();
   const { aviso } = await searchParams;
 
-  const [{ data: cliente }, { data: agendamentos }, { data: destaques }, horasMinimas] = await Promise.all([
+  const [{ data: cliente }, { data: agendamentos }, { data: destaques }, horasMinimas, { data: equipe }, { data: vinculos }] = await Promise.all([
     clienteId
       ? supabase.from("clientes").select("nome, consentimento, data_nascimento").eq("id", clienteId).single()
       : Promise.resolve({ data: null }),
@@ -31,7 +32,27 @@ export default async function InicioCliente({ searchParams }: PageProps<"/client
       .order("nome")
       .limit(3),
     lerConfigNumero(supabase, "horas_minimas_remarcacao", 2),
+    // leitura pública (sem telefone): mesma que a tela de escolher profissional usa
+    supabase.from("profissionais").select("id, nome, bio, foto_url, papel").eq("ativo", true).order("papel").order("nome"),
+    supabase.from("profissional_servicos").select("profissional_id, servico:servicos(categoria)"),
   ]);
+
+  const categoriasPorProfissional = new Map<string, Set<string>>();
+  for (const v of (vinculos ?? []) as unknown as { profissional_id: string; servico: { categoria: string | null } | null }[]) {
+    if (!v.servico?.categoria) continue;
+    const set = categoriasPorProfissional.get(v.profissional_id) ?? new Set<string>();
+    set.add(v.servico.categoria);
+    categoriasPorProfissional.set(v.profissional_id, set);
+  }
+  const profissionais: ProfissionalHome[] = (equipe ?? []).map((p) => ({
+    id: p.id,
+    papel: p.papel,
+    nome: p.nome,
+    bio: p.bio,
+    foto_url: p.foto_url,
+    categorias: [...(categoriasPorProfissional.get(p.id) ?? [])],
+  }));
+  const fotoGisele = (equipe ?? []).find((p) => p.papel === "owner")?.foto_url ?? null;
 
   const agora = agoraMs();
   const proximo = ((agendamentos ?? []) as unknown as AgendamentoComDetalhes[])
@@ -49,22 +70,18 @@ export default async function InicioCliente({ searchParams }: PageProps<"/client
 
   return (
     <div className="space-y-6">
-      <header>
-        <Eyebrow>Studio VIP</Eyebrow>
-        <h1 className="mt-1 text-[28px] leading-tight font-semibold tracking-tight">
-          {saudacao()}
-          {primeiroNome ? (
+      <HeroStudio
+        fotoGisele={fotoGisele}
+        saudacao={
+          primeiroNome ? (
             <>
-              , <em className="italic font-normal text-accent">{primeiroNome}</em>
+              {saudacao()}, <span className="text-gold-soft">{primeiroNome}</span>
             </>
           ) : (
-            "!"
-          )}
-        </h1>
-        <p className="mt-1 text-[15px] text-ink-muted">
-          {clienteId ? "Que bom ter você de volta ao seu momento de cuidado." : "Escolha seu cuidado e reserve em poucos toques, sem senha e sem código."}
-        </p>
-      </header>
+            `${saudacao()}!`
+          )
+        }
+      />
 
       {typeof aviso === "string" && avisos[aviso] && <Caixa tipo="ok">{avisos[aviso]}</Caixa>}
 
@@ -96,9 +113,7 @@ export default async function InicioCliente({ searchParams }: PageProps<"/client
         </Card>
       )}
 
-      <LinkBotao href="/cliente/agendar" largo>
-        Agendar novo horário
-      </LinkBotao>
+      <EquipeStudio profissionais={profissionais} />
 
       {destaques && destaques.length > 0 && (
         <section>

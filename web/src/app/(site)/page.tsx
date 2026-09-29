@@ -47,7 +47,7 @@ export default async function Home() {
           <p className="text-[12px] font-semibold uppercase tracking-[0.18em] text-gold-soft">Lindeza Premium</p>
           <h1 className="mt-2 text-[40px] leading-[1.05] font-semibold tracking-tight sm:text-[56px]">Studio Gisele Lima</h1>
           <p className="mt-3 text-[18px] text-white/90">
-            Seja uma <em className="italic">Lindeza Premium</em>.
+            Seja uma <em className="font-display font-semibold not-italic text-gold-soft">Lindeza Premium</em>.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <LinkBotao href="/cliente/agendar">Agendar agora</LinkBotao>
