@@ -312,19 +312,9 @@ pós-atendimento** (só dos serviços que ela atende). Em branco = não envia.
 
 ## Passo 8d — Lembrete de 28 dias só da Gisele
 
-1. **SQL Editor** → colar e rodar `supabase/colar/10-aviso-troca-aparelho-e-28-dias.sql`.
-2. Em seguida, colar e rodar `supabase/colar/11-remove-aviso-troca-aparelho.sql`.
-
-O 10 restringe o lembrete de manutenção de 28 dias aos atendimentos da
-Gisele e cria um aviso de "cadastro aberto em novo aparelho"; o 11 tira esse
-aviso (decisão de 30/09/2026: sem mensagem nessa situação). A troca de
-aparelho continua registrada, só não manda WhatsApp. Os dois podem ser
-colados de novo sem problema. Se o 10 já tinha sido colado antes, basta
-o 11.
-
-A `notificar-agendamento` **não precisa** ser publicada de novo. Se ela já
-tinha sido atualizada pelo passo 8d antigo, pode ficar como está: sem o
-trigger, a parte do aviso nunca é chamada.
+**SQL Editor** → colar e rodar `supabase/colar/10-lembrete-28-dias-so-gisele.sql`.
+Faz o lembrete de manutenção de 28 dias sair só pra atendimentos da Gisele.
+Não tem senha dentro e pode ser colado de novo sem problema.
 
 ## Passo 9 — Primeiro acesso da Gisele e montagem da equipe
 
@@ -558,9 +548,8 @@ Nada disto é necessário pra colocar o sistema no ar.
 - **Se um dia usar a CLI do Supabase:** as migrations aplicadas pelo SQL
   Editor não ficam registradas no histórico da CLI. Antes do primeiro
   `supabase db push`, rode `supabase migration repair --status applied`
-  para as sete (`20260925153806`, `20260925160000`, `20260925170000`,
-  `20260929120000`, `20260929150000`, `20260930120000`,
-  `20260930150000`); senão
+  para as seis (`20260925153806`, `20260925160000`, `20260925170000`,
+  `20260929120000`, `20260929150000`, `20260930120000`); senão
   a CLI tenta aplicar de novo. O `config.toml` já descreve a verificação de
   JWT de cada função e o hook de SMS.
 - **Importar a planilha por terminal** (alternativa ao passo 8):

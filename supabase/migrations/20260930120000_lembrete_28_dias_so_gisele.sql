@@ -1,25 +1,9 @@
--- 1. Aviso por WhatsApp quando o cadastro de um número vai pra outro
---    aparelho (linha nova em clientes_trocas_aparelho, migration
---    20260929150000). Mesmo mecanismo dos avisos de agendamento: pg_net
---    chama a Edge Function notificar-agendamento, que reconhece a tabela e
---    manda a mensagem pro número da cliente. Mesmo secret, nada novo pra
---    configurar.
--- 2. Lembrete de 28 dias volta a valer só pros atendimentos da Gisele
---    (profissional com papel owner).
+-- Lembrete de 28 dias volta a valer só pros atendimentos da Gisele
+-- (profissional com papel owner). Não há aviso de troca de aparelho por
+-- WhatsApp (decisão de 30/09/2026): a troca só fica registrada em
+-- clientes_trocas_aparelho.
 --
 -- Idempotente: pode rodar de novo sem erro.
-
--- ANTES DE RODAR ESTA MIGRATION: troque '<COLE_O_WEBHOOK_NOTIFICAR_SECRET_AQUI>'
--- abaixo pelo mesmo valor de WEBHOOK_NOTIFICAR_AGENDAMENTO_SECRET (o gerador
--- de supabase/colar/ já preenche).
-drop trigger if exists on_troca_aparelho_notificar on clientes_trocas_aparelho;
-create trigger on_troca_aparelho_notificar
-  after insert on clientes_trocas_aparelho
-  for each row
-  execute function public.dispara_webhook(
-    'https://pjbcgyzykvidbwdjlnvp.supabase.co/functions/v1/notificar-agendamento',
-    '<COLE_O_WEBHOOK_NOTIFICAR_SECRET_AQUI>'
-  );
 
 -- Mesma função da migration 20260925160000, com o filtro de owner.
 create or replace function public.concluidos_para_lembrete_pos_procedimento()
