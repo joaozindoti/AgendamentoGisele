@@ -432,6 +432,15 @@ describe("staff (profissional nova)", () => {
     await assert.rejects(s()(`select telefone from profissionais`), /permission denied/);
   });
 
+  test("não chama faturamento_periodo (nem cliente, nem anon)", async () => {
+    await assert.rejects(s()(`select * from faturamento_periodo(current_date - 365, current_date + 365)`), /apenas_owner/);
+    await assert.rejects(
+      como(db, "authenticated", clienteA)(`select * from faturamento_periodo(current_date, current_date)`),
+      /apenas_owner/,
+    );
+    await assert.rejects(anon(`select * from faturamento_periodo(current_date, current_date)`), /permission denied/);
+  });
+
   test("bloqueio tira o horário da grade", async () => {
     // longe do bloqueio de "daqui a 10–11 dias" do teste anterior
     const dia = proximoDia(2, 20);
@@ -491,6 +500,48 @@ describe("owner (Gisele)", () => {
     assert.ok(m.por_status.concluido >= 1);
     assert.ok(Number(m.receita_estimada) >= 40); // henna concluído com a staff
     assert.ok(Array.isArray(m.por_dia));
+  });
+
+  test("faturamento_periodo bate com a soma manual, por profissional e no total", async () => {
+    const c = g();
+    // semana isolada no passado: só os agendamentos deste teste caem nela
+    const dia = (d, hm) => new Date(`2020-01-${d}T${hm}:00-03:00`).toISOString();
+    const faixa = (d, hm, min) => `[${dia(d, hm)},${new Date(new Date(dia(d, hm)).getTime() + min * 60_000).toISOString()})`;
+    const [{ preco: precoDesign }] = await c(`select preco from servicos where id = $1`, [design]);
+    const [{ id: semPreco }] = await c(
+      `insert into servicos (nome, preco, duracao_min) values ('Teste sem preço', null, 30) returning id`,
+    );
+    // preço próprio da staff pra henna: tem que valer o override, não o do catálogo
+    await c(`update profissional_servicos set preco_override = 55 where profissional_id = $1 and servico_id = $2`, [idStaff, henna]);
+
+    const ag = (prof, serv, d, hm, status) =>
+      c(`insert into agendamentos (cliente_id, profissional_id, servico_id, periodo, status, canal) values ($1, $2, $3, $4, $5, 'painel')`, [
+        idClienteA, prof, serv, faixa(d, hm, 30), status,
+      ]);
+    await ag(idGisele, design, "07", "09:00", "concluido");
+    await ag(idGisele, design, "08", "09:00", "concluido");
+    await ag(idGisele, semPreco, "08", "10:00", "concluido"); // sem preço: entra como 0
+    await ag(idGisele, design, "09", "09:00", "cancelado"); // não conta
+    await ag(idGisele, design, "09", "10:00", "no_show"); // não conta
+    await ag(idStaff, henna, "07", "09:00", "concluido");
+    await ag(idStaff, henna, "20", "09:00", "concluido"); // fora do período
+
+    const linhas = await c(`select * from faturamento_periodo('2020-01-06', '2020-01-12')`);
+    const porProf = Object.fromEntries(linhas.map((l) => [l.profissional_id ?? "total", l]));
+
+    const esperadoGisele = 2 * Number(precoDesign);
+    const esperadoStaff = 55;
+    assert.equal(Number(porProf[idGisele].total), esperadoGisele);
+    assert.equal(Number(porProf[idGisele].atendimentos), 3);
+    assert.equal(Number(porProf[idGisele].sem_preco), 1);
+    assert.equal(Number(porProf[idStaff].total), esperadoStaff);
+    assert.equal(Number(porProf.total.total), esperadoGisele + esperadoStaff);
+    assert.equal(porProf.total.profissional_nome, "Total");
+    assert.equal(linhas.at(-1).profissional_id, null, "total geral é a última linha");
+    // profissional ativa sem atendimento aparece zerada, não some da lista
+    assert.ok(linhas.filter((l) => l.profissional_id && Number(l.total) === 0).length >= 1);
+
+    await c(`update profissional_servicos set preco_override = null where profissional_id = $1 and servico_id = $2`, [idStaff, henna]);
   });
 });
 
