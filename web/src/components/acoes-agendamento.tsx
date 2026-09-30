@@ -3,7 +3,6 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { mensagemDeErro } from "@/lib/erros";
-import { criarClienteNavegador } from "@/lib/supabase/client";
 import { linkWhatsApp } from "@/lib/telefone";
 import { Botao, Caixa, LinkBotao } from "./ui";
 
@@ -42,6 +41,9 @@ export function AcoesAgendamentoCliente({
   async function cancelar() {
     setCarregando(true);
     setErro(null);
+    // biblioteca do Supabase só carrega quando a cliente cancela: a home não
+    // precisa baixar esses ~68 KB só pra mostrar o botão
+    const { criarClienteNavegador } = await import("@/lib/supabase/client");
     const { error } = await criarClienteNavegador().rpc("cancelar", { p_agendamento_id: agendamentoId });
     setCarregando(false);
     if (error) {

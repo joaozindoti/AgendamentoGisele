@@ -219,6 +219,15 @@ atrás é só não trocar o domínio no passo 11.
 
 Toda vez que algo entrar na `main` do GitHub, a Vercel publica sozinha.
 
+**Região das funções:** o `web/vercel.json` fixa as funções em São Paulo
+(`gru1`), a mesma região do banco no Supabase (`sa-east-1`). Antes disso elas
+rodavam em Washington (`iad1`) e cada consulta atravessava o continente —
+era o principal motivo da troca de página lenta (30/09/2026). Pra conferir
+depois de um deploy: abrir qualquer página, DevTools → Network → documento →
+cabeçalho `x-vercel-id` tem que terminar em `gru1::...` (e não `iad1`). Se
+continuar `iad1`, em Vercel → projeto → Settings → Functions → Function
+Region, escolher **São Paulo (gru1)** e publicar de novo.
+
 ## Passo 8 — Clientes da planilha
 
 1. Na planilha "CRM Studio Gisele Lima", aba **Página1**: **Arquivo → Fazer

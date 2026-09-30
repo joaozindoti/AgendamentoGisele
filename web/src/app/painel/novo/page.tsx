@@ -11,21 +11,19 @@ export default async function NovoAgendamento({ searchParams }: PageProps<"/pain
   const { supabase, ehOwner, profissionalId, papel } = await exigirProfissional();
   const { data: diaParam, cliente } = await searchParams;
 
-  const [{ data: servicos }, { data: meusServicos }, diasMaximos] = await Promise.all([
+  const [{ data: servicos }, { data: meusServicos }, diasMaximos, { data: clienteInicial }] = await Promise.all([
     supabase.from("servicos").select("id, nome, duracao_min").eq("ativo", true).order("nome"),
     supabase.from("profissional_servicos").select("servico_id").eq("profissional_id", profissionalId),
     lerConfigNumero(supabase, "dias_maximos_agendamento", 60),
+    typeof cliente === "string"
+      ? supabase.from("clientes").select("id, nome").eq("id", cliente).maybeSingle()
+      : Promise.resolve({ data: null }),
   ]);
 
   // staff só marca serviço que ela mesma faz (agendar() recusa o resto)
   const meus = new Set((meusServicos ?? []).map((s) => s.servico_id as string));
   const lista = (servicos ?? []).filter((s) => ehOwner || meus.has(s.id));
 
-  let clienteInicial: { id: string; nome: string } | null = null;
-  if (typeof cliente === "string") {
-    const { data } = await supabase.from("clientes").select("id, nome").eq("id", cliente).maybeSingle();
-    clienteInicial = data;
-  }
 
   return (
     <>
