@@ -710,11 +710,30 @@ verificação. O que isso abre, e o que já está coberto:
 Nada disto é necessário pra colocar o sistema no ar.
 
 - **Pull requests (a partir da fase 20):** o GitHub CLI (`gh`) está instalado
-  neste computador (winget, 30/09/2026). Daqui em diante o Claude Code abre
-  os PRs direto (`gh pr create`), da branch de cada fase para
-  `feature/2.0-supabase-nextjs`, sem link manual. Precisa estar logado: se
+  neste computador (winget, 30/09/2026). O Claude Code abre os PRs direto
+  (`gh pr create`), sem link manual. Precisa estar logado: se
   `gh auth status` disser que não está, rodar `gh auth login` (GitHub.com →
   HTTPS → login pelo navegador) com a conta dona do repositório.
+- **PRs direto na `main` (a partir de 30/09/2026, depois do PR #18):** a
+  branch `feature/2.0-supabase-nextjs` deixou de ser intermediária. Cada fase
+  sai numa branch própria a partir da `main` e o PR vai direto pra `main`.
+  O que a `main` publica sozinha a cada merge:
+  - **Vercel, projeto `agendamento-gisele-eacy`** → produção em
+    `agendamento-gisele-eacy.vercel.app` (ambiente de teste até a virada do
+    passo 11). Todo PR também ganha um endereço de **Preview** próprio pra
+    conferir antes do merge.
+  - **GitHub Pages** → o site estático antigo da raiz (`index.html`, `js/`,
+    `css/`) em `joaozindoti.github.io/AgendamentoGisele/`. Nenhuma fase mexe
+    nesses arquivos (o app novo fica em `web/`), então o merge não muda nada
+    lá. Se um dia uma fase precisar mexer na raiz, avisar antes.
+  - Nada no Supabase: SQL e funções continuam indo pelos passos de colar.
+- **Sobra na Vercel pra desconectar (sem pressa):** além do
+  `agendamento-gisele-eacy`, os projetos `agendamento-gisele` e
+  `agendamento-gisele-2hzx` também estão ligados a este repositório e fazem
+  deploy em dobro a cada merge. O endereço `agendamento-gisele.vercel.app` nem
+  é deste código (é outro app, "Gisele Oliveira Beauty"). Em Vercel → projeto
+  → Settings → Git → **Disconnect**, ou apagar o projeto se não servir pra
+  mais nada.
 
 - **De onde vem `supabase/colar/`:** `node scripts/gerar-colar.mjs` monta a
   pasta a partir de `supabase/migrations/`, `supabase/seed-producao.sql`,
