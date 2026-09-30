@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { PAINEL } from "@/components/home-cliente";
+import { Titulo } from "@/components/ui";
 import { obterSessao } from "@/lib/auth";
 import { FormLogin } from "./form";
 
@@ -27,15 +29,21 @@ export default async function PaginaEntrar({ searchParams }: PageProps<"/entrar"
   }
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-md flex-col px-6 pt-12 pb-10">
+    <main className="mx-auto flex min-h-dvh max-w-md flex-col px-4 pt-8 pb-10">
       <Link href="/" className="mx-auto" aria-label="Voltar ao início">
-        <Image src="/fotos/logo.webp" alt="Gisele Lima — Estética Feminina" width={220} height={80} className="logo-marca h-auto w-52" priority />
+        <Image src="/fotos/logo.webp" alt="Gisele Lima — Estética Feminina" width={160} height={58} className="logo-marca h-12 w-auto" priority />
       </Link>
-      <h1 className="mt-10 text-[30px] leading-tight font-semibold tracking-tight">Área da equipe</h1>
-      <p className="mt-3 text-[15px] text-ink-muted">
-        Acesso ao painel do studio, para a Gisele e as profissionais cadastradas. Entre com o celular cadastrado no painel.
-      </p>
-      <FormLogin destino={destino ?? "/painel"} />
+      <Titulo
+        className="mt-10"
+        eyebrow="Studio Gisele Lima"
+        sub="Acesso ao painel do studio, para a Gisele e as profissionais cadastradas. Entre com o celular cadastrado no painel."
+      >
+        Área da equipe
+      </Titulo>
+      {/* o formulário traz margem própria (mt-8) pra quando não tinha painel */}
+      <div className={`${PAINEL} [&>form]:mt-0`}>
+        <FormLogin destino={destino ?? "/painel"} />
+      </div>
       <p className="mt-8 text-center text-[14px] text-ink-muted">
         É cliente?{" "}
         <Link href="/cliente/agendar" className="text-accent">

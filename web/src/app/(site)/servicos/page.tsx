@@ -16,7 +16,7 @@ export default async function PaginaServicos() {
     .order("nome");
 
   return (
-    <div className="mx-auto max-w-5xl px-4 pt-8">
+    <div className="mx-auto max-w-5xl px-4 pt-6">
       <Titulo eyebrow="Lindeza Premium" sub="Escolha o seu cuidado e agende no horário que preferir.">
         Serviços
       </Titulo>

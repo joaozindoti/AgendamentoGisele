@@ -709,6 +709,13 @@ verificação. O que isso abre, e o que já está coberto:
 
 Nada disto é necessário pra colocar o sistema no ar.
 
+- **Pull requests (a partir da fase 20):** o GitHub CLI (`gh`) está instalado
+  neste computador (winget, 30/09/2026). Daqui em diante o Claude Code abre
+  os PRs direto (`gh pr create`), da branch de cada fase para
+  `feature/2.0-supabase-nextjs`, sem link manual. Precisa estar logado: se
+  `gh auth status` disser que não está, rodar `gh auth login` (GitHub.com →
+  HTTPS → login pelo navegador) com a conta dona do repositório.
+
 - **De onde vem `supabase/colar/`:** `node scripts/gerar-colar.mjs` monta a
   pasta a partir de `supabase/migrations/`, `supabase/seed-producao.sql`,
   `scripts/preparar-planilha.sql`, `scripts/importar-planilha.sql` e `supabase/functions/`. As functions saem

@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { PAINEL } from "@/components/home-cliente";
+import { Titulo } from "@/components/ui";
 import { FormPreCadastro } from "./form";
 
 export const metadata: Metadata = {
@@ -6,15 +8,16 @@ export const metadata: Metadata = {
   description: "Cadastre-se e receba descontos especiais direto no seu WhatsApp no mês do seu aniversário.",
 };
 
+// O aviso de público feminino vem da faixa do layout (fase 20).
 export default function PaginaPreCadastro() {
   return (
-    <div className="mx-auto max-w-md px-4 pt-10">
-      <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-gold-ink">Clube Lindeza Premium</p>
-      <h1 className="mt-2 text-[26px] leading-tight font-semibold tracking-tight">
-        Cadastre-se uma vez e receba descontos especiais direto no seu WhatsApp
-      </h1>
-      <p className="mt-3 text-[13px] text-ink-muted">Atendimento exclusivo para o público feminino.</p>
-      <FormPreCadastro />
+    <div className="mx-auto max-w-md px-4 pt-6">
+      <Titulo eyebrow="Clube Lindeza Premium" sub="No mês do seu aniversário, o desconto chega direto no seu WhatsApp.">
+        Cadastre-se uma vez e ganhe descontos especiais
+      </Titulo>
+      <div className={PAINEL}>
+        <FormPreCadastro />
+      </div>
     </div>
   );
 }
