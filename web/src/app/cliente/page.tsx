@@ -1,21 +1,26 @@
-import Link from "next/link";
 import { AcoesAgendamentoCliente } from "@/components/acoes-agendamento";
-import { CartaoServico } from "@/components/catalogo";
-import { EquipeStudio, HeroStudio, type ProfissionalHome } from "@/components/home-cliente";
+import {
+  EquipeStudio,
+  HeroStudio,
+  LocalizacaoStudio,
+  SeloExclusivoFeminino,
+  type ProfissionalHome,
+} from "@/components/home-cliente";
 import { Caixa, Card, Eyebrow } from "@/components/ui";
 import { obterAreaCliente } from "@/lib/auth";
 import { SELECT_AGENDAMENTO_CLIENTE, lerConfigNumero, type AgendamentoComDetalhes } from "@/lib/consultas";
 import { agoraMs, dataLonga, hora, lerPeriodo, saudacao } from "@/lib/formato";
 import { WHATSAPP_STUDIO } from "@/lib/studio";
-import type { Servico } from "@/lib/tipos";
 
 export default async function InicioCliente({ searchParams }: PageProps<"/cliente">) {
   const { supabase, clienteId } = await obterAreaCliente();
   const { aviso } = await searchParams;
 
-  const [{ data: cliente }, { data: agendamentos }, { data: destaques }, horasMinimas, { data: equipe }, { data: vinculos }] = await Promise.all([
+  // Home enxuta (fase 16): hero, faixa de exclusividade, próximo horário (se
+  // houver), equipe e localização. Nada além disso.
+  const [{ data: cliente }, { data: agendamentos }, horasMinimas, { data: equipe }, { data: vinculos }] = await Promise.all([
     clienteId
-      ? supabase.from("clientes").select("nome, consentimento, data_nascimento").eq("id", clienteId).single()
+      ? supabase.from("clientes").select("nome").eq("id", clienteId).single()
       : Promise.resolve({ data: null }),
     clienteId
       ? supabase
@@ -25,12 +30,6 @@ export default async function InicioCliente({ searchParams }: PageProps<"/client
           .eq("status", "confirmado")
           .order("periodo")
       : Promise.resolve({ data: [] }),
-    supabase
-      .from("servicos")
-      .select("id, nome, descricao, foto_url, preco, duracao_min, ativo, categoria, destaque")
-      .eq("destaque", true)
-      .order("nome")
-      .limit(3),
     lerConfigNumero(supabase, "horas_minimas_remarcacao", 2),
     // leitura pública (sem telefone): mesma que a tela de escolher profissional usa
     supabase.from("profissionais").select("id, nome, bio, foto_url, papel, criado_em").eq("ativo", true).order("papel").order("criado_em"),
@@ -65,7 +64,6 @@ export default async function InicioCliente({ searchParams }: PageProps<"/client
     .find((a) => a.inicio.getTime() > agora);
 
   const primeiroNome = cliente?.nome && cliente.nome !== "Cliente" ? cliente.nome.split(" ")[0] : null;
-  const perfilIncompleto = Boolean(clienteId) && (!cliente || cliente.nome === "Cliente" || !cliente.data_nascimento);
   const podeAlterar = proximo ? proximo.inicio.getTime() - agora > horasMinimas * 3600_000 : false;
 
   const avisos: Record<string, string> = {
@@ -81,15 +79,11 @@ export default async function InicioCliente({ searchParams }: PageProps<"/client
         <HeroStudio fotoGisele={fotoGisele} chamada={saudacao()} titulo="Seja uma" destaque="Lindeza Premium." />
       )}
 
+      <SeloExclusivoFeminino />
+
       {typeof aviso === "string" && avisos[aviso] && <Caixa tipo="ok">{avisos[aviso]}</Caixa>}
 
-      {perfilIncompleto && (
-        <Link href="/cliente/perfil" className="block rounded-card border border-gold-soft bg-surface px-4 py-3 text-[14px] text-ink hover:border-gold">
-          Complete seu perfil com nome e data de nascimento — no mês do seu aniversário tem presente. <span className="text-accent">Completar →</span>
-        </Link>
-      )}
-
-      {proximo ? (
+      {proximo && (
         <Card className="overflow-hidden border-0 p-0 shadow-soft">
           <div className="flex items-stretch">
             {/* bloco da data: o que a cliente procura primeiro */}
@@ -119,36 +113,11 @@ export default async function InicioCliente({ searchParams }: PageProps<"/client
           />
           </div>
         </Card>
-      ) : clienteId ? (
-        <Card className="flex items-center justify-between gap-4 border-dashed bg-transparent p-5">
-          <p className="text-[15px] text-ink-muted">Nenhum horário marcado por enquanto.</p>
-          <Link href="/cliente/agendar" className="shrink-0 font-display text-[14px] font-bold text-accent">
-            Agendar →
-          </Link>
-        </Card>
-      ) : null}
+      )}
 
       <EquipeStudio profissionais={profissionais} />
 
-      {destaques && destaques.length > 0 && (
-        <section>
-          <div className="mb-3 flex items-end justify-between">
-            <div>
-              <Eyebrow className="tracking-[0.22em]">Menu exclusivo</Eyebrow>
-              <h2 className="mt-1.5 text-[24px] leading-tight font-extrabold tracking-[-0.03em]">Experiências do Studio</h2>
-            </div>
-            <Link href="/cliente/agendar" className="text-[14px] text-accent">
-              Ver catálogo →
-            </Link>
-          </div>
-          <div className="space-y-3">
-            {(destaques as Servico[]).map((s) => (
-              <CartaoServico key={s.id} servico={s} href={`/cliente/agendar?servico=${s.id}`} />
-            ))}
-          </div>
-        </section>
-      )}
-
+      <LocalizacaoStudio />
     </div>
   );
 }
