@@ -1,7 +1,7 @@
 // Regras da resposta automática (fase 17), sem nada de Deno nem de rede:
 // dá pra testar direto no Node (supabase/tests/resposta-whatsapp.test.mjs).
 
-export type Categoria = "curso" | "link" | "masculino" | "outro";
+export type Categoria = "curso" | "masculino" | "link" | "saudacao" | "outro";
 
 // Texto comparável: minúsculo, sem acento, só letras/números separados por
 // um espaço. "Só pra MULHER?!" vira "so pra mulher".
@@ -24,14 +24,18 @@ const CURSO = [
   "aprender", "ensina", "ensinam", "ensinar",
 ];
 
+// Link por RAIZ (fase 19): "agend" cobre agendar, agendamento, agendei,
+// agendada...; "marcac" cobre marcação/marcações. Cada item é um pedaço de
+// regex sobre o texto normalizado.
 const LINK = [
-  "link", "linck", "linke", "lik", "lynk",
-  "app", "aplicativo", "aplicativos", "aplicatico", "aplicatvo", "aplicativu", "aplicacao",
+  "link[a-z]*", "linck", "lik", "lynk",
+  "apps?", "aplicativ[a-z]*", "aplicatic[a-z]*", "aplicatv[a-z]*", "aplicacao",
   "site", "sait", "saite",
-  "agendar", "agendo", "agende", "agenda", "agendamento", "agendamentos", "ajendar", "ajenda", "agemdar", "agenadr",
-  "marcar", "marca um horario", "marco um horario", "quero marcar", "remarcar", "desmarcar", "cancelar",
-  "horario", "horarios", "orario", "orarios", "hora marcada",
-  "vaga", "vagas", "disponibilidade", "disponivel",
+  "agend[a-z]*", "ajend[a-z]*", "agemd[a-z]*", "agenad[a-z]*",
+  "marcar", "marco um horario", "marca um horario", "marcac[a-z]*", "marcad[oa]s?", "marque", "marquei",
+  "remarc[a-z]*", "desmarc[a-z]*", "cancel[a-z]*", "reserv[a-z]*",
+  "horari[a-z]*", "orari[a-z]*", "hora marcada",
+  "vagas?", "disponib[a-z]*", "disponive[a-z]*",
 ];
 
 const MASCULINO = [
@@ -41,19 +45,57 @@ const MASCULINO = [
   "apenas mulher", "apenas mulheres", "somente mulher", "somente mulheres",
 ];
 
+// Abertura de conversa, com letra repetida ("oii", "boa tardee", "bom diaaa").
+const SAUDACAO = [
+  "o+i+e*", "o+l+a+", "alo+u?", "opa+", "e+ ai+", "ea[ie]+", "hello", "hey",
+  "bo+m+ di+a+", "bdia", "bo+a+ ta+r+de+", "bo+a+ no+i+te+",
+];
+// Palavras que podem acompanhar a saudação sem virar "intenção":
+// "oi, tudo bem?", "bom dia, gente", "boa tarde Gisele, td bom?".
+const COMPLEMENTO_SAUDACAO = new Set(
+  (
+    "tudo td bem bom boa blz beleza certo tranquilo como vai vao esta ta voce voces vc vcs " +
+    "gente pessoal moca mocas menina meninas amiga amigas querida flor linda lindas " +
+    "gisele gi studio estudio e ai a o ne"
+  ).split(" "),
+);
+
 const regex = (lista: string[]) => new RegExp(`(^| )(${lista.join("|")})( |$)`);
 const RE_CURSO = regex(CURSO);
 const RE_LINK = regex(LINK);
 const RE_MASCULINO = regex(MASCULINO);
+const RE_SAUDACAO = new RegExp(`(^| )(?:${SAUDACAO.join("|")})(?= |$)`, "g");
 
-// Prioridade fixa: curso (silêncio) > link > aviso de público feminino.
+// Só saudação: tem pelo menos uma e, tirando as saudações, sobra no máximo
+// complemento ("tudo bem", "gente"...). "bom dia, quanto custa?" não é.
+function soSaudacao(t: string): boolean {
+  const marcado = t.replace(RE_SAUDACAO, "$1#");
+  const palavras = marcado.split(" ").filter(Boolean);
+  return palavras.includes("#") && palavras.every((p) => p === "#" || COMPLEMENTO_SAUDACAO.has(p));
+}
+
+// Prioridade fixa (fase 19): curso (silêncio) > masculino > link > saudação.
 export function classificar(texto: string): Categoria {
   const t = normalizar(texto);
   if (!t) return "outro";
   if (RE_CURSO.test(t)) return "curso";
-  if (RE_LINK.test(t)) return "link";
   if (RE_MASCULINO.test(t)) return "masculino";
+  if (RE_LINK.test(t)) return "link";
+  if (soSaudacao(t)) return "saudacao";
   return "outro";
+}
+
+export type Acao = "silencio" | "masculino" | "link" | "registrar";
+
+// O que fazer com a mensagem. Só a saudação depende do cadastro: número
+// novo recebe o link (pra se cadastrar e agendar); cliente já cadastrada
+// não recebe nada automático (já tem o app) e a mensagem vai pra Gisele.
+export function decidir(categoria: Categoria, clienteCadastrada: boolean): Acao {
+  if (categoria === "curso") return "silencio";
+  if (categoria === "masculino") return "masculino";
+  if (categoria === "link") return "link";
+  if (categoria === "saudacao") return clienteCadastrada ? "registrar" : "link";
+  return "registrar";
 }
 
 export function mensagemLink(linkApp: string): string {

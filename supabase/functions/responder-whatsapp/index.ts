@@ -2,11 +2,14 @@
 // 20260930150000). Substitui o workflow "Agente" do n8n: é o webhook de
 // mensagem da Evolution API (instância do WhatsApp do studio) que chama isto.
 //
-// O que faz, por palavra-chave (regras.ts), com prioridade curso > link >
-// masculino:
+// O que faz, por palavra-chave (regras.ts), com prioridade curso >
+// masculino > link > saudação (fase 19):
 //   - curso      -> não responde nada (a Gisele atende pessoalmente)
-//   - link       -> manda o link do app (LINK_APP)
 //   - masculino  -> avisa que o atendimento é só pro público feminino
+//   - link       -> manda o link do app (LINK_APP)
+//   - saudação   -> só "oi", "bom dia"...: número que não é cliente recebe o
+//                   link; cliente já cadastrada (clientes.whatsapp, com e sem
+//                   o 9) segue como "outro"
 //   - outro      -> não responde; grava em mensagens_nao_classificadas e
 //                   avisa a Gisele no WhatsApp dela (fase 18, migration
 //                   20260930180000; um alerta por número a cada 10 min)
@@ -32,7 +35,7 @@
 
 import { enviarWhatsApp } from "../_shared/evolution.ts";
 import { criarClienteAdmin } from "../_shared/supabase-admin.ts";
-import { classificar, lerMensagem, mensagemAlertaGisele, MENSAGEM_MASCULINO, mensagemLink, variantesTelefone } from "./regras.ts";
+import { classificar, decidir, lerMensagem, mensagemAlertaGisele, MENSAGEM_MASCULINO, mensagemLink, variantesTelefone } from "./regras.ts";
 
 const COOLDOWN_MINUTOS = 10;
 
@@ -107,21 +110,35 @@ Deno.serve(async (req) => {
 
   const categoria = classificar(msg.texto);
 
-  if (categoria === "curso") return responder({ categoria, acao: "silêncio" });
+  // Cadastro só pesa na saudação; nas outras categorias nem consulta.
+  let cadastrada = false;
+  if (categoria === "saudacao") {
+    const { data: cliente, error: erroCliente } = await supabase
+      .from("clientes")
+      .select("id")
+      .in("whatsapp", variantesTelefone(msg.telefone))
+      .limit(1);
+    // na dúvida, trata como cadastrada: a mensagem vai pra Gisele em vez de
+    // mandar o link pra quem talvez já tenha o app
+    cadastrada = Boolean(erroCliente) || (cliente?.length ?? 0) > 0;
+  }
+  const acao = decidir(categoria, cadastrada);
 
-  if (categoria === "outro") {
+  if (acao === "silencio") return responder({ categoria, acao: "silêncio" });
+
+  if (acao === "registrar") {
     const { error } = await supabase
       .from("mensagens_nao_classificadas")
       .upsert(
         { telefone: msg.telefone, nome: msg.nome, texto: msg.texto.slice(0, 4000), mensagem_id: msg.mensagemId },
         { onConflict: "mensagem_id", ignoreDuplicates: true },
       );
-    if (error) return responder({ categoria, erro: error.message });
-    return responder({ categoria, acao: "registrada", alerta: await alertarGisele(supabase, msg) });
+    if (error) return responder({ categoria, cadastrada, erro: error.message });
+    return responder({ categoria, cadastrada, acao: "registrada", alerta: await alertarGisele(supabase, msg) });
   }
 
   let texto = MENSAGEM_MASCULINO;
-  if (categoria === "link") {
+  if (acao === "link") {
     const linkApp = Deno.env.get("LINK_APP");
     if (!linkApp) return responder({ categoria, erro: "LINK_APP não configurado" });
     texto = mensagemLink(linkApp);

@@ -4,7 +4,7 @@
 
 import assert from "node:assert/strict";
 import { before, describe, test } from "node:test";
-import { classificar, exibirTelefone, lerMensagem, mensagemAlertaGisele, mensagemLink, normalizar, variantesTelefone } from "../functions/responder-whatsapp/regras.ts";
+import { classificar, decidir, exibirTelefone, lerMensagem, mensagemAlertaGisele, mensagemLink, normalizar, variantesTelefone } from "../functions/responder-whatsapp/regras.ts";
 import { TELEFONE_GISELE, como, criarBanco, criarLogin } from "./ambiente.mjs";
 
 describe("classificação por palavra-chave", () => {
@@ -23,6 +23,12 @@ describe("classificação por palavra-chave", () => {
       "preciso cancelar meu horário",
       "ajendar sombrancelha",
       "manda o app",
+      "quero fazer um agendamento",
+      "Agendamento?",
+      "queria uma marcação",
+      "agendei ontem, confirmou?",
+      "tem disponibilidade sábado?",
+      "quero reservar",
     ],
     masculino: [
       "Vocês atendem homem?",
@@ -41,8 +47,23 @@ describe("classificação por palavra-chave", () => {
       "quero aprender a fazer henna",
       "Tenho um workshop pra oferecer",
     ],
-    outro: [
+    saudacao: [
+      "oi",
+      "Oii",
+      "Olá!",
+      "ola",
       "Bom dia!",
+      "bom diaaa",
+      "Boa tarde",
+      "boa tardee",
+      "Boa noite 🌙",
+      "oi, tudo bem?",
+      "Bom dia gente, td bom?",
+      "oie Gisele",
+    ],
+    outro: [
+      "bom dia, quanto custa a sobrancelha?",
+      "oi, obrigada",
       "quanto custa a limpeza de pele?",
       "obrigada 💛",
       "mandei whatsapp ontem",
@@ -64,11 +85,14 @@ describe("classificação por palavra-chave", () => {
     assert.equal(classificar("cursor"), "outro");
   });
 
-  test("prioridade: curso > link > masculino", () => {
+  test("prioridade: curso > masculino > link > saudação", () => {
     assert.equal(classificar("tem curso? qual o link pra agendar?"), "curso");
     assert.equal(classificar("curso pra homem?"), "curso");
-    assert.equal(classificar("atende homem? como faço pra agendar?"), "link");
-    assert.equal(classificar("é só mulher? me manda o link"), "link");
+    assert.equal(classificar("oi, vocês tem curso de extensão?"), "curso");
+    assert.equal(classificar("atende homem? como faço pra agendar?"), "masculino");
+    assert.equal(classificar("é só mulher? me manda o link"), "masculino");
+    assert.equal(classificar("oi, queria agendar"), "link");
+    assert.equal(classificar("boa tarde, atende homem?"), "masculino");
   });
 
   test("normalizar tira acento, caixa e pontuação", () => {
@@ -78,6 +102,36 @@ describe("classificação por palavra-chave", () => {
 
   test("mensagem de link leva o endereço", () => {
     assert.ok(mensagemLink("https://exemplo.app/instalar").includes("https://exemplo.app/instalar"));
+  });
+});
+
+describe("decisão: saudação depende do cadastro, o resto não", () => {
+  const acao = (texto, cadastrada) => decidir(classificar(texto), cadastrada);
+
+  test("número novo mandando só \"oi\" recebe o link", () => {
+    assert.equal(acao("oi", false), "link");
+    assert.equal(acao("Boa tarde!", false), "link");
+  });
+
+  test("cliente cadastrada mandando só \"bom dia\" não recebe nada: vai pra não classificadas (e alerta)", () => {
+    assert.equal(acao("bom dia", true), "registrar");
+    assert.equal(acao("oi, tudo bem?", true), "registrar");
+  });
+
+  test("\"quero fazer um agendamento\" é link pra nova e pra cadastrada", () => {
+    assert.equal(acao("quero fazer um agendamento", false), "link");
+    assert.equal(acao("quero fazer um agendamento", true), "link");
+  });
+
+  test("\"oi, vocês tem curso de extensão?\" fica em silêncio pra qualquer uma", () => {
+    assert.equal(acao("oi, vocês tem curso de extensão?", false), "silencio");
+    assert.equal(acao("oi, vocês tem curso de extensão?", true), "silencio");
+  });
+
+  test("masculino responde pra qualquer número; o resto registra", () => {
+    assert.equal(acao("atende homem?", true), "masculino");
+    assert.equal(acao("atende homem?", false), "masculino");
+    assert.equal(acao("quanto custa?", false), "registrar");
   });
 });
 

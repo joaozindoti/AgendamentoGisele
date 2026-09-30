@@ -354,9 +354,13 @@ silêncio.
 | A mensagem fala de… | O que acontece |
 |---|---|
 | curso (curso, aula, workshop, mentoria, aprender…) | **não responde nada**. A Gisele atende pessoalmente. Vence qualquer outra palavra da mensagem |
-| link, app, site, agendar, marcar, horário, vaga, remarcar, cancelar… | manda o link do app |
 | homem, masculino, "só pra mulher", marido… | avisa que o atendimento é exclusivo para o público feminino |
+| link, app, site, agendar/agendamento, marcar/marcação, horário, vaga, remarcar, cancelar, reservar… | manda o link do app |
+| só saudação ("oi", "bom dia", "boa tarde, tudo bem?"…) | número que **não** é cliente: manda o link do app. Cliente já cadastrada: não responde, fica registrada e a Gisele é avisada (passo 8h) |
 | qualquer outra coisa (inclusive áudio e foto sem legenda) | não responde; fica registrada pra Gisele ver |
+
+A ordem da tabela é a prioridade: se a mensagem tem palavras de duas linhas,
+vale a de cima.
 
 O mesmo número recebe no máximo **uma** resposta automática a cada 10
 minutos. A função não responde grupo, não responde ao próprio número do
@@ -399,7 +403,7 @@ studio:
 - [ ] De outro celular: "vocês atendem homem?" → chega o aviso de público
       feminino.
 - [ ] "tem curso de sobrancelha?" → não chega nada.
-- [ ] "bom dia" → não chega nada, e a mensagem aparece em **Table Editor →
+- [ ] "quanto custa a limpeza de pele?" → não chega nada, e a mensagem aparece em **Table Editor →
       mensagens_nao_classificadas**. Pra ver as últimas no SQL Editor:
 
       ```sql
@@ -440,7 +444,7 @@ Faça depois do passo 8f (ou junto com ele):
 Não tem secret novo.
 
 **Conferir:**
-- [ ] De um celular que não é da equipe, mandar "bom dia" pro WhatsApp do
+- [ ] De um celular que não é da equipe, mandar "quanto custa a limpeza?" pro WhatsApp do
       studio → chega no WhatsApp da Gisele "Nova mensagem sem resposta
       automática de …". O link no fim abre a conversa com esse número.
 - [ ] Logo em seguida, do mesmo celular, "tudo bem?" → **não** chega outro
@@ -449,6 +453,40 @@ Não tem secret novo.
 
 Enquanto a conta de teste do João (passo 8e) existir, ele também recebe
 esses avisos, porque ela é dona. Some junto com a conta no passo 11.
+
+## Passo 8h — Saudação e cadastro na resposta automática
+
+A `responder-whatsapp` passa a entender mensagem que é **só** saudação
+("oi", "olá", "bom dia", "boa tarde", "boa noite", com ou sem "tudo bem?"):
+- de um número que **não** é cliente, manda o link do app, como se a pessoa
+  tivesse pedido o link;
+- de uma cliente **já cadastrada**, não responde nada: a mensagem fica
+  registrada e a Gisele recebe o aviso do passo 8g.
+
+Também entende mais jeitos de pedir horário ("marcação", "agendei",
+"reservar", "disponibilidade"…). E a pergunta sobre público masculino passou
+a vir **antes** do link: "atende homem? como agendo?" agora recebe o aviso
+de público feminino, não o link. A tabela do passo 8f já está na ordem nova.
+
+Faça depois dos passos 8f e 8g:
+
+1. **Edge Functions** → `responder-whatsapp` → aba **Code**: apagar tudo,
+   colar o conteúdo **novo** de `supabase/colar/functions/responder-whatsapp.ts`
+   → **Deploy**.
+2. Aba **Details**: conferir que a verificação de JWT continua **desligada**.
+
+Não tem SQL nem secret novo.
+
+**Conferir:**
+- [ ] De um celular que **não** está em **Clientes**: mandar "oi" → chega o
+      link do app.
+- [ ] De um celular de uma cliente cadastrada: mandar "bom dia" → não chega
+      nada pra ela, e a Gisele recebe "Nova mensagem sem resposta
+      automática…".
+- [ ] Logo depois, da mesma cliente: "quero fazer um agendamento" →
+      chega o link.
+- [ ] "oi, vocês têm curso de extensão?" → não chega nada, de nenhum
+      celular.
 
 ## Passo 9 — Primeiro acesso da Gisele e montagem da equipe
 
