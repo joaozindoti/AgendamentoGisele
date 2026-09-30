@@ -5,7 +5,8 @@ import { CATEGORIAS } from "@/lib/tipos";
 import { IconeLocal } from "./icones";
 import { LinkBotao } from "./ui";
 
-// Blocos da home da cliente (redesign "Lindeza Premium", 30/09/2026).
+// Blocos da home da cliente (redesign "Lindeza Premium", 30/09/2026), também
+// usados na vitrine pública (app/(site)) desde a fase 20.
 // Tudo aqui é Server Component e lê só dado público: nome, bio e foto de
 // profissional ativa, e a categoria dos serviços que cada uma faz.
 //
@@ -22,6 +23,7 @@ export function HeroStudio({
   chamada,
   titulo,
   destaque,
+  secundario,
 }: {
   fotoGisele: string | null;
   /** linha pequena acima do título (saudação ou "Lindeza Premium") */
@@ -30,6 +32,8 @@ export function HeroStudio({
   titulo: string;
   /** segunda linha do título, em peso forte */
   destaque: ReactNode;
+  /** botão ao lado do "Agendar horário" (a vitrine pública usa pra "Ver serviços") */
+  secundario?: { href: string; rotulo: string };
 }) {
   return (
     <section className="relative -mx-4 overflow-hidden px-4 pt-3 pb-8">
@@ -70,9 +74,16 @@ export function HeroStudio({
         <p className="mx-auto mt-3 max-w-[19rem] text-[15px] leading-relaxed text-ink-muted">
           Sobrancelha, pele e epilação em Pedreiras&nbsp;-&nbsp;MA, com o cuidado da Gisele e da equipe.
         </p>
-        <LinkBotao href="/cliente/agendar" className="mt-5 min-h-12 px-8 text-[16px]">
-          Agendar horário
-        </LinkBotao>
+        <div className="mt-5 flex flex-wrap justify-center gap-3">
+          <LinkBotao href="/cliente/agendar" className="min-h-12 px-8 text-[16px]">
+            Agendar horário
+          </LinkBotao>
+          {secundario && (
+            <LinkBotao href={secundario.href} variante="secundario" className="min-h-12 px-6 text-[16px]">
+              {secundario.rotulo}
+            </LinkBotao>
+          )}
+        </div>
       </div>
     </section>
   );
@@ -99,7 +110,7 @@ export function SeloExclusivoFeminino() {
 
 // Cabeçalho das seções da home: fio dourado + chamada + título, o mesmo
 // acabamento em todas, pra nenhum título ficar "solto" no fundo liso.
-function CabecalhoSecao({ chamada, titulo }: { chamada: string; titulo: string }) {
+export function CabecalhoSecao({ chamada, titulo }: { chamada: string; titulo: string }) {
   return (
     <header className="mb-4">
       <p className="flex items-center gap-2.5 font-display text-[11px] font-bold uppercase tracking-[0.22em] text-gold-ink">
@@ -112,7 +123,7 @@ function CabecalhoSecao({ chamada, titulo }: { chamada: string; titulo: string }
 }
 
 // Painel branco com sombra suave que embrulha cada seção da home.
-const PAINEL = "rounded-card bg-surface p-5 shadow-soft";
+export const PAINEL = "rounded-card bg-surface p-5 shadow-soft";
 
 export function LocalizacaoStudio() {
   return (

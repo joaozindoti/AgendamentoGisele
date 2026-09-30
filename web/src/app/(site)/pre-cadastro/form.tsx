@@ -51,8 +51,9 @@ export function FormPreCadastro() {
 
   if (ok) {
     return (
-      <div className="mt-8 rounded-card border border-line bg-surface p-6 text-center">
-        <p className="text-[20px] font-semibold">Cadastro recebido!</p>
+      <div className="py-2 text-center">
+        <p className="font-display text-[11px] font-bold uppercase tracking-[0.2em] text-ok">Tudo certo</p>
+        <p className="mt-1 font-display text-[22px] font-extrabold tracking-[-0.02em]">Cadastro recebido!</p>
         <p className="mt-2 text-[14px] text-ink-muted">Fique de olho no seu WhatsApp — descontos especiais chegam direto por lá.</p>
         <LinkBotao href="/cliente/agendar" className="mt-5">
           Agendar meu horário
@@ -62,7 +63,7 @@ export function FormPreCadastro() {
   }
 
   return (
-    <form onSubmit={enviar} noValidate className="mt-6 space-y-4">
+    <form onSubmit={enviar} noValidate className="space-y-4">
       <Campo rotulo="Nome completo" autoComplete="name" value={nome} onChange={(e) => setNome(e.target.value)} required />
       <Campo
         rotulo="WhatsApp"
