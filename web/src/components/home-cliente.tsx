@@ -58,7 +58,11 @@ export function HeroStudio({
       </div>
 
       <div className="relative mt-9 text-center">
-        <p className="font-display text-[11px] font-bold uppercase tracking-[0.22em] text-gold-ink">{chamada}</p>
+        <p className="flex items-center justify-center gap-3 font-display text-[11px] font-bold uppercase tracking-[0.22em] text-gold-ink">
+          <span aria-hidden className="h-px w-8 bg-gradient-to-l from-gold/70 to-transparent" />
+          {chamada}
+          <span aria-hidden className="h-px w-8 bg-gradient-to-r from-gold/70 to-transparent" />
+        </p>
         <h1 className="mt-2 text-[40px] leading-[1.02] tracking-[-0.04em] text-ink">
           <span className="block font-extralight">{titulo}</span>
           <span className="block font-extrabold">{destaque}</span>
@@ -74,33 +78,47 @@ export function HeroStudio({
   );
 }
 
-// Faixa de exclusividade logo abaixo do hero. Precisa ser lida de primeira
-// (é regra do studio, não detalhe), por isso é o único bloco escuro da home.
+// Faixa de exclusividade no TOPO da home, antes do hero: é regra do studio,
+// não detalhe, e o hero sozinho já ocupa a primeira tela do celular. Chega
+// como uma notificação (entra deslizando) e é o único bloco escuro da home.
 export function SeloExclusivoFeminino() {
   return (
-    <aside className="-mt-2 flex items-center gap-4 rounded-card bg-ink px-5 py-4 text-white shadow-soft">
+    <aside className="flex animate-[faixa-entra_420ms_cubic-bezier(0.2,0.8,0.2,1)_both] items-center gap-3 rounded-card bg-ink py-2.5 pr-4 pl-2.5 text-white shadow-soft motion-reduce:animate-none">
       <span
         aria-hidden
-        className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-gold-soft font-display text-[24px] leading-none text-gold-soft"
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-gold-soft/80 bg-white/5 font-display text-[18px] leading-none text-gold-soft"
       >
         ♀
       </span>
-      <div className="min-w-0">
-        <p className="font-display text-[11px] font-bold uppercase tracking-[0.2em] text-gold-soft">Exclusivo</p>
-        <p className="mt-0.5 font-display text-[17px] leading-snug font-bold tracking-[-0.01em] text-balance">
-          Atendimento exclusivo para o público feminino
-        </p>
-      </div>
+      <p className="min-w-0 font-display text-[14px] leading-snug font-bold tracking-[-0.005em] text-balance">
+        Atendimento exclusivo para o <span className="text-gold-soft">público feminino</span>
+      </p>
     </aside>
   );
 }
 
+// Cabeçalho das seções da home: fio dourado + chamada + título, o mesmo
+// acabamento em todas, pra nenhum título ficar "solto" no fundo liso.
+function CabecalhoSecao({ chamada, titulo }: { chamada: string; titulo: string }) {
+  return (
+    <header className="mb-4">
+      <p className="flex items-center gap-2.5 font-display text-[11px] font-bold uppercase tracking-[0.22em] text-gold-ink">
+        <span aria-hidden className="h-px w-6 bg-gold/70" />
+        {chamada}
+      </p>
+      <h2 className="mt-1.5 text-[24px] leading-tight font-extrabold tracking-[-0.03em]">{titulo}</h2>
+    </header>
+  );
+}
+
+// Painel branco com sombra suave que embrulha cada seção da home.
+const PAINEL = "rounded-card bg-surface p-5 shadow-soft";
+
 export function LocalizacaoStudio() {
   return (
-    <section>
-      <p className="font-display text-[11px] font-bold uppercase tracking-[0.22em] text-gold-ink">Localização</p>
-      <h2 className="mt-1.5 mb-4 text-[24px] leading-tight font-extrabold tracking-[-0.03em]">Onde estamos</h2>
-      <div className="flex items-start gap-4 rounded-card bg-surface p-4 shadow-soft">
+    <section className={PAINEL}>
+      <CabecalhoSecao chamada="Localização" titulo="Onde estamos" />
+      <div className="flex items-start gap-4">
         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-blush text-accent">
           <IconeLocal />
         </span>
@@ -178,12 +196,11 @@ export function EquipeStudio({ profissionais }: { profissionais: ProfissionalHom
   if (profissionais.length === 0) return null;
 
   return (
-    <section>
-      <p className="font-display text-[11px] font-bold uppercase tracking-[0.22em] text-gold-ink">Nossa equipe</p>
-      <h2 className="mt-1.5 mb-4 text-[24px] leading-tight font-extrabold tracking-[-0.03em]">Quem cuida de você</h2>
+    <section className={PAINEL}>
+      <CabecalhoSecao chamada="Nossa equipe" titulo="Quem cuida de você" />
 
       {profissionais.length === 1 ? (
-        <div className="flex items-center gap-4 rounded-card bg-surface p-4 shadow-soft">
+        <div className="flex items-center gap-4">
           <FotoArco p={profissionais[0]} tamanho="88px" className="h-[110px] w-[88px] shrink-0" />
           <div className="min-w-0">
             <p className="font-display text-[18px] font-bold tracking-[-0.02em]">{profissionais[0].nome}</p>
@@ -193,7 +210,7 @@ export function EquipeStudio({ profissionais }: { profissionais: ProfissionalHom
           </div>
         </div>
       ) : (
-        <ul className="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <ul className="-mx-5 flex snap-x snap-mandatory scroll-px-5 gap-4 overflow-x-auto px-5 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {profissionais.map((p) => (
             <li key={p.id} className="w-[44%] max-w-44 shrink-0 snap-start">
               <FotoArco p={p} tamanho="176px" className="aspect-[4/5] w-full shadow-soft" />

@@ -102,3 +102,15 @@ input[type="time"],
 input[type="datetime-local"] {
   min-height: 2.75rem;
 }
+
+/* Faixa de exclusividade da home entrando como notificação. */
+@keyframes faixa-entra {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

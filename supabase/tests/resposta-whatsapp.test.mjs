@@ -4,7 +4,7 @@
 
 import assert from "node:assert/strict";
 import { before, describe, test } from "node:test";
-import { classificar, lerMensagem, mensagemLink, normalizar, variantesTelefone } from "../functions/responder-whatsapp/regras.ts";
+import { classificar, exibirTelefone, lerMensagem, mensagemAlertaGisele, mensagemLink, normalizar, variantesTelefone } from "../functions/responder-whatsapp/regras.ts";
 import { TELEFONE_GISELE, como, criarBanco, criarLogin } from "./ambiente.mjs";
 
 describe("classificação por palavra-chave", () => {
@@ -78,6 +78,31 @@ describe("classificação por palavra-chave", () => {
 
   test("mensagem de link leva o endereço", () => {
     assert.ok(mensagemLink("https://exemplo.app/instalar").includes("https://exemplo.app/instalar"));
+  });
+});
+
+describe("alerta pra Gisele (mensagem sem categoria)", () => {
+  test("traz nome, telefone legível, o texto e o link direto pra conversa", () => {
+    const t = mensagemAlertaGisele("+5599984183784", "Maria", "quanto custa a limpeza?");
+    assert.match(t, /Nova mensagem sem resposta automática de Maria · \(99\) 98418-3784/);
+    assert.ok(t.includes('"quanto custa a limpeza?"'));
+    assert.ok(t.includes("https://wa.me/5599984183784"));
+  });
+
+  test("sem nome, só o telefone; áudio aparece como rótulo", () => {
+    const t = mensagemAlertaGisele("+559984183784", null, "[áudio]");
+    assert.match(t, /de \(99\) 8418-3784:/);
+    assert.ok(t.includes('"[áudio]"'));
+  });
+
+  test("texto longo é cortado", () => {
+    const t = mensagemAlertaGisele("+5599984183784", null, "a".repeat(2000));
+    assert.ok(t.length < 700);
+    assert.ok(t.includes("…"));
+  });
+
+  test("telefone de fora do Brasil fica como veio", () => {
+    assert.equal(exibirTelefone("+14155550100"), "+14155550100");
   });
 });
 
@@ -181,6 +206,29 @@ describe("cooldown e tabelas (banco)", () => {
     assert.equal(await reivindicar("+5599900000003", "masculino"), true);
     const [linha] = (await db.query(`select categoria from respostas_automaticas where telefone = $1`, ["+5599900000003"])).rows;
     assert.equal(linha.categoria, "masculino");
+  });
+
+  const alertar = (tel) => sr(`select reivindicar_alerta_gisele($1, 10) as ok`, [tel]).then((r) => r[0].ok);
+
+  test("alerta pra Gisele: um por número a cada 10 min, e volta depois", async () => {
+    assert.equal(await alertar("+5599900000005"), true);
+    assert.equal(await alertar("+5599900000005"), false, "segunda mensagem seguida não gera outro alerta");
+    assert.equal(await alertar("+5599900000006"), true, "outro número alerta normalmente");
+    await db.query(`update alertas_mensagem_nao_classificada set alertado_em = now() - interval '10 minutes 1 second' where telefone = $1`, ["+5599900000005"]);
+    assert.equal(await alertar("+5599900000005"), true);
+  });
+
+  test("cooldown do alerta é separado do da resposta automática", async () => {
+    // cliente recebeu o link e logo depois mandou algo que a automação não entende
+    assert.equal(await reivindicar("+5599900000007"), true);
+    assert.equal(await alertar("+5599900000007"), true);
+    assert.equal(await reivindicar("+5599900000007"), false);
+  });
+
+  test("app não chama o alerta nem lê a tabela dele", async () => {
+    await assert.rejects(anon(`select reivindicar_alerta_gisele('+5599900000009', 10)`), /permission denied/);
+    await assert.rejects(como(db, "authenticated", gisele)(`select reivindicar_alerta_gisele('+5599900000009', 10)`), /permission denied/);
+    assert.equal((await como(db, "authenticated", gisele)(`select * from alertas_mensagem_nao_classificada`)).length, 0);
   });
 
   test("app (anon/authenticated) não chama o cooldown nem lê as respostas", async () => {
