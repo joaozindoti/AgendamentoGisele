@@ -1,6 +1,8 @@
 import Image from "next/image";
 import type { ReactNode } from "react";
+import { ENDERECO, LINK_MAPS } from "@/lib/studio";
 import { CATEGORIAS } from "@/lib/tipos";
+import { IconeLocal } from "./icones";
 import { LinkBotao } from "./ui";
 
 // Blocos da home da cliente (redesign "Lindeza Premium", 30/09/2026).
@@ -67,11 +69,47 @@ export function HeroStudio({
         <LinkBotao href="/cliente/agendar" className="mt-5 min-h-12 px-8 text-[16px]">
           Agendar horário
         </LinkBotao>
-        <div className="mt-7 flex flex-col items-center gap-2.5">
-          <span aria-hidden className="h-px w-10 bg-gold/70" />
-          <p className="max-w-[17rem] text-[11px] leading-relaxed font-medium text-balance uppercase tracking-[0.12em] text-ink-muted">
-            Atendimento exclusivo para o público feminino
-          </p>
+      </div>
+    </section>
+  );
+}
+
+// Faixa de exclusividade logo abaixo do hero. Precisa ser lida de primeira
+// (é regra do studio, não detalhe), por isso é o único bloco escuro da home.
+export function SeloExclusivoFeminino() {
+  return (
+    <aside className="-mt-2 flex items-center gap-4 rounded-card bg-ink px-5 py-4 text-white shadow-soft">
+      <span
+        aria-hidden
+        className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-gold-soft font-display text-[24px] leading-none text-gold-soft"
+      >
+        ♀
+      </span>
+      <div className="min-w-0">
+        <p className="font-display text-[11px] font-bold uppercase tracking-[0.2em] text-gold-soft">Exclusivo</p>
+        <p className="mt-0.5 font-display text-[17px] leading-snug font-bold tracking-[-0.01em] text-balance">
+          Atendimento exclusivo para o público feminino
+        </p>
+      </div>
+    </aside>
+  );
+}
+
+export function LocalizacaoStudio() {
+  return (
+    <section>
+      <p className="font-display text-[11px] font-bold uppercase tracking-[0.22em] text-gold-ink">Localização</p>
+      <h2 className="mt-1.5 mb-4 text-[24px] leading-tight font-extrabold tracking-[-0.03em]">Onde estamos</h2>
+      <div className="flex items-start gap-4 rounded-card bg-surface p-4 shadow-soft">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-blush text-accent">
+          <IconeLocal />
+        </span>
+        <div className="min-w-0">
+          <p className="font-display text-[16px] font-bold tracking-[-0.01em]">Studio Gisele Lima</p>
+          <p className="mt-0.5 text-[14px] text-ink-muted">{ENDERECO}</p>
+          <LinkBotao href={LINK_MAPS} target="_blank" rel="noopener" variante="secundario" className="mt-3">
+            Ver no mapa
+          </LinkBotao>
         </div>
       </div>
     </section>
