@@ -63,9 +63,9 @@ export function AvisoInstalar() {
   if (standalone || fechadoAntes || fechado) return null;
 
   return (
-    <div className="mb-4 flex items-center gap-3 rounded-card border border-gold-soft bg-surface px-4 py-2.5 text-[14px]">
-      <Link href="/instalar" className="flex-1 text-ink">
-        Instale o app do Studio na tela inicial. <span className="text-accent">Como instalar →</span>
+    <div className="mb-3 flex items-center gap-3 rounded-pill bg-surface py-1.5 pr-2 pl-4 text-[13px] shadow-soft">
+      <Link href="/instalar" className="flex-1 text-ink-muted">
+        Tenha o app na tela inicial · <span className="font-display font-bold text-accent">Instalar</span>
       </Link>
       <button
         type="button"

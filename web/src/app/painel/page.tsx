@@ -69,14 +69,26 @@ export default async function Agenda({ searchParams }: PageProps<"/painel">) {
   const qs = (d: string) => `/painel?data=${d}${filtroProf ? `&prof=${filtroProf}` : ""}`;
   const listaPendentes = ((pendentes ?? []) as unknown as AgendamentoComDetalhes[]).map((a) => ({ ...a, ...lerPeriodo(a.periodo) }));
 
+  // resumo do dia escolhido, logo abaixo do título: quantos e qual o próximo
+  const ativosDoDia = doDia.filter((a) => a.status !== "cancelado");
+  const proximoDoDia = dia === hoje ? itensSemana.find((a) => a.status === "confirmado" && chaveDia(a.inicio) === dia && a.inicio > agora) : null;
+
   return (
     <div className="space-y-5">
       <header className="flex items-end justify-between gap-3">
-        <div>
-          <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-gold-ink">Lindeza Premium</p>
-          <h1 className="text-[28px] font-semibold tracking-tight">Agenda</h1>
+        <div className="min-w-0">
+          <p className="font-display text-[11px] font-bold uppercase tracking-[0.2em] text-gold-ink">Lindeza Premium</p>
+          <h1 className="mt-1 text-[30px] leading-none font-extrabold tracking-[-0.03em]">Agenda</h1>
+          <p className="mt-1.5 text-[13px] text-ink-muted">
+            {ativosDoDia.length === 0
+              ? "Nenhum atendimento neste dia"
+              : `${ativosDoDia.length} atendimento${ativosDoDia.length > 1 ? "s" : ""}`}
+            {proximoDoDia && <> · próximo às <strong className="font-semibold text-ink">{hora(proximoDoDia.inicio)}</strong></>}
+          </p>
         </div>
-        <LinkBotao href={`/painel/novo?data=${dia}`}>+ Novo agendamento</LinkBotao>
+        <LinkBotao href={`/painel/novo?data=${dia}`} className="shrink-0 px-4">
+          + Novo
+        </LinkBotao>
       </header>
 
       <div className="flex items-center gap-2">

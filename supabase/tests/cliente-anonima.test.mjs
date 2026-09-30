@@ -162,21 +162,9 @@ describe("mesmo número em outro aparelho", () => {
     await assert.rejects(como(db, "authenticated", s)(`select cadastrar_cliente('Ana', '+5599977770000')`), /muitas_trocas_de_aparelho/);
   });
 
-  test("cada troca avisa o número por WhatsApp (notificar-agendamento, com o secret)", async () => {
-    const avisos = (
-      await db.query(
-        `select url, headers, corpo from webhooks_disparados where corpo->>'table' = 'clientes_trocas_aparelho' and corpo->'record'->>'cliente_id' = $1`,
-        [anaId],
-      )
-    ).rows;
-    assert.equal(avisos.length, 3); // as 3 trocas que passaram; a 4ª foi recusada e não avisa
-    assert.ok(avisos.every((a) => a.url.endsWith("/functions/v1/notificar-agendamento")));
-    assert.ok(avisos.every((a) => a.headers["x-webhook-secret"]));
-    assert.ok(avisos.every((a) => a.corpo.type === "INSERT" && a.corpo.record.user_id_anterior));
-    // cadastro de número novo não é troca: não avisa
-    const bia = (await db.query(`select id from clientes where whatsapp = '+5599966660000'`)).rows[0].id;
-    const nenhum = (await db.query(`select 1 from webhooks_disparados where corpo->>'table' = 'clientes_trocas_aparelho' and corpo->'record'->>'cliente_id' = $1`, [bia])).rows;
-    assert.equal(nenhum.length, 0);
+  test("troca de aparelho fica registrada, mas não dispara mensagem", async () => {
+    const avisos = (await db.query(`select 1 from webhooks_disparados where corpo->>'table' = 'clientes_trocas_aparelho'`)).rows;
+    assert.equal(avisos.length, 0);
   });
 
   test("trocas de aparelho: só a Gisele lê o registro", async () => {

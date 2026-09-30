@@ -310,25 +310,31 @@ por celular + código em `/entrar`, que agora é a "Área da equipe".
 Cada profissional escreve os protocolos em **Mais → Protocolos
 pós-atendimento** (só dos serviços que ela atende). Em branco = não envia.
 
-## Passo 8d — Aviso de troca de aparelho e lembrete de 28 dias só da Gisele
+## Passo 8d — Lembrete de 28 dias só da Gisele
 
-1. **SQL Editor** → colar e rodar `supabase/colar/10-aviso-troca-aparelho-e-28-dias.sql`.
-   Tem o secret do aviso de agendamento dentro. Pode colar de novo sem
-   problema.
-2. **Edge Functions** → abrir `notificar-agendamento` → trocar todo o código
-   pelo de `supabase/colar/functions/notificar-agendamento.ts` → **Deploy**.
-   Depois, em **Details**, conferir que a verificação de JWT continua
-   **desligada** (o bug do passo 3 religa ao editar).
+**SQL Editor** → colar e rodar `supabase/colar/10-lembrete-28-dias-so-gisele.sql`.
+Faz o lembrete de manutenção de 28 dias sair só pra atendimentos da Gisele.
+Não tem senha dentro e pode ser colado de novo sem problema.
 
-A partir daqui:
-- quando um WhatsApp já cadastrado é usado num aparelho novo, esse número
-  recebe "Seu cadastro no app do Studio Gisele Lima foi acessado de um novo
-  aparelho. Se foi você, está tudo certo. Se não foi, fale com a Gisele por
-  aqui.";
-- na primeira vez que um cadastro que veio da planilha, do pré-cadastro ou do
-  painel é aberto no app, a mensagem diz "foi ativado em um aparelho", no
-  mesmo tom;
-- o lembrete de manutenção de 28 dias só sai pra atendimentos da Gisele.
+## Passo 8e — Conta de dona de TESTE pro João revisar o painel
+
+> ⚠️ **Conta de teste. Remover antes do lançamento pra Gisele** (passo 11, item 0).
+
+1. **SQL Editor** → colar e rodar `supabase/colar/90-conta-teste-joao.sql`.
+   Cria a dona de teste "TESTE João (dona de teste)" com o celular do João
+   (+55 99 98499-4873). Não mexe na Gisele nem na equipe real.
+2. O João entra em `<endereço do passo 7>/entrar` com o celular dele e o
+   código que chega no WhatsApp, e cai no painel como dona.
+3. Pra revisar o painel da profissional: em **Equipe → + Nova**, criar uma
+   profissional fictícia com o **nome começando com "TESTE"** (ex: "TESTE
+   Profissional") e um celular de teste; entrar com esse celular em outro
+   navegador. Clientes criadas pra teste também com nome começando com
+   "TESTE".
+
+O nome "TESTE…" é o que o script de remoção usa pra achar o que apagar. A
+dona de teste não tem serviço vinculado, então não aparece pra cliente. A
+profissional fictícia, se tiver serviço, **aparece** no app da cliente
+enquanto existir: não deixe ela ativa depois da revisão.
 
 ## Passo 9 — Primeiro acesso da Gisele e montagem da equipe
 
@@ -356,8 +362,8 @@ de reserva até o novo estar comprovado (seção 13).
       chega no WhatsApp. Nenhum código é pedido.
 - [ ] Fechar e reabrir o navegador: continua cadastrada (não pede os dados
       de novo). Em outro navegador, cadastrar com o **mesmo** número: o
-      cadastro e os agendamentos vão pro aparelho novo, o primeiro perde
-      o acesso, e o número recebe o aviso de "novo aparelho" no WhatsApp.
+      cadastro e os agendamentos vão pro aparelho novo, e o primeiro perde
+      o acesso. Nenhuma mensagem é enviada por causa da troca.
 - [ ] Foto no cadastro: aparece na agenda do painel, ao lado do nome.
 - [ ] Protocolo: escrever um em **Mais → Protocolos**, marcar pelo painel um
       atendimento de 10 minutos que já terminou há uns 15, e esperar até 5
@@ -397,6 +403,10 @@ de reserva até o novo estar comprovado (seção 13).
 
 ## Passo 11 — Virada (quando a lista acima estiver toda marcada)
 
+0. **Remover a conta de teste do João** (passo 8e): SQL Editor → colar e
+   rodar `supabase/colar/91-remover-conta-teste.sql`. Apaga a dona de teste,
+   toda profissional e cliente com nome começando com "TESTE" e os
+   agendamentos delas. O resultado tem que ser `0 | 0`.
 1. Na Vercel, **projeto antigo** → Settings → Domains → remover o domínio
    (`studio-gisele-lima.vercel.app` ou o domínio próprio). No **projeto
    novo** → Settings → Domains → adicionar esse domínio. Os links antigos
@@ -514,8 +524,8 @@ verificação. O que isso abre, e o que já está coberto:
   e remarcação avisam a dona do número pelo WhatsApp; no máximo 3 trocas de
   aparelho por número a cada 24h; cada troca fica registrada em
   `clientes_trocas_aparelho` (só a Gisele lê); quem assume não sobrescreve
-  nome e nascimento. Desde o passo 8d, a dona do número também recebe um
-  WhatsApp a cada troca de aparelho ("se não foi você, fale com a Gisele").
+  nome e nascimento. **Não coberto, por decisão (30/09/2026):** a dona
+  do número não recebe aviso quando o cadastro muda de aparelho.
 - **Qualquer pessoa vira "cliente" sem provar nada.** Coberto: teto de 3
   agendamentos futuros por cliente pelo app (Mais → Configurações), limite
   de sessões anônimas por IP (passo 8c.3), e todas as regras de RLS de

@@ -12,11 +12,11 @@ export default async function LayoutCliente({ children }: { children: React.Reac
   return (
     <div className="pb-tabbar">
       <header className="navbar-blur sticky top-0 z-20 border-b border-line/60">
-        <div className="mx-auto flex h-14 max-w-xl items-center justify-between px-4">
+        <div className="mx-auto flex h-[72px] max-w-xl items-center justify-between px-4">
           <Link href="/cliente" aria-label="Início">
-            <Image src="/fotos/logo.webp" alt="Studio Gisele Lima" width={100} height={36} className="h-8 w-auto" />
+            <Image src="/fotos/logo.webp" alt="Studio Gisele Lima" width={160} height={58} className="logo-marca h-12 w-auto" priority />
           </Link>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-gold-ink">Lindeza Premium</p>
+          <p className="font-display text-[11px] font-bold uppercase tracking-[0.18em] text-gold-ink">Lindeza Premium</p>
         </div>
       </header>
       <main className="mx-auto max-w-xl px-4 pt-5">

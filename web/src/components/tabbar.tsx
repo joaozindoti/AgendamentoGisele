@@ -14,7 +14,7 @@ export interface ItemTab {
 export function TabBar({ itens }: { itens: ItemTab[] }) {
   const caminho = usePathname();
   return (
-    <nav className="navbar-blur safe-bottom fixed inset-x-0 bottom-0 z-30 border-t border-line" aria-label="Navegação principal">
+    <nav className="safe-bottom fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/92 backdrop-blur-xl" aria-label="Navegação principal">
       <ul className="mx-auto flex max-w-xl">
         {itens.map((item) => {
           const ativo = item.exato ? caminho === item.href : caminho === item.href || caminho.startsWith(`${item.href}/`);
@@ -23,10 +23,11 @@ export function TabBar({ itens }: { itens: ItemTab[] }) {
               <Link
                 href={item.href}
                 aria-current={ativo ? "page" : undefined}
-                className={`flex flex-col items-center gap-1 py-2.5 text-[11px] font-medium ${ativo ? "text-accent" : "text-ink-muted"}`}
+                className={`flex flex-col items-center gap-1 pt-2 pb-2.5 text-[11px] font-medium transition-colors ${ativo ? "font-semibold text-accent" : "text-ink-muted hover:text-ink"}`}
               >
-                <span aria-hidden className="h-6 w-6">
-                  {item.icone}
+                {/* pílula rosa só na aba ativa: o rosa como acento, não como fundo */}
+                <span aria-hidden className={`flex h-7 w-14 items-center justify-center rounded-pill transition-colors ${ativo ? "bg-blush" : ""}`}>
+                  <span className="h-[22px] w-[22px]">{item.icone}</span>
                 </span>
                 {item.rotulo}
               </Link>

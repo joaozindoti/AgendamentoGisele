@@ -12,7 +12,8 @@ export default async function Home() {
   const supabase = await criarClienteServidor();
 
   const [{ data: owner }, { data: destaques }] = await Promise.all([
-    supabase.from("profissionais").select("id").eq("papel", "owner").eq("ativo", true).limit(1).maybeSingle(),
+    // a Gisele é a dona cadastrada primeiro (pode haver outra dona, ex: conta de teste)
+    supabase.from("profissionais").select("id").eq("papel", "owner").eq("ativo", true).order("criado_em").limit(1).maybeSingle(),
     supabase
       .from("servicos")
       .select("id, nome, descricao, preco, duracao_min, destaque")
@@ -47,7 +48,7 @@ export default async function Home() {
           <p className="text-[12px] font-semibold uppercase tracking-[0.18em] text-gold-soft">Lindeza Premium</p>
           <h1 className="mt-2 text-[40px] leading-[1.05] font-semibold tracking-tight sm:text-[56px]">Studio Gisele Lima</h1>
           <p className="mt-3 text-[18px] text-white/90">
-            Seja uma <em className="italic">Lindeza Premium</em>.
+            Seja uma <em className="font-display font-semibold not-italic text-gold-soft">Lindeza Premium</em>.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <LinkBotao href="/cliente/agendar">Agendar agora</LinkBotao>

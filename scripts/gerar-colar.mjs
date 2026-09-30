@@ -97,6 +97,10 @@ for (const velho of ["05-importar-planilha.sql", "06-disparar-lembretes-agora.sq
 writeFileSync(join(SAIDA, "05-preparar-planilha.sql"), aviso("scripts/preparar-planilha.sql") + readFileSync(join(RAIZ, "scripts", "preparar-planilha.sql"), "utf8"));
 writeFileSync(join(SAIDA, "06-importar-planilha.sql"), aviso("scripts/importar-planilha.sql") + readFileSync(join(RAIZ, "scripts", "importar-planilha.sql"), "utf8"));
 
+// ---------- conta de teste do João (remover antes do lançamento) ----------
+writeFileSync(join(SAIDA, "90-conta-teste-joao.sql"), aviso("scripts/conta-teste-joao.sql") + readFileSync(join(RAIZ, "scripts", "conta-teste-joao.sql"), "utf8"));
+writeFileSync(join(SAIDA, "91-remover-conta-teste.sql"), aviso("scripts/remover-conta-teste.sql") + readFileSync(join(RAIZ, "scripts", "remover-conta-teste.sql"), "utf8"));
+
 // ---------- disparo manual dos lembretes ----------
 const url = (f) => `https://pjbcgyzykvidbwdjlnvp.supabase.co/functions/v1/${f}`;
 const disparo = (f) =>

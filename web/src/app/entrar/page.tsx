@@ -29,7 +29,7 @@ export default async function PaginaEntrar({ searchParams }: PageProps<"/entrar"
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col px-6 pt-12 pb-10">
       <Link href="/" className="mx-auto" aria-label="Voltar ao início">
-        <Image src="/fotos/logo.webp" alt="Gisele Lima — Estética Feminina" width={220} height={80} className="h-auto w-44" priority />
+        <Image src="/fotos/logo.webp" alt="Gisele Lima — Estética Feminina" width={220} height={80} className="logo-marca h-auto w-52" priority />
       </Link>
       <h1 className="mt-10 text-[30px] leading-tight font-semibold tracking-tight">Área da equipe</h1>
       <p className="mt-3 text-[15px] text-ink-muted">

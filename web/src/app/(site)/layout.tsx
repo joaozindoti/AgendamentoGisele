@@ -6,9 +6,9 @@ export default function LayoutSite({ children }: { children: React.ReactNode }) 
   return (
     <>
       <nav className="navbar-blur fixed inset-x-0 top-0 z-30 border-b border-line/60">
-        <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4">
+        <div className="mx-auto flex h-[72px] max-w-5xl items-center justify-between px-4">
           <Link href="/" aria-label="Studio Gisele Lima — início">
-            <Image src="/fotos/logo.webp" alt="Gisele Lima — Estética Feminina" width={120} height={44} className="h-10 w-auto" priority />
+            <Image src="/fotos/logo.webp" alt="Gisele Lima — Estética Feminina" width={160} height={58} className="logo-marca h-12 w-auto" priority />
           </Link>
           <div className="flex items-center gap-4">
             <Link href="/servicos" className="hidden text-[14px] text-ink-muted hover:text-accent sm:inline">
@@ -20,7 +20,7 @@ export default function LayoutSite({ children }: { children: React.ReactNode }) 
           </div>
         </div>
       </nav>
-      <main className="pt-16">{children}</main>
+      <main className="pt-[72px]">{children}</main>
       <footer className="mt-16 border-t border-line bg-surface">
         <div className="mx-auto max-w-5xl px-4 py-10 text-center">
           <p className="text-[18px] font-semibold text-ink">Studio Gisele Lima</p>

@@ -31,12 +31,18 @@ export default async function LayoutPainel({ children }: { children: React.React
   return (
     <div className="pb-tabbar">
       <header className="navbar-blur sticky top-0 z-20 border-b border-line/60">
-        <div className="mx-auto flex h-14 max-w-3xl items-center justify-between px-4">
-          <Link href="/painel" className="flex items-center gap-3">
-            <Image src="/fotos/logo.webp" alt="" width={90} height={32} className="h-8 w-auto" />
-            <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-gold-ink">Painel</span>
+        <div className="mx-auto flex h-[68px] max-w-3xl items-center justify-between px-4">
+          <Link href="/painel" className="flex items-center gap-3" aria-label="Painel — agenda">
+            <Image src="/fotos/logo.webp" alt="" width={160} height={58} className="logo-marca h-11 w-auto" />
+            <span aria-hidden className="h-6 w-px bg-line" />
+            <span className="font-display text-[11px] font-bold uppercase tracking-[0.18em] text-gold-ink">Painel</span>
           </Link>
-          <span className="text-[13px] text-ink-muted">{papel?.nome_profissional}</span>
+          <Link href="/painel/mais" className="flex items-center gap-2 text-[13px] text-ink-muted hover:text-ink">
+            <span className="hidden sm:inline">{papel?.nome_profissional}</span>
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-blush font-display text-[14px] font-bold text-accent">
+              {papel?.nome_profissional?.charAt(0) ?? "·"}
+            </span>
+          </Link>
         </div>
       </header>
       <main className="mx-auto max-w-3xl px-4 pt-5">{children}</main>

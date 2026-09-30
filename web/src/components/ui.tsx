@@ -9,14 +9,14 @@ import type { ComponentProps, ReactNode } from "react";
 type Variante = "primario" | "secundario" | "fantasma" | "perigo";
 
 const VARIANTES: Record<Variante, string> = {
-  primario: "bg-accent text-white hover:bg-accent-hover disabled:bg-accent/40",
-  secundario: "bg-base text-accent hover:bg-line disabled:text-accent/40",
+  primario: "bg-accent text-white shadow-[0_8px_20px_-10px_rgba(122,46,62,0.6)] hover:bg-accent-hover disabled:bg-accent/40 disabled:shadow-none",
+  secundario: "bg-blush text-accent hover:bg-blush/70 disabled:text-accent/40",
   fantasma: "bg-transparent text-ink-muted hover:text-accent disabled:text-ink-muted/40",
   perigo: "bg-transparent text-alerta border border-alerta/40 hover:bg-alerta/5 disabled:opacity-40",
 };
 
 const BASE_BOTAO =
-  "inline-flex items-center justify-center gap-2 rounded-pill px-5 min-h-11 text-[15px] font-medium transition-colors disabled:cursor-not-allowed";
+  "inline-flex items-center justify-center gap-2 rounded-pill px-5 min-h-11 font-display text-[15px] font-semibold transition-colors disabled:cursor-not-allowed";
 
 export function Botao({
   variante = "primario",
@@ -45,7 +45,7 @@ export function Card({ className = "", ...props }: ComponentProps<"div">) {
 }
 
 export function Eyebrow({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return <p className={`text-[12px] font-semibold uppercase tracking-[0.14em] text-gold-ink ${className}`}>{children}</p>;
+  return <p className={`font-display text-[12px] font-semibold uppercase tracking-[0.14em] text-gold-ink ${className}`}>{children}</p>;
 }
 
 export function Titulo({
@@ -62,7 +62,7 @@ export function Titulo({
   return (
     <header className={`mb-5 ${className}`}>
       {eyebrow && <Eyebrow className="mb-1">{eyebrow}</Eyebrow>}
-      <h1 className="text-[28px] leading-tight font-semibold tracking-tight text-ink">{children}</h1>
+      <h1 className="text-[30px] leading-[1.1] font-extrabold tracking-[-0.03em] text-ink">{children}</h1>
       {sub && <p className="mt-1 text-[15px] text-ink-muted">{sub}</p>}
     </header>
   );
@@ -70,7 +70,7 @@ export function Titulo({
 
 export function Selo({ children }: { children: ReactNode }) {
   return (
-    <span className="inline-block bg-gold-soft/40 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-gold-ink">
+    <span className="inline-block rounded-pill border border-gold-soft px-2 py-0.5 font-display text-[10px] font-bold uppercase tracking-[0.12em] text-gold-ink">
       {children}
     </span>
   );

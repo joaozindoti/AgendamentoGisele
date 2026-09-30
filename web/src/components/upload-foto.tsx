@@ -87,7 +87,7 @@ export function UploadFoto({
         )}
       </div>
       <div className="space-y-2">
-        <label className="inline-flex min-h-11 cursor-pointer items-center rounded-pill bg-base px-5 text-[15px] font-medium text-accent hover:bg-line">
+        <label className="inline-flex min-h-11 cursor-pointer items-center rounded-pill bg-blush px-5 font-display text-[15px] font-semibold text-accent hover:bg-blush/70">
           {enviando ? "Enviando…" : fotoAtual ? "Trocar foto" : "Enviar foto"}
           <input type="file" accept={TIPOS_FOTO.join(",")} className="sr-only" onChange={aoEscolher} disabled={enviando} />
         </label>
