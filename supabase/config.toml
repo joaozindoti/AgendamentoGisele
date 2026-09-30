@@ -474,6 +474,12 @@ verify_jwt = false
 # enviar-protocolos também só é chamada pelo pg_cron (migration 20260929150000)
 [functions.enviar-protocolos]
 verify_jwt = false
+
+# responder-whatsapp é o webhook de mensagem recebida da Evolution API
+# (migration 20260930150000), sem JWT — autenticação real é o
+# WEBHOOK_WHATSAPP_ENTRADA_SECRET no endereço ou no header x-webhook-secret.
+[functions.responder-whatsapp]
+verify_jwt = false
 # Directory under `supabase/` where declarative files are written.
 # declarative_schema_path = "./schemas"
 # JSON string passed through to pg-delta SQL formatting. When omitted, SQL is

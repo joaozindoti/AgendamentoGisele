@@ -345,6 +345,76 @@ dona de teste não tem serviço vinculado, então não aparece pra cliente. A
 profissional fictícia, se tiver serviço, **aparece** no app da cliente
 enquanto existir: não deixe ela ativa depois da revisão.
 
+## Passo 8f — Resposta automática no WhatsApp (substitui o "Agente" do n8n)
+
+A função `responder-whatsapp` passa a receber as mensagens que chegam no
+WhatsApp do studio e responde sozinha em só duas situações. O resto fica em
+silêncio.
+
+| A mensagem fala de… | O que acontece |
+|---|---|
+| curso (curso, aula, workshop, mentoria, aprender…) | **não responde nada**. A Gisele atende pessoalmente. Vence qualquer outra palavra da mensagem |
+| link, app, site, agendar, marcar, horário, vaga, remarcar, cancelar… | manda o link do app |
+| homem, masculino, "só pra mulher", marido… | avisa que o atendimento é exclusivo para o público feminino |
+| qualquer outra coisa (inclusive áudio e foto sem legenda) | não responde; fica registrada pra Gisele ver |
+
+O mesmo número recebe no máximo **uma** resposta automática a cada 10
+minutos. A função não responde grupo, não responde ao próprio número do
+studio e não responde número de ninguém da equipe (cadastro em **Equipe**).
+
+> ⚠️ **O item 5 abaixo é a virada do "Agente".** A Evolution API manda as
+> mensagens recebidas pra **um** endereço só. Quando ele passar a ser o da
+> função nova, o Agente do n8n para de receber mensagens na mesma hora. Faça
+> os itens 1 a 4 quando quiser; o item 5, no dia combinado com a Gisele.
+
+1. **SQL Editor** → colar e rodar `supabase/colar/11-resposta-whatsapp-entrada.sql`.
+   Esse arquivo não tem senha e pode ser colado de novo sem problema.
+2. **Edge Functions → Secrets**: adicionar os dois secrets novos. Os dois
+   estão no fim de `supabase/colar/SECRETS.txt`:
+   - `WEBHOOK_WHATSAPP_ENTRADA_SECRET`: o valor que está lá.
+   - `LINK_APP`: o endereço do app com `/instalar` no fim, sem barra depois.
+     Enquanto a virada do passo 11 não acontece, é o endereço do passo 7 (ex:
+     `https://agendamento-gisele.vercel.app/instalar`). **Depois do passo 11,
+     trocar pelo domínio final**, senão a cliente recebe o link provisório.
+3. **Edge Functions → Deploy a new function → Via Editor**, nome
+   `responder-whatsapp`, colar `supabase/colar/functions/responder-whatsapp.ts`,
+   **Deploy**. Depois, em **Details**, **desligar** a verificação de JWT (igual
+   às outras do passo 3; quem chama é a Evolution API, sem login).
+4. **Anotar o webhook que está hoje na Evolution API** (é o do n8n). No
+   painel da Evolution (`<EVOLUTION_API_URL>/manager`) → instância
+   `studio-gisele-lima` → **Webhook**: copiar a **URL** que aparece e guardar.
+   É ela que volta se for preciso desfazer.
+5. **[SÓ NO PAINEL DA EVOLUTION]** Na mesma tela de **Webhook**:
+   - **URL**: a linha que está em `supabase/colar/WEBHOOK-EVOLUTION.txt`. Ela
+     já tem o secret dentro: não mande pra ninguém.
+   - **Enabled**: ligado.
+   - **Webhook by Events**: desligado. Se estiver ligado também funciona.
+   - **Eventos**: só `MESSAGES_UPSERT`.
+   - **Save**.
+
+**Conferir:** de um celular que **não** é da equipe, mandar pro WhatsApp do
+studio:
+- [ ] "qual o link pra agendar?" → chega o link do app. Logo em seguida,
+      "me manda o link" → **não** chega nada (cooldown de 10 minutos).
+- [ ] De outro celular: "vocês atendem homem?" → chega o aviso de público
+      feminino.
+- [ ] "tem curso de sobrancelha?" → não chega nada.
+- [ ] "bom dia" → não chega nada, e a mensagem aparece em **Table Editor →
+      mensagens_nao_classificadas**. Pra ver as últimas no SQL Editor:
+
+      ```sql
+      select recebida_em, telefone, nome, texto
+      from mensagens_nao_classificadas
+      order by recebida_em desc
+      limit 50;
+      ```
+- [ ] Do celular da Gisele ou de alguém da equipe: "link" → não chega nada.
+- [ ] O motivo de cada mensagem (respondida, cooldown, silêncio, ignorada)
+      aparece em **Edge Functions → responder-whatsapp → Logs**.
+
+**Desfazer:** colocar de volta na Evolution a URL anotada no item 4. O Agente
+do n8n volta a responder na hora (se o workflow ainda estiver ativo).
+
 ## Passo 9 — Primeiro acesso da Gisele e montagem da equipe
 
 1. No celular da Gisele, abrir `<endereço do passo 7>/entrar`, digitar o
@@ -425,12 +495,14 @@ de reserva até o novo estar comprovado (seção 13).
    pra alguma página específica.
 3. Supabase → **Authentication → URL Configuration → Site URL**: o domínio
    final.
+4. Supabase → **Edge Functions → Secrets** → `LINK_APP`: trocar pelo domínio
+   final + `/instalar` (passo 8f). É o link que a resposta automática manda.
 
 ## Passo 12 — Desligar o sistema antigo (depois de alguns dias estável)
 
 No n8n da VPS, **desativar** os workflows. Não apague ainda: eles são a
 reserva.
-- "Agente"
+- "Agente" (já não recebe mensagem desde o item 5 do passo 8f)
 - "Pré-cadastro"
 - "motor de disponibilidade" (endpoint `/webhook/disponibilidade`)
 - "Lembretes"
