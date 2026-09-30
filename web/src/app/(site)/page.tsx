@@ -11,9 +11,14 @@ import type { Disponibilidade, Servico } from "@/lib/tipos";
 export default async function Home() {
   const supabase = await criarClienteServidor();
 
-  const [{ data: owner }, { data: destaques }] = await Promise.all([
-    // a Gisele é a dona cadastrada primeiro (pode haver outra dona, ex: conta de teste)
-    supabase.from("profissionais").select("id").eq("papel", "owner").eq("ativo", true).order("criado_em").limit(1).maybeSingle(),
+  // Tudo em paralelo: a grade vem já filtrada pelas donas (join), em vez de
+  // buscar a dona primeiro e só depois a grade dela.
+  const [{ data: dispDonas }, { data: destaques }] = await Promise.all([
+    supabase
+      .from("disponibilidade_profissional")
+      .select("*, dona:profissionais!inner(papel, ativo, criado_em)")
+      .eq("dona.papel", "owner")
+      .eq("dona.ativo", true),
     supabase
       .from("servicos")
       .select("id, nome, descricao, preco, duracao_min, destaque")
@@ -22,9 +27,10 @@ export default async function Home() {
       .limit(3),
   ]);
 
-  const { data: disp } = owner
-    ? await supabase.from("disponibilidade_profissional").select("*").eq("profissional_id", owner.id)
-    : { data: [] };
+  // a Gisele é a dona cadastrada primeiro (pode haver outra dona, ex: conta de teste)
+  const linhas = (dispDonas ?? []) as (Disponibilidade & { dona: { criado_em: string } })[];
+  const gisele = linhas.map((l) => ({ id: l.profissional_id, em: l.dona.criado_em })).sort((a, b) => a.em.localeCompare(b.em))[0]?.id;
+  const disp = linhas.filter((l) => l.profissional_id === gisele);
 
   const horarios = resumoHorarios((disp ?? []) as Disponibilidade[]);
   const agora = statusAgora((disp ?? []) as Disponibilidade[]);
