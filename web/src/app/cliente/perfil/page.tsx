@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { BotaoSair } from "@/components/botao-sair";
 import { BotaoInstalar } from "@/components/pwa";
-import { LinkBotao, Titulo } from "@/components/ui";
+import { Titulo } from "@/components/ui";
 import { UploadFoto } from "@/components/upload-foto";
 import { obterAreaCliente } from "@/lib/auth";
 import { exibirTelefone } from "@/lib/telefone";
@@ -12,7 +12,9 @@ import { CadastroPerfil, FormPerfil } from "./form";
 export const metadata: Metadata = { title: "Perfil" };
 
 export default async function Perfil() {
-  const { supabase, clienteId, papel, anonimo } = await obterAreaCliente();
+  // Sem atalho pro painel aqui, mesmo pra quem também é da equipe: o painel
+  // se abre por /entrar (Área da equipe), que leva direto quem já está logado.
+  const { supabase, clienteId, anonimo } = await obterAreaCliente();
 
   if (!clienteId) {
     return (
@@ -38,11 +40,6 @@ export default async function Perfil() {
       <p className="text-[12px] text-ink-muted">
         Pra trocar o número de WhatsApp, fale com o studio: é pra ele que vão a confirmação e os lembretes.
       </p>
-      {papel?.profissional_id && (
-        <LinkBotao href="/painel" variante="secundario" largo>
-          Ir para o painel do studio
-        </LinkBotao>
-      )}
       <BotaoInstalar nomeApp="o app do Studio" />
       {/* Sessão anônima não tem como "entrar de novo": sair apagaria o
           vínculo deste aparelho. Só quem entrou por telefone vê o botão. */}

@@ -65,3 +65,21 @@ export const IconeVoltar = () => (
     <path d="M15 5l-7 7 7 7" />
   </svg>
 );
+export const IconeLocal = () => (
+  <svg {...base}>
+    <path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11Z" />
+    <circle cx="12" cy="10" r="2.4" />
+  </svg>
+);
+export const IconeToque = () => (
+  <svg {...base}>
+    <rect x="7" y="3" width="10" height="18" rx="2.5" />
+    <path d="M11 18h2" />
+  </svg>
+);
+export const IconeWifi = () => (
+  <svg {...base}>
+    <path d="M3 9.5a13 13 0 0 1 18 0M6 13a8.5 8.5 0 0 1 12 0M9.2 16.4a4 4 0 0 1 5.6 0" />
+    <circle cx="12" cy="19.5" r="0.9" fill="currentColor" />
+  </svg>
+);

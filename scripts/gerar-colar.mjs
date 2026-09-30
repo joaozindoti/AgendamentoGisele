@@ -12,6 +12,8 @@
 //   - functions/<nome>.ts: cada Edge Function num arquivo só (o editor do
 //     dashboard cria uma função por vez; imports de ../_shared não existem lá).
 //   - SECRETS.txt: nome = valor de cada secret das Edge Functions.
+//   - WEBHOOK-EVOLUTION.txt: endereço (com secret) do webhook de mensagem
+//     recebida, pra colar no painel da Evolution API (passo 8f).
 //
 // A pasta está no .gitignore: o repositório é público e ela tem secrets e
 // o telefone pessoal da Gisele. Os valores ficam em
@@ -35,7 +37,7 @@ mkdirSync(join(SAIDA, "functions"), { recursive: true });
 // ---------- secrets ----------
 const arqSegredos = join(SAIDA, ".segredos.json");
 const segredos = existsSync(arqSegredos) ? JSON.parse(readFileSync(arqSegredos, "utf8")) : {};
-for (const nome of ["WEBHOOK_VALIDAR_FOTO_SECRET", "WEBHOOK_NOTIFICAR_AGENDAMENTO_SECRET", "CRON_SECRET"]) {
+for (const nome of ["WEBHOOK_VALIDAR_FOTO_SECRET", "WEBHOOK_NOTIFICAR_AGENDAMENTO_SECRET", "CRON_SECRET", "WEBHOOK_WHATSAPP_ENTRADA_SECRET"]) {
   segredos[nome] ??= randomBytes(32).toString("hex");
 }
 // Dado pessoal, não secret de function: não dá pra gerar aleatório, e sem
@@ -44,7 +46,7 @@ if (!/^\+[1-9]\d{7,14}$/.test(segredos.TELEFONE_GISELE ?? "")) {
   throw new Error(`Falta "TELEFONE_GISELE" (E.164, ex: +5599999999999) em ${arqSegredos}.`);
 }
 writeFileSync(arqSegredos, JSON.stringify(segredos, null, 2));
-const SECRETS_DE_FUNCTION = ["WEBHOOK_VALIDAR_FOTO_SECRET", "WEBHOOK_NOTIFICAR_AGENDAMENTO_SECRET", "CRON_SECRET"];
+const SECRETS_DE_FUNCTION = ["WEBHOOK_VALIDAR_FOTO_SECRET", "WEBHOOK_NOTIFICAR_AGENDAMENTO_SECRET", "CRON_SECRET", "WEBHOOK_WHATSAPP_ENTRADA_SECRET"];
 
 const PLACEHOLDERS = {
   "<COLE_O_SECRET_AQUI>": segredos.WEBHOOK_VALIDAR_FOTO_SECRET,
@@ -171,6 +173,19 @@ writeFileSync(
     "EVOLUTION_API_INSTANCE\nstudio-gisele-lima\n",
     "EVOLUTION_API_KEY\n<pegar no painel/env da VPS ou do n8n atual>\n",
     "SEND_SMS_HOOK_SECRET\n<gerado pelo dashboard no passo 5 do PENDENCIAS.md>\n",
+    "LINK_APP\n<endereço do app + /instalar, ex: https://studio-gisele-lima.vercel.app/instalar — ver passo 8f do PENDENCIAS.md>\n",
+  ].join("\n"),
+);
+
+// ---------- webhook de mensagem recebida (passo 8f) ----------
+writeFileSync(
+  join(SAIDA, "WEBHOOK-EVOLUTION.txt"),
+  [
+    "Endereço do webhook de mensagem recebida — colar na Evolution API (passo 8f do PENDENCIAS.md).",
+    "Tem o secret dentro: não commitar, não compartilhar.",
+    "",
+    `${url("responder-whatsapp")}/${segredos.WEBHOOK_WHATSAPP_ENTRADA_SECRET}`,
+    "",
   ].join("\n"),
 );
 

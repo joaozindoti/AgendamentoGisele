@@ -1,9 +1,12 @@
 import Image from "next/image";
 import type { ReactNode } from "react";
+import { ENDERECO, LINK_MAPS } from "@/lib/studio";
 import { CATEGORIAS } from "@/lib/tipos";
+import { IconeLocal } from "./icones";
 import { LinkBotao } from "./ui";
 
-// Blocos da home da cliente (redesign "Lindeza Premium", 30/09/2026).
+// Blocos da home da cliente (redesign "Lindeza Premium", 30/09/2026), também
+// usados na vitrine pública (app/(site)) desde a fase 20.
 // Tudo aqui é Server Component e lê só dado público: nome, bio e foto de
 // profissional ativa, e a categoria dos serviços que cada uma faz.
 //
@@ -20,6 +23,7 @@ export function HeroStudio({
   chamada,
   titulo,
   destaque,
+  secundario,
 }: {
   fotoGisele: string | null;
   /** linha pequena acima do título (saudação ou "Lindeza Premium") */
@@ -28,6 +32,8 @@ export function HeroStudio({
   titulo: string;
   /** segunda linha do título, em peso forte */
   destaque: ReactNode;
+  /** botão ao lado do "Agendar horário" (a vitrine pública usa pra "Ver serviços") */
+  secundario?: { href: string; rotulo: string };
 }) {
   return (
     <section className="relative -mx-4 overflow-hidden px-4 pt-3 pb-8">
@@ -56,7 +62,11 @@ export function HeroStudio({
       </div>
 
       <div className="relative mt-9 text-center">
-        <p className="font-display text-[11px] font-bold uppercase tracking-[0.22em] text-gold-ink">{chamada}</p>
+        <p className="flex items-center justify-center gap-3 font-display text-[11px] font-bold uppercase tracking-[0.22em] text-gold-ink">
+          <span aria-hidden className="h-px w-8 bg-gradient-to-l from-gold/70 to-transparent" />
+          {chamada}
+          <span aria-hidden className="h-px w-8 bg-gradient-to-r from-gold/70 to-transparent" />
+        </p>
         <h1 className="mt-2 text-[40px] leading-[1.02] tracking-[-0.04em] text-ink">
           <span className="block font-extralight">{titulo}</span>
           <span className="block font-extrabold">{destaque}</span>
@@ -64,14 +74,71 @@ export function HeroStudio({
         <p className="mx-auto mt-3 max-w-[19rem] text-[15px] leading-relaxed text-ink-muted">
           Sobrancelha, pele e epilação em Pedreiras&nbsp;-&nbsp;MA, com o cuidado da Gisele e da equipe.
         </p>
-        <LinkBotao href="/cliente/agendar" className="mt-5 min-h-12 px-8 text-[16px]">
-          Agendar horário
-        </LinkBotao>
-        <div className="mt-7 flex flex-col items-center gap-2.5">
-          <span aria-hidden className="h-px w-10 bg-gold/70" />
-          <p className="max-w-[17rem] text-[11px] leading-relaxed font-medium text-balance uppercase tracking-[0.12em] text-ink-muted">
-            Atendimento exclusivo para o público feminino
-          </p>
+        <div className="mt-5 flex flex-wrap justify-center gap-3">
+          <LinkBotao href="/cliente/agendar" className="min-h-12 px-8 text-[16px]">
+            Agendar horário
+          </LinkBotao>
+          {secundario && (
+            <LinkBotao href={secundario.href} variante="secundario" className="min-h-12 px-6 text-[16px]">
+              {secundario.rotulo}
+            </LinkBotao>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// Faixa de exclusividade no TOPO da home, antes do hero: é regra do studio,
+// não detalhe, e o hero sozinho já ocupa a primeira tela do celular. Chega
+// como uma notificação (entra deslizando) e é o único bloco escuro da home.
+export function SeloExclusivoFeminino() {
+  return (
+    <aside className="flex animate-[faixa-entra_420ms_cubic-bezier(0.2,0.8,0.2,1)_both] items-center gap-3 rounded-card bg-ink py-2.5 pr-4 pl-2.5 text-white shadow-soft motion-reduce:animate-none">
+      <span
+        aria-hidden
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-gold-soft/80 bg-white/5 font-display text-[18px] leading-none text-gold-soft"
+      >
+        ♀
+      </span>
+      <p className="min-w-0 font-display text-[14px] leading-snug font-bold tracking-[-0.005em] text-balance">
+        Atendimento exclusivo para o <span className="text-gold-soft">público feminino</span>
+      </p>
+    </aside>
+  );
+}
+
+// Cabeçalho das seções da home: fio dourado + chamada + título, o mesmo
+// acabamento em todas, pra nenhum título ficar "solto" no fundo liso.
+export function CabecalhoSecao({ chamada, titulo }: { chamada: string; titulo: string }) {
+  return (
+    <header className="mb-4">
+      <p className="flex items-center gap-2.5 font-display text-[11px] font-bold uppercase tracking-[0.22em] text-gold-ink">
+        <span aria-hidden className="h-px w-6 bg-gold/70" />
+        {chamada}
+      </p>
+      <h2 className="mt-1.5 text-[24px] leading-tight font-extrabold tracking-[-0.03em]">{titulo}</h2>
+    </header>
+  );
+}
+
+// Painel branco com sombra suave que embrulha cada seção da home.
+export const PAINEL = "rounded-card bg-surface p-5 shadow-soft";
+
+export function LocalizacaoStudio() {
+  return (
+    <section className={PAINEL}>
+      <CabecalhoSecao chamada="Localização" titulo="Onde estamos" />
+      <div className="flex items-start gap-4">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-blush text-accent">
+          <IconeLocal />
+        </span>
+        <div className="min-w-0">
+          <p className="font-display text-[16px] font-bold tracking-[-0.01em]">Studio Gisele Lima</p>
+          <p className="mt-0.5 text-[14px] text-ink-muted">{ENDERECO}</p>
+          <LinkBotao href={LINK_MAPS} target="_blank" rel="noopener" variante="secundario" className="mt-3">
+            Ver no mapa
+          </LinkBotao>
         </div>
       </div>
     </section>
@@ -140,12 +207,11 @@ export function EquipeStudio({ profissionais }: { profissionais: ProfissionalHom
   if (profissionais.length === 0) return null;
 
   return (
-    <section>
-      <p className="font-display text-[11px] font-bold uppercase tracking-[0.22em] text-gold-ink">Nossa equipe</p>
-      <h2 className="mt-1.5 mb-4 text-[24px] leading-tight font-extrabold tracking-[-0.03em]">Quem cuida de você</h2>
+    <section className={PAINEL}>
+      <CabecalhoSecao chamada="Nossa equipe" titulo="Quem cuida de você" />
 
       {profissionais.length === 1 ? (
-        <div className="flex items-center gap-4 rounded-card bg-surface p-4 shadow-soft">
+        <div className="flex items-center gap-4">
           <FotoArco p={profissionais[0]} tamanho="88px" className="h-[110px] w-[88px] shrink-0" />
           <div className="min-w-0">
             <p className="font-display text-[18px] font-bold tracking-[-0.02em]">{profissionais[0].nome}</p>
@@ -155,7 +221,7 @@ export function EquipeStudio({ profissionais }: { profissionais: ProfissionalHom
           </div>
         </div>
       ) : (
-        <ul className="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <ul className="-mx-5 flex snap-x snap-mandatory scroll-px-5 gap-4 overflow-x-auto px-5 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {profissionais.map((p) => (
             <li key={p.id} className="w-[44%] max-w-44 shrink-0 snap-start">
               <FotoArco p={p} tamanho="176px" className="aspect-[4/5] w-full shadow-soft" />
