@@ -16,8 +16,8 @@ export default async function InicioCliente({ searchParams }: PageProps<"/client
   const { supabase, clienteId } = await obterAreaCliente();
   const { aviso } = await searchParams;
 
-  // Home enxuta (fase 16): hero, faixa de exclusividade, próximo horário (se
-  // houver), equipe e localização. Nada além disso.
+  // Home enxuta (fase 16): faixa de exclusividade (no topo, visível sem
+  // rolar), hero, próximo horário (se houver), equipe e localização.
   const [{ data: cliente }, { data: agendamentos }, horasMinimas, { data: equipe }, { data: vinculos }] = await Promise.all([
     clienteId
       ? supabase.from("clientes").select("nome").eq("id", clienteId).single()
@@ -73,13 +73,13 @@ export default async function InicioCliente({ searchParams }: PageProps<"/client
 
   return (
     <div className="space-y-6">
+      <SeloExclusivoFeminino />
+
       {primeiroNome ? (
         <HeroStudio fotoGisele={fotoGisele} chamada="Studio Gisele Lima" titulo={`${saudacao()},`} destaque={<>{primeiroNome}.</>} />
       ) : (
         <HeroStudio fotoGisele={fotoGisele} chamada={saudacao()} titulo="Seja uma" destaque="Lindeza Premium." />
       )}
-
-      <SeloExclusivoFeminino />
 
       {typeof aviso === "string" && avisos[aviso] && <Caixa tipo="ok">{avisos[aviso]}</Caixa>}
 

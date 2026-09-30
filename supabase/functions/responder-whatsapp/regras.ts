@@ -65,6 +65,23 @@ export function mensagemLink(linkApp: string): string {
   );
 }
 
+// "+5599984183784" -> "(99) 98418-3784"; fora do Brasil, fica como veio.
+export function exibirTelefone(e164: string): string {
+  const br = e164.match(/^\+55(\d{2})(\d{4,5})(\d{4})$/);
+  return br ? `(${br[1]}) ${br[2]}-${br[3]}` : e164;
+}
+
+// Alerta pra Gisele (fase 18) quando a mensagem não bate com nenhuma
+// categoria. O link wa.me abre a conversa com a cliente num toque.
+export function mensagemAlertaGisele(telefone: string, nome: string | null, texto: string): string {
+  const quem = nome ? `${nome} · ${exibirTelefone(telefone)}` : exibirTelefone(telefone);
+  const trecho = texto.length > 500 ? `${texto.slice(0, 500)}…` : texto;
+  return (
+    `Nova mensagem sem resposta automática de ${quem}:\n\n"${trecho}"\n\n` +
+    `Responda direto pelo WhatsApp: https://wa.me/${telefone.slice(1)}`
+  );
+}
+
 export const MENSAGEM_MASCULINO =
   "Oi! Obrigada pelo contato. O atendimento do Studio Gisele Lima é exclusivo para o público feminino. 💛";
 

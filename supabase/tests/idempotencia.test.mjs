@@ -15,7 +15,7 @@ import { fileURLToPath } from "node:url";
 import { criarBancoVazio } from "./ambiente.mjs";
 
 const COLAR = join(dirname(fileURLToPath(import.meta.url)), "..", "colar");
-const ARQUIVOS = ["01-schema-inicial.sql", "02-lembretes-e-notificacoes.sql", "03-motor-agendamento-e-painel.sql", "04-seed-producao.sql", "08-faturamento-periodo.sql", "09-cliente-sem-login-e-protocolo.sql", "10-lembrete-28-dias-so-gisele.sql", "11-resposta-whatsapp-entrada.sql"];
+const ARQUIVOS = ["01-schema-inicial.sql", "02-lembretes-e-notificacoes.sql", "03-motor-agendamento-e-painel.sql", "04-seed-producao.sql", "08-faturamento-periodo.sql", "09-cliente-sem-login-e-protocolo.sql", "10-lembrete-28-dias-so-gisele.sql", "11-resposta-whatsapp-entrada.sql", "12-alerta-gisele-mensagem.sql"];
 const existe = ARQUIVOS.every((f) => existsSync(join(COLAR, f)));
 const ler = (f) => readFileSync(join(COLAR, f), "utf8").replace(/create extension if not exists pg_(cron|net)[^;]*;/g, "");
 

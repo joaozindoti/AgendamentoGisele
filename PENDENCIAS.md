@@ -415,6 +415,41 @@ studio:
 **Desfazer:** colocar de volta na Evolution a URL anotada no item 4. O Agente
 do n8n volta a responder na hora (se o workflow ainda estiver ativo).
 
+## Passo 8g — Aviso pra Gisele de mensagem sem resposta automática
+
+Toda mensagem que a `responder-whatsapp` não sabe responder (a última
+linha da tabela do passo 8f) passa a gerar um aviso no WhatsApp **pessoal**
+da Gisele: o celular dela cadastrado no painel, o mesmo que recebe
+"Novo agendamento". O aviso traz o nome e o número da cliente, o texto (ou
+"[áudio]", "[imagem]"…) e um link que abre a conversa com ela.
+
+Se a mesma pessoa mandar várias mensagens seguidas, a Gisele recebe **um**
+aviso a cada 10 minutos por número, não um por mensagem. Todas continuam
+registradas em `mensagens_nao_classificadas`.
+
+Faça depois do passo 8f (ou junto com ele):
+
+1. **SQL Editor** → colar e rodar `supabase/colar/12-alerta-gisele-mensagem.sql`.
+   Não tem senha dentro e pode ser colado de novo sem problema.
+2. **Edge Functions** → `responder-whatsapp` → aba **Code**: apagar tudo,
+   colar o conteúdo **novo** de `supabase/colar/functions/responder-whatsapp.ts`
+   → **Deploy**.
+3. Depois do deploy, aba **Details**: conferir que a verificação de JWT
+   continua **desligada** (o bug do passo 3 liga de volta ao editar).
+
+Não tem secret novo.
+
+**Conferir:**
+- [ ] De um celular que não é da equipe, mandar "bom dia" pro WhatsApp do
+      studio → chega no WhatsApp da Gisele "Nova mensagem sem resposta
+      automática de …". O link no fim abre a conversa com esse número.
+- [ ] Logo em seguida, do mesmo celular, "tudo bem?" → **não** chega outro
+      aviso (fica só na tabela).
+- [ ] Um áudio de outro celular → o aviso chega com "[áudio]".
+
+Enquanto a conta de teste do João (passo 8e) existir, ele também recebe
+esses avisos, porque ela é dona. Some junto com a conta no passo 11.
+
 ## Passo 9 — Primeiro acesso da Gisele e montagem da equipe
 
 1. No celular da Gisele, abrir `<endereço do passo 7>/entrar`, digitar o
