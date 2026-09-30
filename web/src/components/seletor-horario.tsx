@@ -1,17 +1,25 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { chaveDia, diaDaSemana, hora, inicioDoDia, somaDias } from "@/lib/formato";
+import { chaveDia, dataLonga, diaDaSemana, hora, inicioDoDia, instanteLocal, somaDias } from "@/lib/formato";
 import { criarClienteNavegador } from "@/lib/supabase/client";
 import { Vazio } from "./ui";
 
 const MESES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
-const DIAS_CURTOS = ["D", "S", "T", "Q", "Q", "S", "S"];
+const DIAS_CURTOS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
-// Calendário + grade de horários, alimentados pelo motor de agendamento do
-// banco (dias_disponiveis / horarios_disponiveis, seção 5). O front nunca
-// calcula disponibilidade por conta própria — era exatamente essa duplicação
-// (site x n8n) que fazia o site oferecer horário que o backend recusava.
+interface Janela {
+  dia_semana: number;
+  hora_inicio: string;
+  hora_fim: string;
+}
+
+// Semana (7 dias) + grade de horários do dia, alimentadas pelo motor de
+// agendamento do banco (dias_disponiveis / horarios_disponiveis, seção 5).
+// O front nunca decide o que está livre: só é clicável o que o banco
+// devolveu. A grade de trabalho da profissional (disponibilidade, leitura
+// pública) e o passo da grade servem só de MOLDURA, pra mostrar também os
+// horários ocupados/passados como indisponíveis, em vez de uma lista solta.
 export function SeletorHorario({
   profissionalId,
   servicoId,
@@ -52,10 +60,14 @@ export function SeletorHorario({
   const [respHorarios, setRespHorarios] = useState<{ chave: string; lista: string[] } | null>(null);
   const horarios = chaveHorarios && respHorarios?.chave === chaveHorarios ? respHorarios.lista : null;
 
-  // mês navegado à mão pelas setas; sem isso, o calendário mostra o mês do
-  // dia escolhido (ex: primeiro dia livre é no mês que vem)
-  const [mesManual, setMesManual] = useState<string | null>(null);
-  const mes = mesManual ?? (dia ?? hoje).slice(0, 7);
+  const [respMoldura, setRespMoldura] = useState<{ profissionalId: string; janelas: Janela[]; passo: number } | null>(null);
+  const moldura = respMoldura?.profissionalId === profissionalId ? respMoldura : null;
+
+  // semana navegada à mão pelas setas; sem isso, mostra a semana do dia escolhido
+  const [semanaManual, setSemanaManual] = useState<string | null>(null);
+  const segundaDe = (d: string) => somaDias(d, -((diaDaSemana(d) + 6) % 7));
+  const semana = semanaManual ?? segundaDe(dia ?? hoje);
+  const diasDaSemana = useMemo(() => Array.from({ length: 7 }, (_, i) => somaDias(semana, i)), [semana]);
 
   useEffect(() => {
     let vivo = true;
@@ -93,92 +105,123 @@ export function SeletorHorario({
     };
   }, [chaveHorarios, dia, profissionalId, servicoId, ignorarAgendamentoId]);
 
-  const setDia = (d: string) => {
-    setDiaEscolhido(d);
-    setMesManual(null);
-  };
-  const setMes = setMesManual;
+  useEffect(() => {
+    let vivo = true;
+    const supabase = criarClienteNavegador();
+    Promise.all([
+      supabase.from("disponibilidade_profissional").select("dia_semana, hora_inicio, hora_fim").eq("profissional_id", profissionalId),
+      supabase.from("configuracoes").select("valor").eq("chave", "passo_minutos").maybeSingle(),
+    ]).then(([{ data: janelas }, { data: passo }]) => {
+      if (vivo) {
+        setRespMoldura({ profissionalId, janelas: (janelas ?? []) as Janela[], passo: Math.max(Number(passo?.valor) || 30, 5) });
+      }
+    });
+    return () => {
+      vivo = false;
+    };
+  }, [profissionalId]);
 
-  const celulas = useMemo(() => {
-    const primeiro = `${mes}-01`;
-    const vazios = diaDaSemana(primeiro);
-    const lista: (string | null)[] = Array(vazios).fill(null);
-    for (let d = primeiro; d.startsWith(mes); d = somaDias(d, 1)) lista.push(d);
-    return lista;
-  }, [mes]);
-
-  const [ano, mesNum] = mes.split("-").map(Number);
-  const mesAnterior = `${mesNum === 1 ? ano - 1 : ano}-${String(mesNum === 1 ? 12 : mesNum - 1).padStart(2, "0")}`;
-  const mesSeguinte = `${mesNum === 12 ? ano + 1 : ano}-${String(mesNum === 12 ? 1 : mesNum + 1).padStart(2, "0")}`;
+  // Todos os inícios da grade de trabalho do dia (moldura) + os livres que o
+  // banco devolveu. Livre = veio do banco; o resto aparece indisponível.
+  const slots = useMemo(() => {
+    if (!dia || !horarios) return [];
+    const livres = new Set(horarios);
+    const todos = new Set(horarios);
+    for (const j of moldura?.janelas ?? []) {
+      if (j.dia_semana !== diaDaSemana(dia)) continue;
+      const [hi, mi] = j.hora_inicio.split(":").map(Number);
+      const [hf, mf] = j.hora_fim.split(":").map(Number);
+      for (let m = hi * 60 + mi; m < hf * 60 + mf; m += moldura!.passo) {
+        const hhmm = `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
+        todos.add(instanteLocal(dia, hhmm).toISOString());
+      }
+    }
+    return [...todos].sort().map((iso) => ({ iso, livre: livres.has(iso) }));
+  }, [dia, horarios, moldura]);
 
   const periodos = useMemo(() => {
-    const grupos: { rotulo: string; itens: string[] }[] = [
+    const grupos: { rotulo: string; itens: typeof slots }[] = [
       { rotulo: "Manhã", itens: [] },
       { rotulo: "Tarde", itens: [] },
       { rotulo: "Noite", itens: [] },
     ];
-    for (const h of horarios ?? []) {
-      const hh = Number(hora(new Date(h)).slice(0, 2));
-      grupos[hh < 12 ? 0 : hh < 18 ? 1 : 2].itens.push(h);
+    for (const s of slots) {
+      const hh = Number(hora(new Date(s.iso)).slice(0, 2));
+      grupos[hh < 12 ? 0 : hh < 18 ? 1 : 2].itens.push(s);
     }
     return grupos.filter((g) => g.itens.length);
-  }, [horarios]);
+  }, [slots]);
+
+  const semanaAnterior = somaDias(semana, -7);
+  const semanaSeguinte = somaDias(semana, 7);
+  // semana que cruza o mês: "Setembro – Outubro 2026"
+  const [anoIni, mesIni] = semana.split("-").map(Number);
+  const [anoFim, mesFim] = somaDias(semana, 6).split("-").map(Number);
+  const rotuloMes =
+    mesIni === mesFim
+      ? `${MESES[mesIni - 1]} ${anoIni}`
+      : `${MESES[mesIni - 1]}${anoIni !== anoFim ? ` ${anoIni}` : ""} – ${MESES[mesFim - 1]} ${anoFim}`;
+  const qtdLivres = slots.filter((s) => s.livre).length;
 
   return (
-    <div className="space-y-5">
-      <div className="rounded-card border border-line bg-surface p-3">
-        <div className="mb-2 flex items-center justify-between">
+    <div className="space-y-4">
+      {/* ---------- dias da semana ---------- */}
+      <div className="rounded-card bg-surface p-3 shadow-soft">
+        <div className="mb-3 flex items-center justify-between">
           <button
             type="button"
-            aria-label="Mês anterior"
-            className="px-3 py-1 text-[18px] text-ink-muted disabled:opacity-30"
-            disabled={mesAnterior < hoje.slice(0, 7)}
-            onClick={() => setMes(mesAnterior)}
+            aria-label="Semana anterior"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-[18px] text-ink-muted hover:bg-base disabled:opacity-25"
+            disabled={somaDias(semana, -1) < hoje}
+            onClick={() => setSemanaManual(semanaAnterior)}
           >
             ‹
           </button>
-          <p className="text-[15px] font-semibold">
-            {MESES[mesNum - 1]} {ano}
-          </p>
+          <p className="font-display text-[15px] font-bold tracking-[-0.01em]">{rotuloMes}</p>
           <button
             type="button"
-            aria-label="Próximo mês"
-            className="px-3 py-1 text-[18px] text-ink-muted disabled:opacity-30"
-            disabled={mesSeguinte > limite.slice(0, 7)}
-            onClick={() => setMes(mesSeguinte)}
+            aria-label="Próxima semana"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-[18px] text-ink-muted hover:bg-base disabled:opacity-25"
+            disabled={semanaSeguinte > limite}
+            onClick={() => setSemanaManual(semanaSeguinte)}
           >
             ›
           </button>
         </div>
-        <div className="grid grid-cols-7 text-center text-[11px] font-medium text-ink-muted">
-          {DIAS_CURTOS.map((d, i) => (
-            <span key={i} className="py-1">
-              {d}
-            </span>
-          ))}
-        </div>
-        <div className="grid grid-cols-7 gap-y-1 text-center">
-          {celulas.map((c, i) => {
-            if (!c) return <span key={`v${i}`} />;
-            const livre = diasLivres?.has(c) ?? false;
-            const escolhido = c === dia;
+        <div className="grid grid-cols-7 gap-1.5">
+          {diasDaSemana.map((d) => {
+            const livre = diasLivres?.has(d) ?? false;
+            const escolhido = d === dia;
             return (
               <button
-                key={c}
+                key={d}
                 type="button"
                 disabled={!livre}
-                onClick={() => setDia(c)}
+                onClick={() => {
+                  setDiaEscolhido(d);
+                  setSemanaManual(null);
+                }}
                 aria-pressed={escolhido}
-                aria-label={inicioDoDia(c).toLocaleDateString("pt-BR", { day: "numeric", month: "long" })}
-                className={`mx-auto flex h-10 w-10 items-center justify-center rounded-full text-[14px] transition-colors ${
+                aria-label={`${dataLonga(inicioDoDia(d))}${livre ? "" : ", sem horários"}`}
+                className={`flex flex-col items-center rounded-input py-2 transition-colors ${
                   escolhido
-                    ? "bg-accent text-white"
+                    ? "bg-accent text-white shadow-[0_8px_18px_-10px_rgba(122,46,62,0.7)]"
                     : livre
-                    ? "text-ink hover:bg-base"
+                    ? "bg-base text-ink hover:bg-blush"
                     : "text-ink-muted/35"
-                } ${c === hoje && !escolhido ? "ring-1 ring-accent/40" : ""}`}
+                }`}
               >
-                {Number(c.slice(8))}
+                <span className={`font-display text-[10px] font-bold uppercase tracking-[0.08em] ${escolhido ? "text-white/80" : ""}`}>
+                  {DIAS_CURTOS[diaDaSemana(d)]}
+                </span>
+                <span className="font-display text-[18px] leading-tight font-extrabold tracking-[-0.02em]">{Number(d.slice(8))}</span>
+                {/* ponto dourado = tem vaga; hoje ganha um traço embaixo */}
+                <span
+                  aria-hidden
+                  className={`mt-0.5 h-1 rounded-full ${d === hoje ? "w-3" : "w-1"} ${
+                    escolhido ? "bg-white/80" : livre ? "bg-gold" : "bg-transparent"
+                  }`}
+                />
               </button>
             );
           })}
@@ -190,32 +233,66 @@ export function SeletorHorario({
         <Vazio>Sem horários livres nos próximos dias para essa combinação. Tente outra profissional ou fale com o studio.</Vazio>
       )}
 
+      {/* ---------- grade de horários do dia ---------- */}
       {dia && (
-        <div>
-          <p className="mb-2 text-[14px] font-medium text-ink">Horários disponíveis</p>
+        <div className="rounded-card bg-surface p-4 shadow-soft">
+          <div className="flex items-baseline justify-between gap-3">
+            <p className="font-display text-[16px] font-bold tracking-[-0.02em]">{dataLonga(inicioDoDia(dia))}</p>
+            {horarios && (
+              <p className="shrink-0 text-[12px] font-medium text-ink-muted">
+                {qtdLivres} {qtdLivres === 1 ? "livre" : "livres"}
+              </p>
+            )}
+          </div>
+          <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-ink-muted" aria-label="Legenda">
+            <li className="flex items-center gap-1.5">
+              <span aria-hidden className="h-2.5 w-2.5 rounded-[3px] border border-ink-muted/50 bg-surface" /> Disponível
+            </li>
+            <li className="flex items-center gap-1.5">
+              <span aria-hidden className="h-2.5 w-2.5 rounded-[3px] bg-accent" /> Selecionado
+            </li>
+            <li className="flex items-center gap-1.5">
+              <span aria-hidden className="h-2.5 w-2.5 rounded-[3px] border border-line bg-base" /> Indisponível
+            </li>
+          </ul>
+
           {horarios === null ? (
-            <p className="text-[13px] text-ink-muted">Carregando horários…</p>
+            <p className="mt-4 text-[13px] text-ink-muted">Carregando horários…</p>
           ) : periodos.length === 0 ? (
-            <Vazio>Nenhum horário livre neste dia.</Vazio>
+            <div className="mt-4">
+              <Vazio>Nenhum horário livre neste dia.</Vazio>
+            </div>
           ) : (
-            <div className="space-y-3">
+            <div className="mt-4 space-y-4">
               {periodos.map((p) => (
                 <div key={p.rotulo}>
-                  <p className="mb-1.5 text-[12px] uppercase tracking-wider text-ink-muted">{p.rotulo}</p>
-                  <div className="grid grid-cols-4 gap-2">
-                    {p.itens.map((h) => (
-                      <button
-                        key={h}
-                        type="button"
-                        onClick={() => aoEscolher(h)}
-                        aria-pressed={valor === h}
-                        className={`min-h-11 rounded-input border text-[14px] font-medium transition-colors ${
-                          valor === h ? "border-accent bg-accent text-white" : "border-line bg-surface text-ink hover:border-accent"
-                        }`}
-                      >
-                        {hora(new Date(h))}
-                      </button>
-                    ))}
+                  <p className="mb-2 flex items-center gap-2 font-display text-[11px] font-bold uppercase tracking-[0.16em] text-gold-ink">
+                    {p.rotulo}
+                    <span aria-hidden className="h-px flex-1 bg-line" />
+                  </p>
+                  <div className="grid grid-cols-4 gap-2 sm:grid-cols-6">
+                    {p.itens.map((s) => {
+                      const escolhido = valor === s.iso;
+                      return (
+                        <button
+                          key={s.iso}
+                          type="button"
+                          disabled={!s.livre}
+                          onClick={() => aoEscolher(s.iso)}
+                          aria-pressed={escolhido}
+                          aria-label={`${hora(new Date(s.iso))}${s.livre ? "" : ", indisponível"}`}
+                          className={`min-h-11 rounded-input text-[14px] font-semibold tabular-nums transition-all ${
+                            escolhido
+                              ? "bg-accent text-white shadow-[0_8px_18px_-10px_rgba(122,46,62,0.7)]"
+                              : s.livre
+                              ? "border border-line bg-surface text-ink hover:border-accent hover:text-accent"
+                              : "cursor-not-allowed bg-base text-ink-muted/40 line-through decoration-ink-muted/30"
+                          }`}
+                        >
+                          {hora(new Date(s.iso))}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               ))}

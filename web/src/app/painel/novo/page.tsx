@@ -29,7 +29,7 @@ export default async function NovoAgendamento({ searchParams }: PageProps<"/pain
 
   return (
     <>
-      <Titulo eyebrow="Painel">Novo agendamento</Titulo>
+      <Titulo sub="Cliente, serviço e horário, nessa ordem.">Novo agendamento</Titulo>
       <FormNovoAgendamento
         servicos={lista as { id: string; nome: string; duracao_min: number }[]}
         ehOwner={ehOwner}

@@ -107,24 +107,29 @@ export function FormNovoAgendamento({
 
   return (
     <div className="space-y-6">
-      <section className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-[15px] font-semibold">1. Cliente</h2>
+      <Etapa numero={1} titulo="Cliente" feita={clienteOk}
+        acao={
           <button
             type="button"
-            className="text-[13px] text-accent"
+            className="font-display text-[13px] font-bold text-accent"
             onClick={() => {
               setModoCliente((m) => (m === "busca" ? "nova" : "busca"));
               setCliente(null);
             }}
           >
-            {modoCliente === "busca" ? "+ Cliente nova" : "Buscar cliente cadastrada"}
+            {modoCliente === "busca" ? "+ Cliente nova" : "Buscar cadastrada"}
           </button>
-        </div>
+        }
+      >
         {modoCliente === "busca" ? (
           cliente ? (
-            <div className="flex items-center justify-between border border-accent bg-surface px-4 py-3">
-              <span className="font-medium">{cliente.nome}</span>
+            <div className="flex items-center justify-between rounded-input border border-accent/40 bg-blush/40 px-4 py-3">
+              <span className="flex items-center gap-3 font-medium">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-surface font-display text-[13px] font-bold text-accent">
+                  {cliente.nome.charAt(0)}
+                </span>
+                {cliente.nome}
+              </span>
               <button type="button" className="text-[13px] text-accent" onClick={() => setCliente(null)}>
                 Trocar
               </button>
@@ -165,10 +170,9 @@ export function FormNovoAgendamento({
             />
           </div>
         )}
-      </section>
+      </Etapa>
 
-      <section className="space-y-3">
-        <h2 className="text-[15px] font-semibold">2. Serviço e profissional</h2>
+      <Etapa numero={2} titulo="Serviço e profissional" feita={Boolean(servicoId && profissionalId)}>
         <Selecao
           rotulo="Serviço"
           value={servicoId}
@@ -208,16 +212,20 @@ export function FormNovoAgendamento({
         {ehOwner && servicoId && profissionais.length === 0 && (
           <Caixa>Nenhuma profissional ativa faz esse serviço. Vincule em Equipe ou em Serviços.</Caixa>
         )}
-      </section>
+      </Etapa>
 
       {servicoId && profissionalId && (
-        <section className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-[15px] font-semibold">3. Horário</h2>
-            <button type="button" className="text-[13px] text-accent" onClick={() => setModoLivre((v) => !v)}>
-              {modoLivre ? "Usar horários da grade" : "Encaixe (horário livre)"}
+        <Etapa
+          numero={3}
+          titulo="Horário"
+          feita={Boolean(inicioEscolhido)}
+          semCartao={!modoLivre}
+          acao={
+            <button type="button" className="font-display text-[13px] font-bold text-accent" onClick={() => setModoLivre((v) => !v)}>
+              {modoLivre ? "Usar a grade" : "Encaixe"}
             </button>
-          </div>
+          }
+        >
           {modoLivre ? (
             <div className="grid grid-cols-2 gap-3">
               <Campo rotulo="Dia" type="date" value={diaLivre} onChange={(e) => setDiaLivre(e.target.value)} />
@@ -235,7 +243,7 @@ export function FormNovoAgendamento({
               aoEscolher={setInicio}
             />
           )}
-        </section>
+        </Etapa>
       )}
 
       <AreaTexto rotulo="Observações (opcional)" value={observacoes} onChange={(e) => setObservacoes(e.target.value)} maxLength={1000} />
@@ -249,5 +257,44 @@ export function FormNovoAgendamento({
           : "Agendar"}
       </Botao>
     </div>
+  );
+}
+
+// Etapa numerada: é uma sequência de verdade (cliente → serviço → horário),
+// e o número vira check quando a etapa está completa.
+function Etapa({
+  numero,
+  titulo,
+  feita,
+  acao,
+  semCartao,
+  children,
+}: {
+  numero: number;
+  titulo: string;
+  feita: boolean;
+  acao?: React.ReactNode;
+  /** o seletor de horário já vem em cartões próprios */
+  semCartao?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="space-y-3">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="flex items-center gap-2.5 text-[17px] font-bold tracking-[-0.02em]">
+          <span
+            aria-hidden
+            className={`flex h-7 w-7 items-center justify-center rounded-full font-display text-[13px] font-extrabold ${
+              feita ? "bg-accent text-white" : "border border-gold/70 text-gold-ink"
+            }`}
+          >
+            {feita ? "✓" : numero}
+          </span>
+          {titulo}
+        </h2>
+        {acao}
+      </div>
+      {semCartao ? children : <div className="space-y-3 rounded-card bg-surface p-4 shadow-soft">{children}</div>}
+    </section>
   );
 }
