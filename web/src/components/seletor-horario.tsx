@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { chaveDia, dataLonga, diaDaSemana, hora, inicioDoDia, instanteLocal, somaDias } from "@/lib/formato";
+import { montarSlots } from "@/lib/grade-horarios";
 import { criarClienteNavegador } from "@/lib/supabase/client";
 import { Vazio } from "./ui";
 
@@ -24,6 +25,7 @@ export function SeletorHorario({
   profissionalId,
   servicoId,
   ignorarAgendamentoId,
+  horarioAtual,
   diasMaximos,
   valor,
   aoEscolher,
@@ -32,6 +34,8 @@ export function SeletorHorario({
   profissionalId: string;
   servicoId: string;
   ignorarAgendamentoId?: string;
+  /** remarcação: início (ISO) do horário que a cliente já tem — aparece destacado, não escolhível */
+  horarioAtual?: string;
   diasMaximos: number;
   valor: string | null;
   aoEscolher: (inicioIso: string) => void;
@@ -125,19 +129,18 @@ export function SeletorHorario({
   // banco devolveu. Livre = veio do banco; o resto aparece indisponível.
   const slots = useMemo(() => {
     if (!dia || !horarios) return [];
-    const livres = new Set(horarios);
-    const todos = new Set(horarios);
+    const inicios: string[] = [];
     for (const j of moldura?.janelas ?? []) {
       if (j.dia_semana !== diaDaSemana(dia)) continue;
       const [hi, mi] = j.hora_inicio.split(":").map(Number);
       const [hf, mf] = j.hora_fim.split(":").map(Number);
       for (let m = hi * 60 + mi; m < hf * 60 + mf; m += moldura!.passo) {
         const hhmm = `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
-        todos.add(instanteLocal(dia, hhmm).toISOString());
+        inicios.push(instanteLocal(dia, hhmm).toISOString());
       }
     }
-    return [...todos].sort().map((iso) => ({ iso, livre: livres.has(iso) }));
-  }, [dia, horarios, moldura]);
+    return montarSlots(horarios, inicios, horarioAtual);
+  }, [dia, horarios, moldura, horarioAtual]);
 
   const periodos = useMemo(() => {
     const grupos: { rotulo: string; itens: typeof slots }[] = [
@@ -161,7 +164,8 @@ export function SeletorHorario({
     mesIni === mesFim
       ? `${MESES[mesIni - 1]} ${anoIni}`
       : `${MESES[mesIni - 1]}${anoIni !== anoFim ? ` ${anoIni}` : ""} – ${MESES[mesFim - 1]} ${anoFim}`;
-  const qtdLivres = slots.filter((s) => s.livre).length;
+  const qtdLivres = slots.filter((s) => s.estado === "livre").length;
+  const temAtual = slots.some((s) => s.estado === "atual");
 
   return (
     <div className="space-y-4">
@@ -251,6 +255,11 @@ export function SeletorHorario({
             <li className="flex items-center gap-1.5">
               <span aria-hidden className="h-2.5 w-2.5 rounded-[3px] bg-accent" /> Selecionado
             </li>
+            {temAtual && (
+              <li className="flex items-center gap-1.5">
+                <span aria-hidden className="h-2.5 w-2.5 rounded-[3px] border border-dashed border-accent bg-blush" /> Seu horário atual
+              </li>
+            )}
             <li className="flex items-center gap-1.5">
               <span aria-hidden className="h-2.5 w-2.5 rounded-[3px] border border-line bg-base" /> Indisponível
             </li>
@@ -273,18 +282,31 @@ export function SeletorHorario({
                   <div className="grid grid-cols-4 gap-2 sm:grid-cols-6">
                     {p.itens.map((s) => {
                       const escolhido = valor === s.iso;
+                      const livre = s.estado === "livre";
+                      if (s.estado === "atual") {
+                        return (
+                          <div
+                            key={s.iso}
+                            aria-label={`${hora(new Date(s.iso))}, seu horário atual`}
+                            className="flex min-h-11 flex-col items-center justify-center rounded-input border border-dashed border-accent bg-blush text-accent"
+                          >
+                            <span className="text-[14px] leading-none font-semibold tabular-nums">{hora(new Date(s.iso))}</span>
+                            <span className="mt-0.5 font-display text-[9px] font-bold uppercase tracking-[0.08em]">Atual</span>
+                          </div>
+                        );
+                      }
                       return (
                         <button
                           key={s.iso}
                           type="button"
-                          disabled={!s.livre}
+                          disabled={!livre}
                           onClick={() => aoEscolher(s.iso)}
                           aria-pressed={escolhido}
-                          aria-label={`${hora(new Date(s.iso))}${s.livre ? "" : ", indisponível"}`}
+                          aria-label={`${hora(new Date(s.iso))}${livre ? "" : ", indisponível"}`}
                           className={`min-h-11 rounded-input text-[14px] font-semibold tabular-nums transition-all ${
                             escolhido
                               ? "bg-accent text-white shadow-[0_8px_18px_-10px_rgba(122,46,62,0.7)]"
-                              : s.livre
+                              : livre
                               ? "border border-line bg-surface text-ink hover:border-accent hover:text-accent"
                               : "cursor-not-allowed bg-base text-ink-muted/40 line-through decoration-ink-muted/30"
                           }`}

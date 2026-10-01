@@ -35,6 +35,7 @@ export default async function PaginaRemarcar({ params }: PageProps<"/cliente/age
           agendamentoId={ag.id}
           profissionalId={ag.profissional_id}
           servicoId={ag.servico_id}
+          horarioAtual={inicio.toISOString()}
           diasMaximos={diasMaximos}
         />
       ) : (
