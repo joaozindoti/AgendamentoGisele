@@ -12,11 +12,14 @@ export function FormRemarcar({
   agendamentoId,
   profissionalId,
   servicoId,
+  horarioAtual,
   diasMaximos,
 }: {
   agendamentoId: string;
   profissionalId: string;
   servicoId: string;
+  /** início (ISO) do agendamento sendo remarcado */
+  horarioAtual: string;
   diasMaximos: number;
 }) {
   const router = useRouter();
@@ -50,6 +53,7 @@ export function FormRemarcar({
         profissionalId={profissionalId}
         servicoId={servicoId}
         ignorarAgendamentoId={agendamentoId}
+        horarioAtual={horarioAtual}
         diasMaximos={diasMaximos}
         valor={inicio}
         aoEscolher={setInicio}

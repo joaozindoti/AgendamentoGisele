@@ -58,6 +58,7 @@ export default async function DetalheAgendamento({ params }: PageProps<"/painel/
         passou={fim.getTime() <= agoraMs()}
         profissionalId={ag.profissional_id}
         servicoId={ag.servico_id}
+        horarioAtual={inicio.toISOString()}
         diasMaximos={diasMaximos}
       />
 
