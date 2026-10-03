@@ -316,7 +316,7 @@ por celular + código em `/entrar`, que agora é a "Área da equipe".
 
    Tem que dar `4 | 1`.
 
-Cada profissional escreve os protocolos em **Mais → Protocolos
+Cada profissional escreve os protocolos em **Mais → Protocolos pré e
 pós-atendimento** (só dos serviços que ela atende). Em branco = não envia.
 
 ## Passo 8d — Lembrete de 28 dias só da Gisele
@@ -487,6 +487,34 @@ Não tem SQL nem secret novo.
       chega o link.
 - [ ] "oi, vocês têm curso de extensão?" → não chega nada, de nenhum
       celular.
+
+## Passo 8i — Protocolo pré-atendimento
+
+Igual ao protocolo pós-atendimento do passo 8c, só que pra **antes** do
+atendimento: cada profissional escreve, por serviço, um texto que a cliente
+recebe no WhatsApp logo depois do "Agendamento confirmado!" (na mesma hora,
+sem cron). Serviço sem texto = só a confirmação, como antes. Remarcação e
+cancelamento não reenviam o texto.
+
+Faça depois do passo 8c:
+
+1. **SQL Editor** → colar e rodar `supabase/colar/13-protocolo-pre-atendimento.sql`.
+   Não tem senha dentro e pode ser colado de novo sem problema.
+2. **Edge Functions** → `notificar-agendamento` → aba **Code**: apagar tudo,
+   colar o conteúdo **novo** de `supabase/colar/functions/notificar-agendamento.ts`
+   → **Deploy**.
+3. Aba **Details**: conferir que a verificação de JWT continua **desligada**.
+4. O app (painel) sai sozinho na Vercel quando o PR for pro `main`.
+
+Não tem secret novo.
+
+**Conferir:**
+- [ ] No painel, **Mais → Protocolos pré e pós-atendimento**: cada serviço
+      tem os campos "Antes do atendimento" e "Depois do atendimento".
+      Escrever um texto em "Antes" de um serviço e salvar.
+- [ ] Agendar esse serviço (com essa profissional) → a cliente recebe
+      "Agendamento confirmado!" e, logo depois, "Cuidados antes do seu …".
+- [ ] Agendar um serviço com "Antes" em branco → chega só a confirmação.
 
 ## Passo 9 — Primeiro acesso da Gisele e montagem da equipe
 

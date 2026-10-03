@@ -5,6 +5,11 @@
 // deixa a própria cliente mover o horário — sem esse aviso a profissional
 // não ficaria sabendo. concluido/no_show não mandam mensagem.
 //
+// Na confirmação, se a profissional cadastrou protocolo pré-atendimento pra
+// esse serviço (profissional_servicos.protocolo_pre, fase 23), a cliente
+// recebe o texto numa segunda mensagem, logo depois da confirmação. Os
+// textos ficam em mensagens.ts.
+//
 // Autenticação: x-webhook-secret == WEBHOOK_NOTIFICAR_AGENDAMENTO_SECRET
 // (ver migration 20260925160000). Payload vem como
 // {type, table, schema, record, old_record} — NÃO as colunas soltas na
@@ -22,6 +27,7 @@
 import { criarClienteAdmin } from "../_shared/supabase-admin.ts";
 import { enviarWhatsApp } from "../_shared/evolution.ts";
 import { inicioDoPeriodo } from "../_shared/periodo.ts";
+import { type Evento, mensagemProfissional, mensagensCliente } from "./mensagens.ts";
 
 interface Agendamento {
   id: string;
@@ -74,7 +80,7 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({ skipped: true, motivo: "sem record" }), { status: 200 });
   }
 
-  const evento: "confirmacao" | "cancelamento" | "remarcacao" | null =
+  const evento: Evento | null =
     type === "INSERT" && record.status === "confirmado"
       ? "confirmacao"
       : type === "UPDATE" && record.status === "cancelado" && old_record?.status !== "cancelado"
@@ -112,35 +118,39 @@ Deno.serve(async (req) => {
   const servico = detalhes.servico as unknown as { nome: string };
   const { data, hora } = formataDataHora(record.periodo);
 
-  const mensagens = {
-    confirmacao: {
-      cliente:
-        `Agendamento confirmado! ${servico.nome} no dia ${data} às ${hora}, com ${profissional.nome}. ` +
-        `Studio Gisele Lima te espera 💛`,
-      profissional: `Novo agendamento: ${cliente.nome} — ${servico.nome} em ${data} às ${hora}.`,
-    },
-    remarcacao: {
-      cliente:
-        `Horário remarcado! ${servico.nome} agora é no dia ${data} às ${hora}, com ${profissional.nome}. ` +
-        `Studio Gisele Lima te espera 💛`,
-      profissional: `Remarcação: ${cliente.nome} — ${servico.nome} passou para ${data} às ${hora}.`,
-    },
-    cancelamento: {
-      cliente:
-        `Seu agendamento de ${servico.nome} no dia ${data} às ${hora} foi cancelado. ` +
-        `Se quiser remarcar, é só abrir o app. Studio Gisele Lima`,
-      profissional: `Cancelamento: ${cliente.nome} — ${servico.nome} que era em ${data} às ${hora} foi cancelado.`,
-    },
-  }[evento];
-  const mensagemCliente = mensagens.cliente;
-  const mensagemProfissional = mensagens.profissional;
+  // Sem texto (ou erro na leitura), segue só com a confirmação.
+  let protocoloPre: string | null = null;
+  if (evento === "confirmacao") {
+    const { data: ps } = await supabase
+      .from("profissional_servicos")
+      .select("protocolo_pre")
+      .eq("profissional_id", record.profissional_id)
+      .eq("servico_id", record.servico_id)
+      .maybeSingle();
+    protocoloPre = ps?.protocolo_pre ?? null;
+  }
+
+  const dados = {
+    clienteNome: cliente.nome,
+    servicoNome: servico.nome,
+    profissionalNome: profissional.nome,
+    data,
+    hora,
+  };
+  const mensagensDaCliente = mensagensCliente(evento, dados, protocoloPre);
 
   // Avisa só o profissional responsável pelo agendamento, não Gisele à
   // parte — cobre o caso dela mesma (profissional com papel owner) sem
   // duplicar aviso quando é a staff nova quem está com a agenda.
-  const envios: Promise<unknown>[] = [enviarWhatsApp(cliente.whatsapp, mensagemCliente)];
+  // As da cliente vão uma depois da outra, pra chegarem na ordem (o
+  // protocolo pré nunca antes da confirmação, nem sozinho se ela falhar).
+  const envios: Promise<unknown>[] = [
+    (async () => {
+      for (const m of mensagensDaCliente) await enviarWhatsApp(cliente.whatsapp, m);
+    })(),
+  ];
   if (profissional.telefone) {
-    envios.push(enviarWhatsApp(profissional.telefone, mensagemProfissional));
+    envios.push(enviarWhatsApp(profissional.telefone, mensagemProfissional(evento, dados)));
   }
 
   const resultados = await Promise.allSettled(envios);

@@ -10,12 +10,14 @@ interface MeuProtocolo {
   servico_id: string;
   servico_nome: string;
   protocolo: string | null;
+  protocolo_pre: string | null;
 }
 
-// Cada profissional escreve os cuidados pós-atendimento dos serviços que ela
-// atende. O texto sai sozinho pelo WhatsApp 10 minutos depois do fim do
-// atendimento (Edge Function enviar-protocolos). A RPC meus_protocolos só
-// devolve os serviços dela; salvar_protocolo recusa qualquer outro.
+// Cada profissional escreve os cuidados de antes e de depois dos serviços que
+// ela atende. O pré sai pelo WhatsApp logo depois da confirmação do
+// agendamento (Edge Function notificar-agendamento); o pós, 10 minutos depois
+// do fim do atendimento (enviar-protocolos). A RPC meus_protocolos só devolve
+// os serviços dela; salvar_protocolo recusa qualquer outro.
 export default async function PaginaProtocolos() {
   const { supabase } = await exigirProfissional();
   const { data, error } = await supabase.rpc("meus_protocolos");
@@ -23,8 +25,8 @@ export default async function PaginaProtocolos() {
 
   return (
     <div className="space-y-5">
-      <Titulo sub="Enviado automaticamente pelo WhatsApp 10 minutos depois do fim do atendimento. Deixe em branco pra não enviar nada.">
-        Protocolos pós-atendimento
+      <Titulo sub="Enviados automaticamente pelo WhatsApp: o de antes, logo depois da confirmação do agendamento; o de depois, 10 minutos depois do fim do atendimento. Deixe em branco pra não enviar nada.">
+        Protocolos pré e pós-atendimento
       </Titulo>
       {error ? (
         <Caixa tipo="erro">{mensagemDeErro(error)}</Caixa>
@@ -34,7 +36,12 @@ export default async function PaginaProtocolos() {
         <ul className="space-y-4">
           {lista.map((p) => (
             <li key={p.servico_id} className="rounded-card border border-line bg-surface p-4">
-              <FormProtocolo servicoId={p.servico_id} servicoNome={p.servico_nome} protocolo={p.protocolo} />
+              <FormProtocolo
+                servicoId={p.servico_id}
+                servicoNome={p.servico_nome}
+                protocolo={p.protocolo}
+                protocoloPre={p.protocolo_pre}
+              />
             </li>
           ))}
         </ul>
