@@ -319,13 +319,14 @@ export async function salvarMeuPerfil(_: Estado, dados: FormData): Promise<Estad
   return { ok: true };
 }
 
-// ---------- protocolo pós-atendimento (cada profissional, os próprios serviços) ----------
+// ---------- protocolos pré e pós-atendimento (cada profissional, os próprios serviços) ----------
 
 export async function salvarProtocolo(servicoId: string, _: Estado, dados: FormData): Promise<Estado> {
   const { supabase } = await exigirProfissional();
   const { error } = await supabase.rpc("salvar_protocolo", {
     p_servico_id: servicoId,
     p_protocolo: String(dados.get("protocolo") ?? ""),
+    p_protocolo_pre: String(dados.get("protocolo_pre") ?? ""),
   });
   if (error) return { erro: mensagemDeErro(error) };
   revalidatePath("/painel/protocolos");
