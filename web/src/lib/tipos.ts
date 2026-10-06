@@ -111,6 +111,27 @@ export const CATEGORIAS: { chave: string; rotulo: string; sub: string; foto: str
   },
 ];
 
+export type GrupoCategoria = (typeof CATEGORIAS)[number];
+
+/** Rótulo de uma categoria: as fixas têm nome bonito; as criadas no painel já são o próprio nome. */
+export function rotuloCategoria(chave: string | null | undefined) {
+  if (!chave) return "Sem categoria";
+  return CATEGORIAS.find((c) => c.chave === chave)?.rotulo ?? chave;
+}
+
+/**
+ * Categorias presentes no catálogo, na ordem de exibição: as fixas (com foto)
+ * primeiro, depois as criadas pela Gisele no painel, em ordem alfabética.
+ */
+export function ordenarCategorias(presentes: string[]): GrupoCategoria[] {
+  const fixas = CATEGORIAS.filter((c) => presentes.includes(c.chave));
+  const novas = [...new Set(presentes)]
+    .filter((p) => p && !CATEGORIAS.some((c) => c.chave === p))
+    .sort((a, b) => a.localeCompare(b, "pt-BR"))
+    .map((p) => ({ chave: p, rotulo: p, sub: "", foto: "", alt: "" }));
+  return [...fixas, ...novas];
+}
+
 // Chaves de `configuracoes` editáveis pela Gisele no painel, com o texto de
 // ajuda de cada uma.
 export const CHAVES_CONFIG = [

@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { duracao, preco } from "@/lib/formato";
-import { CATEGORIAS, type Servico } from "@/lib/tipos";
+import { ordenarCategorias, type GrupoCategoria, type Servico } from "@/lib/tipos";
 import { Selo, Vazio } from "./ui";
 
 export function FiltroCategorias({
@@ -16,7 +16,7 @@ export function FiltroCategorias({
   ativa: string;
   aoTrocar: (c: string) => void;
 }) {
-  const opcoes = [{ chave: "todos", rotulo: "Todos" }, ...CATEGORIAS.filter((c) => categorias.includes(c.chave))];
+  const opcoes = [{ chave: "todos", rotulo: "Todos" }, ...ordenarCategorias(categorias)];
   if (opcoes.length <= 2) return null;
   return (
     <div className="-mx-4 mb-4 flex gap-2 overflow-x-auto px-4 pb-1" role="tablist" aria-label="Categorias">
@@ -60,48 +60,64 @@ export function CartaoServico({ servico, href }: { servico: Servico; href: strin
   );
 }
 
+/**
+ * Serviços agrupados por categoria (igual ao site antigo): fixas, depois as
+ * criadas no painel, e por último "Outros" (sem categoria). `ativa` filtra
+ * um grupo só; "todos" mostra todos.
+ */
+export function agruparPorCategoria(servicos: Servico[], ativa: string) {
+  const presentes = [...new Set(servicos.map((s) => s.categoria).filter(Boolean))] as string[];
+  const ordem = ordenarCategorias(presentes);
+  const grupos: (GrupoCategoria & { itens: Servico[] })[] = ordem
+    .filter((g) => ativa === "todos" || g.chave === ativa)
+    .map((g) => ({ ...g, itens: servicos.filter((s) => s.categoria === g.chave) }));
+  const semCategoria = servicos.filter((s) => !s.categoria);
+  if (ativa === "todos" && semCategoria.length) {
+    grupos.push({ chave: "", rotulo: "Outros", sub: "", foto: "", alt: "", itens: semCategoria });
+  }
+  return { presentes, grupos: grupos.filter((g) => g.itens.length) };
+}
+
+/** Topo de cada grupo: foto com o nome por cima, ou só o nome quando a categoria não tem foto. */
+export function CabecalhoCategoria({ grupo, mostrarNome = true }: { grupo: GrupoCategoria; mostrarNome?: boolean }) {
+  if (grupo.foto) {
+    return (
+      <div className="relative mb-3 h-28 overflow-hidden rounded-card">
+        <Image src={grupo.foto} alt={grupo.alt} fill sizes="(max-width: 1024px) 100vw, 1024px" className="object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-r from-ink/70 to-transparent" />
+        <div className="absolute bottom-3 left-4 text-white">
+          <p className="text-[20px] font-semibold">{grupo.rotulo}</p>
+          <p className="text-[12px] text-white/80">{grupo.sub}</p>
+        </div>
+      </div>
+    );
+  }
+  return mostrarNome ? <p className="mb-3 text-[18px] font-semibold">{grupo.rotulo}</p> : null;
+}
+
 // hrefBase é texto, não função: este é um Client Component e o Next.js não
 // deixa um Server Component passar função como prop pra ele.
 export function CatalogoServicos({ servicos, hrefBase }: { servicos: Servico[]; hrefBase: string }) {
   const [ativa, setAtiva] = useState("todos");
-  const categoriasPresentes = [...new Set(servicos.map((s) => s.categoria).filter(Boolean))] as string[];
 
   if (!servicos.length) return <Vazio>Catálogo em atualização. Volte em breve!</Vazio>;
 
-  const grupos =
-    ativa === "todos"
-      ? [...CATEGORIAS.filter((c) => categoriasPresentes.includes(c.chave)), { chave: "", rotulo: "Outros", sub: "", foto: "", alt: "" }]
-      : CATEGORIAS.filter((c) => c.chave === ativa);
+  const { presentes, grupos } = agruparPorCategoria(servicos, ativa);
 
   return (
     <>
-      <FiltroCategorias categorias={categoriasPresentes} ativa={ativa} aoTrocar={setAtiva} />
+      <FiltroCategorias categorias={presentes} ativa={ativa} aoTrocar={setAtiva} />
       <div className="space-y-8">
-        {grupos.map((g) => {
-          const itens = servicos.filter((s) => (g.chave ? s.categoria === g.chave : !CATEGORIAS.some((c) => c.chave === s.categoria)));
-          if (!itens.length) return null;
-          return (
-            <section key={g.chave || "outros"}>
-              {g.foto ? (
-                <div className="relative mb-3 h-28 overflow-hidden rounded-card">
-                  <Image src={g.foto} alt={g.alt} fill sizes="(max-width: 1024px) 100vw, 1024px" className="object-cover" />
-                  <div className="absolute inset-0 bg-gradient-to-r from-ink/70 to-transparent" />
-                  <div className="absolute bottom-3 left-4 text-white">
-                    <p className="text-[20px] font-semibold">{g.rotulo}</p>
-                    <p className="text-[12px] text-white/80">{g.sub}</p>
-                  </div>
-                </div>
-              ) : (
-                categoriasPresentes.length > 0 && <p className="mb-3 text-[18px] font-semibold">{g.rotulo}</p>
-              )}
-              <div className="grid gap-3 sm:grid-cols-2">
-                {itens.map((s) => (
-                  <CartaoServico key={s.id} servico={s} href={`${hrefBase}${s.id}`} />
-                ))}
-              </div>
-            </section>
-          );
-        })}
+        {grupos.map((g) => (
+          <section key={g.chave || "outros"}>
+            <CabecalhoCategoria grupo={g} mostrarNome={presentes.length > 0} />
+            <div className="grid gap-3 sm:grid-cols-2">
+              {g.itens.map((s) => (
+                <CartaoServico key={s.id} servico={s} href={`${hrefBase}${s.id}`} />
+              ))}
+            </div>
+          </section>
+        ))}
       </div>
     </>
   );

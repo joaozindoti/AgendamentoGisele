@@ -6,7 +6,7 @@ import { exigirOwner, exigirProfissional } from "@/lib/auth";
 import { mensagemDeErro } from "@/lib/erros";
 import { instanteLocal } from "@/lib/formato";
 import { paraE164 } from "@/lib/telefone";
-import { CHAVES_CONFIG, type StatusAgendamento } from "@/lib/tipos";
+import { CATEGORIAS, CHAVES_CONFIG, type StatusAgendamento } from "@/lib/tipos";
 
 // Server Actions do painel. Toda escrita vai com a sessão da pessoa logada,
 // então quem pode o quê continua sendo decidido pela RLS/triggers no banco
@@ -183,12 +183,27 @@ export async function salvarServico(id: string | null, _: Estado, dados: FormDat
     return { erro: "Duração deve ser um número inteiro de minutos." };
   }
 
+  let categoria: string | null = texto(dados, "categoria") || null;
+  if (categoria === "__nova") {
+    const nova = texto(dados, "categoria_nova").replace(/\s+/g, " ");
+    if (nova.length < 2) return { erro: "Informe o nome da nova categoria." };
+    // Reaproveita uma categoria que já existe com o mesmo nome (ignorando maiúsculas/acentos),
+    // pra não nascer "Cílios" e "cilios" como grupos separados.
+    const normal = (t: string) => t.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+    const { data: usadas } = await supabase.from("servicos").select("categoria").not("categoria", "is", null);
+    const existentes = [
+      ...CATEGORIAS.flatMap((c) => [c.chave, c.rotulo].map((n) => ({ nome: n, chave: c.chave }))),
+      ...(usadas ?? []).map((u) => ({ nome: u.categoria as string, chave: u.categoria as string })),
+    ];
+    categoria = existentes.find((e) => normal(e.nome) === normal(nova))?.chave ?? nova;
+  }
+
   const registro = {
     nome,
     descricao: texto(dados, "descricao") || null,
     preco,
     duracao_min: duracao,
-    categoria: texto(dados, "categoria") || null,
+    categoria,
     destaque: dados.get("destaque") === "on",
     ativo: dados.get("ativo") === "on",
   };

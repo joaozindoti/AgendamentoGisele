@@ -1,7 +1,7 @@
 import Image from "next/image";
 import type { ReactNode } from "react";
 import { ENDERECO, LINK_MAPS } from "@/lib/studio";
-import { CATEGORIAS } from "@/lib/tipos";
+import { rotuloCategoria } from "@/lib/tipos";
 import { IconeLocal } from "./icones";
 import { LinkBotao } from "./ui";
 
@@ -181,7 +181,7 @@ export interface ProfissionalHome {
 function especialidade(p: ProfissionalHome) {
   const bio = p.bio?.trim();
   if (bio) return bio;
-  const rotulos = p.categorias.map((c) => CATEGORIAS.find((x) => x.chave === c)?.rotulo ?? c);
+  const rotulos = p.categorias.map(rotuloCategoria);
   return rotulos.join(" · ");
 }
 

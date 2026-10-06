@@ -3,7 +3,7 @@ import Link from "next/link";
 import { LinkBotao, Selo, Titulo } from "@/components/ui";
 import { exigirOwner } from "@/lib/auth";
 import { duracao, preco } from "@/lib/formato";
-import { CATEGORIAS, type Servico } from "@/lib/tipos";
+import { rotuloCategoria, type Servico } from "@/lib/tipos";
 
 export const metadata: Metadata = { title: "Serviços" };
 
@@ -31,7 +31,7 @@ export default async function ServicosPainel() {
               <span className="min-w-0">
                 <span className="block truncate text-[15px] font-medium">{s.nome}</span>
                 <span className="block text-[13px] text-ink-muted">
-                  {CATEGORIAS.find((c) => c.chave === s.categoria)?.rotulo ?? "Sem categoria"} · {duracao(s.duracao_min)}
+                  {rotuloCategoria(s.categoria)} · {duracao(s.duracao_min)}
                   {!s.ativo && " · inativo"}
                 </span>
               </span>
