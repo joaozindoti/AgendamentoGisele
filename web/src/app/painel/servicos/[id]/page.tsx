@@ -10,10 +10,11 @@ export default async function DetalheServico({ params }: PageProps<"/painel/serv
   const { id } = await params;
   const { supabase } = await exigirOwner();
 
-  const [{ data }, { data: equipe }, { data: vinculos }] = await Promise.all([
+  const [{ data }, { data: equipe }, { data: vinculos }, { data: usadas }] = await Promise.all([
     supabase.from("servicos").select("id, nome, descricao, foto_url, preco, duracao_min, ativo, categoria, destaque").eq("id", id).maybeSingle(),
     supabase.from("profissionais").select("id, nome, ativo").order("nome"),
     supabase.from("profissional_servicos").select("profissional_id").eq("servico_id", id),
+    supabase.from("servicos").select("categoria").not("categoria", "is", null),
   ]);
   if (!data) notFound();
   const servico = data as Servico;
@@ -27,7 +28,9 @@ export default async function DetalheServico({ params }: PageProps<"/painel/serv
         <Titulo className="mt-3">{servico.nome}</Titulo>
       </div>
       <UploadFoto tabela="servicos" id={servico.id} pasta="servicos" fotoAtual={servico.foto_url} />
-      <FormServico servico={servico} equipe={equipe ?? []} quemFaz={(vinculos ?? []).map((v) => v.profissional_id as string)} />
+      <FormServico servico={servico} equipe={equipe ?? []} quemFaz={(vinculos ?? []).map((v) => v.profissional_id as string)}
+        categorias={(usadas ?? []).map((u) => u.categoria as string)}
+      />
     </div>
   );
 }

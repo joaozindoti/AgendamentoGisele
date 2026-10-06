@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { CadastroCliente } from "@/components/cadastro-cliente";
-import { FiltroCategorias } from "@/components/catalogo";
+import { agruparPorCategoria, CabecalhoCategoria, FiltroCategorias } from "@/components/catalogo";
 import { SeletorHorario } from "@/components/seletor-horario";
 import { AreaTexto, Botao, Caixa, Card, Eyebrow, Selo, Vazio } from "@/components/ui";
 import { mensagemDeErro } from "@/lib/erros";
@@ -106,8 +106,8 @@ export function FluxoAgendar({
     router.refresh();
   }
 
-  const categorias = [...new Set(servicos.map((s) => s.categoria).filter(Boolean))] as string[];
-  const visiveis = categoria === "todos" ? servicos : servicos.filter((s) => s.categoria === categoria);
+  const { presentes: categorias, grupos } = agruparPorCategoria(servicos, categoria);
+  const totalVisiveis = grupos.reduce((n, g) => n + g.itens.length, 0);
   const etapaVisual = Math.min(etapa, 3);
 
   return (
@@ -161,34 +161,41 @@ export function FluxoAgendar({
           <FiltroCategorias categorias={categorias} ativa={categoria} aoTrocar={setCategoria} />
           <p className="mb-3 flex justify-between text-[13px] text-ink-muted">
             <span>Escolha o seu cuidado</span>
-            <span>{visiveis.length} opções</span>
+            <span>{totalVisiveis} opções</span>
           </p>
-          {visiveis.length === 0 ? (
+          {totalVisiveis === 0 ? (
             <Vazio>Nenhum serviço disponível no momento.</Vazio>
           ) : (
-            <div className="space-y-3">
-              {visiveis.map((s) => {
-                const escolhido = servico?.id === s.id;
-                return (
-                  <button
-                    key={s.id}
-                    type="button"
-                    onClick={() => escolherServico(s)}
-                    aria-pressed={escolhido}
-                    className={`block w-full rounded-card border bg-surface p-4 text-left transition-colors ${
-                      escolhido ? "border-accent ring-1 ring-accent" : "border-line hover:border-accent/60"
-                    }`}
-                  >
-                    {s.destaque && <Selo>Premium</Selo>}
-                    <p className="mt-1 text-[18px] leading-snug font-semibold">{s.nome}</p>
-                    {s.descricao && <p className="mt-1 text-[14px] text-ink-muted">{s.descricao}</p>}
-                    <p className="mt-3 flex justify-between border-t border-line pt-2 text-[14px]">
-                      <span className="text-ink-muted">{duracao(s.duracao_min)}</span>
-                      <span className="font-semibold text-gold-ink">{preco(s.preco)}</span>
-                    </p>
-                  </button>
-                );
-              })}
+            <div className="space-y-8">
+              {grupos.map((g) => (
+                <section key={g.chave || "outros"}>
+                  <CabecalhoCategoria grupo={g} mostrarNome={categorias.length > 0} />
+                  <div className="space-y-3">
+                    {g.itens.map((s) => {
+                      const escolhido = servico?.id === s.id;
+                      return (
+                        <button
+                          key={s.id}
+                          type="button"
+                          onClick={() => escolherServico(s)}
+                          aria-pressed={escolhido}
+                          className={`block w-full rounded-card border bg-surface p-4 text-left transition-colors ${
+                            escolhido ? "border-accent ring-1 ring-accent" : "border-line hover:border-accent/60"
+                          }`}
+                        >
+                          {s.destaque && <Selo>Premium</Selo>}
+                          <p className="mt-1 text-[18px] leading-snug font-semibold">{s.nome}</p>
+                          {s.descricao && <p className="mt-1 text-[14px] text-ink-muted">{s.descricao}</p>}
+                          <p className="mt-3 flex justify-between border-t border-line pt-2 text-[14px]">
+                            <span className="text-ink-muted">{duracao(s.duracao_min)}</span>
+                            <span className="font-semibold text-gold-ink">{preco(s.preco)}</span>
+                          </p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </section>
+              ))}
             </div>
           )}
           {servico && (
