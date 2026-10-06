@@ -213,7 +213,7 @@ atrás é só não trocar o domínio no passo 11.
      com `eyJ`). Não use a "publishable key": o formulário de pré-cadastro
      não funciona com ela.
 3. **Deploy**. No fim aparece o endereço do app (algo como
-   `agendamento-gisele.vercel.app`). Anote.
+   `agendamento-gisele-eacy.vercel.app`). Anote.
 4. No Supabase: **Authentication → URL Configuration → Site URL** = esse
    endereço → Save.
 
@@ -378,7 +378,7 @@ studio e não responde número de ninguém da equipe (cadastro em **Equipe**).
    - `WEBHOOK_WHATSAPP_ENTRADA_SECRET`: o valor que está lá.
    - `LINK_APP`: o endereço do app com `/instalar` no fim, sem barra depois.
      Enquanto a virada do passo 11 não acontece, é o endereço do passo 7 (ex:
-     `https://agendamento-gisele.vercel.app/instalar`). **Depois do passo 11,
+     `https://agendamento-gisele-eacy.vercel.app/instalar`). **Depois do passo 11,
      trocar pelo domínio final**, senão a cliente recebe o link provisório.
 3. **Edge Functions → Deploy a new function → Via Editor**, nome
    `responder-whatsapp`, colar `supabase/colar/functions/responder-whatsapp.ts`,
