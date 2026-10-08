@@ -5,6 +5,10 @@
 // deixa a própria cliente mover o horário — sem esse aviso a profissional
 // não ficaria sabendo. concluido/no_show não mandam mensagem.
 //
+// Fase 25: na remarcação a Gisele (profissional com papel owner) é sempre
+// avisada, mesmo quando o atendimento é de outra profissional, com o horário
+// antigo e o novo. Se ela mesma é a profissional, recebe um aviso só.
+//
 // Na confirmação, se a profissional cadastrou protocolo pré-atendimento pra
 // esse serviço (profissional_servicos.protocolo_pre, fase 23), a cliente
 // recebe o texto numa segunda mensagem, logo depois da confirmação. Os
@@ -27,7 +31,7 @@
 import { criarClienteAdmin } from "../_shared/supabase-admin.ts";
 import { enviarWhatsApp } from "../_shared/evolution.ts";
 import { inicioDoPeriodo } from "../_shared/periodo.ts";
-import { type Evento, mensagemProfissional, mensagensCliente } from "./mensagens.ts";
+import { type Evento, mensagemGiseleRemarcacao, mensagemProfissional, mensagensCliente } from "./mensagens.ts";
 
 interface Agendamento {
   id: string;
@@ -130,18 +134,21 @@ Deno.serve(async (req) => {
     protocoloPre = ps?.protocolo_pre ?? null;
   }
 
+  const anterior = evento === "remarcacao" && old_record ? formataDataHora(old_record.periodo) : null;
   const dados = {
     clienteNome: cliente.nome,
     servicoNome: servico.nome,
     profissionalNome: profissional.nome,
     data,
     hora,
+    dataAnterior: anterior?.data,
+    horaAnterior: anterior?.hora,
   };
   const mensagensDaCliente = mensagensCliente(evento, dados, protocoloPre);
 
-  // Avisa só o profissional responsável pelo agendamento, não Gisele à
-  // parte — cobre o caso dela mesma (profissional com papel owner) sem
-  // duplicar aviso quando é a staff nova quem está com a agenda.
+  // Confirmação e cancelamento avisam só o profissional responsável — cobre
+  // o caso da Gisele (papel owner) quando o atendimento é dela. Remarcação
+  // avisa também a Gisele quando é de outra profissional (fase 25).
   // As da cliente vão uma depois da outra, pra chegarem na ordem (o
   // protocolo pré nunca antes da confirmação, nem sozinho se ela falhar).
   const envios: Promise<unknown>[] = [
@@ -151,6 +158,21 @@ Deno.serve(async (req) => {
   ];
   if (profissional.telefone) {
     envios.push(enviarWhatsApp(profissional.telefone, mensagemProfissional(evento, dados)));
+  }
+  if (evento === "remarcacao") {
+    const { data: donas, error: erroDonas } = await supabase
+      .from("profissionais")
+      .select("telefone")
+      .eq("papel", "owner")
+      .eq("ativo", true)
+      .not("telefone", "is", null);
+    if (erroDonas) {
+      envios.push(Promise.reject(new Error(`profissionais owner: ${erroDonas.message}`)));
+    }
+    for (const dona of donas ?? []) {
+      if (dona.telefone === profissional.telefone) continue; // já recebeu acima
+      envios.push(enviarWhatsApp(dona.telefone as string, mensagemGiseleRemarcacao(dados)));
+    }
   }
 
   const resultados = await Promise.allSettled(envios);

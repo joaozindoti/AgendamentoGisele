@@ -9,6 +9,13 @@ export interface Dados {
   profissionalNome: string;
   data: string;
   hora: string;
+  /** só na remarcação: o horário de antes */
+  dataAnterior?: string;
+  horaAnterior?: string;
+}
+
+function antes(d: Dados): string {
+  return d.dataAnterior && d.horaAnterior ? ` (antes: ${d.dataAnterior} às ${d.horaAnterior})` : "";
 }
 
 /**
@@ -43,8 +50,16 @@ export function mensagemProfissional(evento: Evento, d: Dados): string {
     case "confirmacao":
       return `Novo agendamento: ${d.clienteNome} — ${d.servicoNome} em ${d.data} às ${d.hora}.`;
     case "remarcacao":
-      return `Remarcação: ${d.clienteNome} — ${d.servicoNome} passou para ${d.data} às ${d.hora}.`;
+      return `Remarcação: ${d.clienteNome} — ${d.servicoNome} passou para ${d.data} às ${d.hora}${antes(d)}.`;
     case "cancelamento":
       return `Cancelamento: ${d.clienteNome} — ${d.servicoNome} que era em ${d.data} às ${d.hora} foi cancelado.`;
   }
+}
+
+/**
+ * Fase 25: toda remarcação avisa a Gisele, mesmo quando o atendimento é de
+ * outra profissional — por isso o nome de quem atende vai junto.
+ */
+export function mensagemGiseleRemarcacao(d: Dados): string {
+  return `Remarcação: ${d.clienteNome} — ${d.servicoNome} com ${d.profissionalNome} passou para ${d.data} às ${d.hora}${antes(d)}.`;
 }

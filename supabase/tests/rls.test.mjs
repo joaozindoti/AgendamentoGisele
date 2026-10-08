@@ -335,7 +335,7 @@ describe("cliente", () => {
     assert.equal((await c(`update agendamentos set status = 'cancelado' where id = $1 returning id`, [longe])).length, 0);
     assert.equal(await status(longe), "concluido");
 
-    // confirmado dentro da janela de 2h: cancelar direto também não pega linha
+    // confirmado dentro da janela mínima: cancelar direto também não pega linha
     const perto = new Date(Date.now() + 90 * 60_000);
     perto.setUTCSeconds(0, 0);
     const idPerto = await novo(perto.toISOString());

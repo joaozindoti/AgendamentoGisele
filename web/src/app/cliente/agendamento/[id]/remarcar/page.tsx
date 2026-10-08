@@ -16,7 +16,7 @@ export default async function PaginaRemarcar({ params }: PageProps<"/cliente/age
 
   const [{ data }, horasMinimas, diasMaximos] = await Promise.all([
     supabase.from("agendamentos").select(SELECT_AGENDAMENTO_CLIENTE).eq("id", id).eq("cliente_id", clienteId).maybeSingle(),
-    lerConfigNumero(supabase, "horas_minimas_remarcacao", 2),
+    lerConfigNumero(supabase, "horas_minimas_remarcacao", 4),
     lerConfigNumero(supabase, "dias_maximos_agendamento", 60),
   ]);
   if (!data) notFound();
