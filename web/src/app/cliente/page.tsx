@@ -30,7 +30,7 @@ export default async function InicioCliente({ searchParams }: PageProps<"/client
           .eq("status", "confirmado")
           .order("periodo")
       : Promise.resolve({ data: [] }),
-    lerConfigNumero(supabase, "horas_minimas_remarcacao", 2),
+    lerConfigNumero(supabase, "horas_minimas_remarcacao", 4),
     // leitura pública (sem telefone): mesma que a tela de escolher profissional usa
     supabase.from("profissionais").select("id, nome, bio, foto_url, papel, criado_em").eq("ativo", true).order("papel").order("criado_em"),
     supabase.from("profissional_servicos").select("profissional_id, servico:servicos(categoria)"),

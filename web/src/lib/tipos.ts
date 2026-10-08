@@ -145,8 +145,8 @@ export const CHAVES_CONFIG = [
 export const DESCRICAO_CONFIG: Record<(typeof CHAVES_CONFIG)[number], { rotulo: string; dica: string; padrao: number }> = {
   horas_minimas_remarcacao: {
     rotulo: "Antecedência mínima pra remarcar/cancelar (horas)",
-    dica: "Depois disso, a cliente só consegue mudar falando com o studio.",
-    padrao: 2,
+    dica: "Depois disso, a cliente só consegue mudar falando com o studio. Toda remarcação avisa a Gisele no WhatsApp.",
+    padrao: 4,
   },
   passo_minutos: {
     rotulo: "Grade de horários (minutos)",
