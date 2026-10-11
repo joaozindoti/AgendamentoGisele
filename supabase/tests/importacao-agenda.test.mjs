@@ -345,6 +345,11 @@ describe("importar-agenda: importar.sql no banco", () => {
 
     const trocas = (await db.query(`select * from clientes_trocas_aparelho where cliente_id = $1`, [liaId])).rows;
     assert.equal(trocas.length, 0, "primeiro cadastro de ficha importada não é troca de aparelho");
+    const vinculo = (await db.query(`select user_id from clientes_primeiro_vinculo where cliente_id = $1`, [liaId])).rows;
+    assert.deepEqual(vinculo, [{ user_id: sessao }], "mas fica registrado quem assumiu a ficha, pra auditoria");
+    assert.deepEqual(await lia(`select * from clientes_primeiro_vinculo`), [], "a cliente não lê a auditoria");
+    const gisele = (await db.query(`select user_id from profissionais where papel = 'owner'`)).rows[0].user_id;
+    assert.equal((await como(db, "authenticated", gisele)(`select * from clientes_primeiro_vinculo where cliente_id = $1`, [liaId])).length, 1, "a Gisele lê");
 
     // aparelho novo depois disso: aí sim é troca
     const outro = await criarLoginAnonimo(db);

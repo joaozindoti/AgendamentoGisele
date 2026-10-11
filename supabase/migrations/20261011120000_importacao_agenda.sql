@@ -45,11 +45,31 @@ $$;
 -- =============================================================
 -- 3. Cadastro da cliente
 -- =============================================================
+-- Auditoria do primeiro vínculo: quando uma ficha que nunca teve sessão
+-- (planilha, agenda antiga, pré-cadastro, painel) é assumida por um
+-- aparelho. Não é troca de aparelho (não havia aparelho antes), mas o
+-- número continua sem verificação, então a Gisele precisa conseguir ver
+-- quem assumiu a ficha e quando — como já via em clientes_trocas_aparelho.
+create table if not exists clientes_primeiro_vinculo (
+  id uuid primary key default uuid_generate_v4(),
+  cliente_id uuid not null references clientes(id) on delete cascade,
+  user_id uuid not null,
+  em timestamptz not null default now()
+);
+create index if not exists clientes_primeiro_vinculo_cliente_idx on clientes_primeiro_vinculo (cliente_id, em);
+
+alter table clientes_primeiro_vinculo enable row level security;
+drop policy if exists "owner_le_primeiro_vinculo" on clientes_primeiro_vinculo;
+create policy "owner_le_primeiro_vinculo" on clientes_primeiro_vinculo
+  for select using (public.eh_owner());
+
 -- Mesma função da migration 20260929150000, com duas mudanças:
 --   - a ficha que já existe é procurada pelo número com e sem o 9 (o
 --     whatsapp gravado na ficha não muda: é o que já recebia mensagem);
 --   - só vira linha em clientes_trocas_aparelho quando a ficha já estava
---     ligada a outra sessão. Também só essas contam no limite de 3 por dia.
+--     ligada a outra sessão. Também só essas contam no limite de 3 por dia
+--     (uma ficha sem sessão só pode ser assumida uma vez: dali em diante é
+--     troca). O primeiro vínculo fica em clientes_primeiro_vinculo.
 create or replace function public.cadastrar_cliente(
   p_nome text,
   p_whatsapp text,
@@ -130,6 +150,9 @@ begin
   if v_existente.user_id is not null then
     insert into clientes_trocas_aparelho (cliente_id, user_id_anterior, user_id_novo)
     values (v_existente.id, v_existente.user_id, v_uid);
+  else
+    insert into clientes_primeiro_vinculo (cliente_id, user_id)
+    values (v_existente.id, v_uid);
   end if;
 
   return v_existente.id;
