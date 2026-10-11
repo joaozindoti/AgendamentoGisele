@@ -550,6 +550,96 @@ Não tem secret novo.
 - [ ] Um agendamento daqui a 3h → o app não deixa remarcar e mostra
       "Falar com o studio".
 
+## Passo 8k — Trazer a agenda do Google Calendar e as clientes da planilha
+
+No dia de desligar o n8n, a agenda real ainda está no Google Calendar
+(giselelimaclinica@gmail.com) e as clientes na planilha CRM. Este passo
+leva tudo pro Supabase **sem mandar nenhuma mensagem** pra cliente nem pra
+Gisele. Precisa do Node (o mesmo dos testes), mas não precisa de nenhuma
+senha do Supabase: o computador só gera um arquivo pra colar no SQL Editor.
+
+O que entra:
+- todo evento a partir de **35 dias atrás**. Os que já aconteceram entram
+  como **atendidos**, com todos os lembretes e o protocolo pós marcados como
+  já enviados; o de 28 dias só fica marcado se o dia dele já passou (os
+  outros o sistema novo manda no dia certo, só pros atendimentos da Gisele);
+- os futuros entram **confirmados**. A confirmação (e o protocolo pré) não
+  sai de novo; o lembrete de 24h fica marcado se faltar menos de 24h, e o de
+  1h se faltar menos de 1h;
+- evento de **dia inteiro** (feriado, studio fechado) vira bloqueio no dia,
+  só os que ainda não passaram;
+- as clientes da planilha e das agendas, pelo telefone (com ou sem o 9).
+  Quem já está no banco **não é alterada**.
+- quando a cliente importada abre o app e se cadastra com o mesmo número
+  (com ou sem o 9), ela cai na mesma ficha e já vê o horário dela.
+
+Faça depois do passo 8j:
+
+1. **SQL Editor** → colar e rodar `supabase/colar/15-importacao-agenda.sql`.
+   Não tem senha dentro e pode ser colado de novo sem problema.
+2. Baixar os dois arquivos e pôr na pasta **`importacao/`** do projeto (ela
+   está no `.gitignore`: nunca vai pro GitHub, mas tem nome e telefone de
+   clientes reais — **apague os arquivos no fim do dia**):
+   - Google Calendar → Configurações → **Importar e exportar → Exportar**.
+     Abrir o .zip e salvar o `giselelimaclinica@gmail.com.ics` como
+     `importacao/agenda.ics`.
+   - Planilha "CRM Studio Gisele Lima", aba **Página1** → Arquivo → Fazer
+     download → .csv. Salvar como `importacao/crm.csv`.
+3. (Recomendado) **SQL Editor** → colar e rodar
+   `scripts/estado-banco-importacao.sql` (só lê, não muda nada). Clicar na
+   única célula do resultado, copiar o valor inteiro e salvar como
+   `importacao/banco.json`. Sem ele a simulação funciona, mas não sabe quem
+   já está no banco nem se algum evento bate com um horário já marcado no
+   sistema novo.
+4. Simular (não grava nada), na pasta do projeto:
+   ```
+   node scripts/importar-agenda.mjs --simular
+   ```
+   Abrir `importacao/relatorio.md` e conferir: clientes novas e já
+   existentes, agendamentos por dia, eventos que ficaram de fora (os criados
+   à mão no Calendar não têm telefone), conflitos, bloqueios e a amostra de
+   horário (Calendar × banco). Os telefones aparecem só com o final.
+5. Se algum evento precisa entrar diferente, ajustar a tabela no topo de
+   `scripts/importar-agenda.mjs` (serviço, profissional, ou um evento
+   específico pelo UID que aparece no relatório) e simular de novo.
+6. Gerar o arquivo de verdade:
+   ```
+   node scripts/importar-agenda.mjs
+   ```
+   **SQL Editor** → colar `importacao/importar.sql` inteiro → **Run**. É uma
+   transação só: se der erro, nada fica gravado. O resultado é uma lista: o
+   **resumo** no topo, depois clientes novas, clientes que já existiam,
+   conflitos (horário já ocupado no sistema novo: esse evento fica de fora e
+   o resto entra), o que não foi achado no banco, eventos de fora e
+   bloqueios.
+7. **Segunda rodada, logo antes de desligar o n8n:** baixar de novo os dois
+   arquivos (item 2) e repetir os itens 4 a 6. Só entra o que é novo; o que
+   já tinha entrado não duplica.
+8. Apagar a pasta `importacao/` inteira.
+
+> **Entre a primeira e a segunda rodada, os dois sistemas mandam lembrete**
+> pros agendamentos futuros que já foram importados: o n8n continua mandando
+> o dele e o sistema novo manda o de 24h/1h. Pra não ter mensagem dobrada,
+> faça as duas rodadas no mesmo dia, o mais perto possível uma da outra, e
+> desative o workflow "Lembretes" do n8n logo depois da segunda.
+
+> Se o passo 8 (planilha) já foi feito antes, 4 clientes podem ter entrado
+> com número errado de DDD 55 (a planilha tem `5555…` com 13 dígitos: o 55
+> foi duplicado e os 2 últimos dígitos se perderam). Esta importação deixa
+> essas linhas de fora e lista no relatório; corrija o número delas em
+> **Painel → Clientes** se aparecerem lá.
+
+**Conferir:**
+- [ ] O resumo do resultado bate com o `relatorio.md` (agendamentos e
+      clientes novas).
+- [ ] Painel → agenda dos próximos dias igual ao Google Calendar, nos mesmos
+      horários.
+- [ ] Os dias de bloqueio aparecem no painel e não oferecem horário no app.
+- [ ] **Edge Functions → notificar-agendamento → Logs**: nenhuma chamada na
+      hora da importação.
+- [ ] Colar o mesmo `importar.sql` de novo: "agendamentos importados agora"
+      dá 0.
+
 ## Passo 9 — Primeiro acesso da Gisele e montagem da equipe
 
 1. No celular da Gisele, abrir `<endereço do passo 7>/entrar`, digitar o

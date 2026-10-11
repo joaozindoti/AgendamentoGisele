@@ -1,0 +1,159 @@
+BEGIN:VCALENDAR
+PRODID:-//Google Inc//Google Calendar 70.9054//EN
+VERSION:2.0
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:agenda-ficticia@example.com
+X-WR-TIMEZONE:America/Fortaleza
+BEGIN:VEVENT
+DTSTART:{{H-720}}
+DTEND:{{H-719.5}}
+UID:passado-30-dias@teste
+DESCRIPTION:Nome: Ana Fictícia\nTelefone: 5599900001111\nServiços: Design pers
+ onalizado — R$ 30\,00
+STATUS:CONFIRMED
+SUMMARY:Ana Fictícia - Design personalizado — R$ 30\,00
+END:VEVENT
+BEGIN:VEVENT
+DTSTART:{{H-240}}
+DTEND:{{H-238.5}}
+UID:passado-10-dias@teste
+DESCRIPTION:Nome: Bia 💖\nTelefone: 559981002222@s.whatsapp.net\nServiços: Epi
+ lação íntima — R$ 60\,00\, Epilação axilas — R$ 30\,00
+STATUS:CONFIRMED
+SUMMARY:Bia - Íntima e axilas com desconto 80\,00
+END:VEVENT
+BEGIN:VEVENT
+DTSTART:{{H-3}}
+DTEND:{{H-2.5}}
+UID:passado-hoje@teste
+DESCRIPTION:Nome: Olga\nTelefone: 5599900011111\nServiços: Epilação axilas — R
+ $ 30\,00
+STATUS:CONFIRMED
+SUMMARY:Olga - Epilação axilas — R$ 30\,00
+END:VEVENT
+BEGIN:VEVENT
+DTSTART:{{H+0.5}}
+DTEND:{{H+1.5}}
+UID:futuro-30-min@teste
+DESCRIPTION:Nome: Carla\nTelefone: 5599900003333\nServiços: Design personaliza
+ do + Henna — R$ 40\,00
+STATUS:CONFIRMED
+SUMMARY:Carla - Design personalizado + Henna — R$ 40\,00
+END:VEVENT
+BEGIN:VEVENT
+DTSTART:{{H+5}}
+DTEND:{{H+6}}
+UID:futuro-5-horas@teste
+DESCRIPTION:Nome: Duda\nTelefone: 5599900004444\nServiços: Brow Lamination — R
+ $ 120\,00
+STATUS:CONFIRMED
+SUMMARY:Duda - Brow Lamination — R$ 120\,00
+END:VEVENT
+BEGIN:VEVENT
+DTSTART:{{H+48}}
+DTEND:{{H+48.5}}
+UID:futuro-2-dias@teste
+DESCRIPTION:Nome: Eva\nTelefone: 5599900005555\nServiços: Epilação axilas — R$
+  30\,00
+STATUS:CONFIRMED
+SUMMARY:Eva - Epilação axilas — R$ 30\,00
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;TZID=America/Manaus:{{L+3}}T100000
+DTEND;TZID=America/Manaus:{{L+3}}T103000
+UID:futuro-tzid-manaus@teste
+DESCRIPTION:Nome: Fabi\nTelefone: 5599900006666\nServiços: Epilação meia perna
+  — R$ 30\,00
+STATUS:CONFIRMED
+SUMMARY:Fabi - Epilação meia perna — R$ 30\,00
+END:VEVENT
+BEGIN:VEVENT
+DTSTART:{{H+30}}
+DTEND:{{H+31}}
+UID:manual-sem-telefone@teste
+STATUS:CONFIRMED
+SUMMARY:15:00 Gabi sobrancelha
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Nome: Alarme\nTelefone: 5599900099999\nServiços: Design personali
+ zado — R$ 30\,00
+TRIGGER:-P0DT0H30M0S
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+DTSTART:{{H+50}}
+DTEND:{{H+51}}
+UID:servico-desconhecido@teste
+DESCRIPTION:Nome: Helena\nTelefone: 5599900008888\nServiços: Massagem relaxant
+ e — R$ 90\,00
+STATUS:CONFIRMED
+SUMMARY:Helena - Massagem relaxante — R$ 90\,00
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:{{L+4}}
+DTEND;VALUE=DATE:{{L+5}}
+UID:feriado-data@teste
+STATUS:CONFIRMED
+SUMMARY:Feriado
+END:VEVENT
+BEGIN:VEVENT
+DTSTART:{{L+6}}T030000Z
+DTEND:{{L+7}}T030000Z
+UID:fechado-meia-noite@teste
+STATUS:CONFIRMED
+SUMMARY:Studio fechado - curso
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:{{L-2}}
+DTEND;VALUE=DATE:{{L-1}}
+UID:feriado-passado@teste
+STATUS:CONFIRMED
+SUMMARY:Feriado que já passou
+END:VEVENT
+BEGIN:VEVENT
+DTSTART:{{H+96}}
+DTEND:{{H+97}}
+UID:conflito@teste
+DESCRIPTION:Nome: Iara\nTelefone: 5599900009999\nServiços: Design personalizad
+ o — R$ 30\,00
+STATUS:CONFIRMED
+SUMMARY:Iara - Design personalizado — R$ 30\,00
+END:VEVENT
+BEGIN:VEVENT
+DTSTART:{{H+120}}
+DTEND:{{H+120.5}}
+UID:cliente-do-app@teste
+DESCRIPTION:Nome: Jojo\nTelefone: 5599900007777\nServiços: Design personalizad
+ o — R$ 30\,00
+STATUS:CONFIRMED
+SUMMARY:Jojo - Design personalizado — R$ 30\,00
+END:VEVENT
+BEGIN:VEVENT
+DTSTART:{{H+144}}
+DTEND:{{H+145}}
+UID:lia-futuro@teste
+DESCRIPTION:Nome: Lia\nTelefone: 5599988887777\nServiços: Epilação íntima — R$
+  60\,00
+STATUS:CONFIRMED
+SUMMARY:Lia - Epilação íntima — R$ 60\,00
+END:VEVENT
+BEGIN:VEVENT
+DTSTART:{{H+150}}
+DTEND:{{H+151}}
+UID:cancelado@teste
+DESCRIPTION:Nome: Kika\nTelefone: 5599900012222\nServiços: Design personalizad
+ o — R$ 30\,00
+STATUS:CANCELLED
+SUMMARY:Kika - Design personalizado — R$ 30\,00
+END:VEVENT
+BEGIN:VEVENT
+DTSTART:{{H-1000}}
+DTEND:{{H-999}}
+UID:fora-da-janela@teste
+DESCRIPTION:Nome: Velha\nTelefone: 5599900013333\nServiços: Design personaliza
+ do — R$ 30\,00
+STATUS:CONFIRMED
+SUMMARY:Velha - Design personalizado — R$ 30\,00
+END:VEVENT
+END:VCALENDAR
