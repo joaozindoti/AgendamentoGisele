@@ -108,7 +108,7 @@ describe("anon (site público, sem login)", () => {
   });
 
   test("consulta horários livres (motor da seção 5)", async () => {
-    const h = await anon(`select * from horarios_disponiveis($1, $2, $3)`, [idGisele, design, TERCA]);
+    const h = await anon(`select * from horarios_disponiveis($1, $2::uuid, $3)`, [idGisele, design, TERCA]);
     assert.ok(h.length > 0);
   });
 
@@ -119,13 +119,13 @@ describe("anon (site público, sem login)", () => {
   });
 
   test("não agenda", async () => {
-    await assert.rejects(anon(`select agendar($1, $2, $3)`, [idGisele, design, instante(TERCA, "15:00")]), /permission denied/);
+    await assert.rejects(anon(`select agendar($1, $2::uuid, $3)`, [idGisele, design, instante(TERCA, "15:00")]), /permission denied/);
   });
 });
 
 describe("motor de agendamento (seção 5)", () => {
   test("grade de 30min respeitando almoço 12:30–14:00", async () => {
-    const h = (await anon(`select * from horarios_disponiveis($1, $2, $3)`, [idGisele, design, TERCA])).map((r) =>
+    const h = (await anon(`select * from horarios_disponiveis($1, $2::uuid, $3)`, [idGisele, design, TERCA])).map((r) =>
       new Date(Object.values(r)[0]).toISOString(),
     );
     assert.ok(h.includes(instante(TERCA, "09:30")));
@@ -138,7 +138,7 @@ describe("motor de agendamento (seção 5)", () => {
   });
 
   test("serviço de 90min não invade o almoço", async () => {
-    const h = (await anon(`select * from horarios_disponiveis($1, $2, $3)`, [idGisele, limpeza, TERCA])).map((r) =>
+    const h = (await anon(`select * from horarios_disponiveis($1, $2::uuid, $3)`, [idGisele, limpeza, TERCA])).map((r) =>
       new Date(Object.values(r)[0]).toISOString(),
     );
     assert.ok(h.includes(instante(TERCA, "11:00"))); // 11:00–12:30
@@ -147,11 +147,11 @@ describe("motor de agendamento (seção 5)", () => {
 
   test("domingo fechado", async () => {
     const domingo = proximoDia(0, 3);
-    assert.equal((await anon(`select * from horarios_disponiveis($1, $2, $3)`, [idGisele, design, domingo])).length, 0);
+    assert.equal((await anon(`select * from horarios_disponiveis($1, $2::uuid, $3)`, [idGisele, design, domingo])).length, 0);
   });
 
   test("profissional que não faz o serviço não tem horário", async () => {
-    assert.equal((await anon(`select * from horarios_disponiveis($1, $2, $3)`, [idStaff, design, TERCA])).length, 0);
+    assert.equal((await anon(`select * from horarios_disponiveis($1, $2::uuid, $3)`, [idStaff, design, TERCA])).length, 0);
   });
 });
 
@@ -164,7 +164,7 @@ describe("cliente", () => {
   });
 
   test("agenda horário válido pela RPC", async () => {
-    [{ agendar: agA }] = await como(db, "authenticated", clienteA)(`select agendar($1, $2, $3)`, [
+    [{ agendar: agA }] = await como(db, "authenticated", clienteA)(`select agendar($1, $2::uuid, $3)`, [
       idGisele,
       design,
       instante(TERCA, "15:00"),
@@ -187,7 +187,7 @@ describe("cliente", () => {
   });
 
   test("horário ocupado some da grade pra outra cliente", async () => {
-    const h = (await como(db, "authenticated", clienteB)(`select * from horarios_disponiveis($1, $2, $3)`, [idGisele, design, TERCA])).map(
+    const h = (await como(db, "authenticated", clienteB)(`select * from horarios_disponiveis($1, $2::uuid, $3)`, [idGisele, design, TERCA])).map(
       (r) => new Date(Object.values(r)[0]).toISOString(),
     );
     assert.ok(!h.includes(instante(TERCA, "15:00")));
@@ -195,21 +195,21 @@ describe("cliente", () => {
 
   test("outra cliente tentando o mesmo horário é recusada", async () => {
     await assert.rejects(
-      como(db, "authenticated", clienteB)(`select agendar($1, $2, $3)`, [idGisele, design, instante(TERCA, "15:00")]),
+      como(db, "authenticated", clienteB)(`select agendar($1, $2::uuid, $3)`, [idGisele, design, instante(TERCA, "15:00")]),
       /horario_indisponivel/,
     );
   });
 
   test("não agenda fora da grade (madrugada, almoço, fora do passo)", async () => {
     const c = como(db, "authenticated", clienteA);
-    await assert.rejects(c(`select agendar($1, $2, $3)`, [idGisele, design, instante(TERCA, "03:00")]), /horario_indisponivel/);
-    await assert.rejects(c(`select agendar($1, $2, $3)`, [idGisele, design, instante(TERCA, "13:00")]), /horario_indisponivel/);
-    await assert.rejects(c(`select agendar($1, $2, $3)`, [idGisele, design, instante(TERCA, "15:10")]), /horario_indisponivel/);
+    await assert.rejects(c(`select agendar($1, $2::uuid, $3)`, [idGisele, design, instante(TERCA, "03:00")]), /horario_indisponivel/);
+    await assert.rejects(c(`select agendar($1, $2::uuid, $3)`, [idGisele, design, instante(TERCA, "13:00")]), /horario_indisponivel/);
+    await assert.rejects(c(`select agendar($1, $2::uuid, $3)`, [idGisele, design, instante(TERCA, "15:10")]), /horario_indisponivel/);
   });
 
   test("não agenda serviço com profissional que não faz", async () => {
     await assert.rejects(
-      como(db, "authenticated", clienteA)(`select agendar($1, $2, $3)`, [idStaff, design, instante(TERCA, "10:00")]),
+      como(db, "authenticated", clienteA)(`select agendar($1, $2::uuid, $3)`, [idStaff, design, instante(TERCA, "10:00")]),
       /servico_nao_oferecido/,
     );
   });
@@ -365,7 +365,7 @@ describe("staff (profissional nova)", () => {
 
   test("marca encaixe fora da grade pra própria agenda, com cliente nova", async () => {
     const [{ obter_ou_criar_cliente: novaId }] = await s()(`select obter_ou_criar_cliente('Dora', '+5599988880000')`);
-    [{ agendar: agStaff }] = await s()(`select agendar($1, $2, $3, $4)`, [idStaff, henna, instante(QUARTA, "19:00"), novaId]);
+    [{ agendar: agStaff }] = await s()(`select agendar($1, $2::uuid, $3, $4)`, [idStaff, henna, instante(QUARTA, "19:00"), novaId]);
     const [a] = (await db.query(`select canal from agendamentos where id = $1`, [agStaff])).rows;
     assert.equal(a.canal, "painel");
   });
@@ -444,13 +444,13 @@ describe("staff (profissional nova)", () => {
   test("bloqueio tira o horário da grade", async () => {
     // longe do bloqueio de "daqui a 10–11 dias" do teste anterior
     const dia = proximoDia(2, 20);
-    const antes = await anon(`select * from horarios_disponiveis($1, $2, $3)`, [idStaff, henna, dia]);
+    const antes = await anon(`select * from horarios_disponiveis($1, $2::uuid, $3)`, [idStaff, henna, dia]);
     await s()(`insert into bloqueios_agenda (profissional_id, periodo) values ($1, tstzrange($2::timestamptz, $3::timestamptz))`, [
       idStaff,
       instante(dia, "00:00"),
       instante(dia, "23:59"),
     ]);
-    const depois = await anon(`select * from horarios_disponiveis($1, $2, $3)`, [idStaff, henna, dia]);
+    const depois = await anon(`select * from horarios_disponiveis($1, $2::uuid, $3)`, [idStaff, henna, dia]);
     assert.ok(antes.length > 0);
     assert.equal(depois.length, 0);
   });
@@ -486,10 +486,10 @@ describe("owner (Gisele)", () => {
 
   test("encaixe fora da grade é permitido pro studio, sobreposição nunca", async () => {
     const c = g();
-    const [{ agendar: id }] = await c(`select agendar($1, $2, $3, $4)`, [idGisele, design, instante(QUARTA, "21:00"), idClienteB]);
+    const [{ agendar: id }] = await c(`select agendar($1, $2::uuid, $3, $4)`, [idGisele, design, instante(QUARTA, "21:00"), idClienteB]);
     assert.ok(id);
     await assert.rejects(
-      c(`select agendar($1, $2, $3, $4)`, [idGisele, design, instante(QUARTA, "21:15"), idClienteA]),
+      c(`select agendar($1, $2::uuid, $3, $4)`, [idGisele, design, instante(QUARTA, "21:15"), idClienteA]),
       /conflicting key value violates exclusion constraint/,
     );
   });

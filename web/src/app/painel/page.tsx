@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { LinkBotao } from "@/components/ui";
 import { exigirProfissional } from "@/lib/auth";
-import { SELECT_AGENDAMENTO_PAINEL, type AgendamentoComDetalhes } from "@/lib/consultas";
+import { SELECT_AGENDAMENTO_PAINEL, servicosDoAgendamento, type AgendamentoComDetalhes } from "@/lib/consultas";
 import { chaveDia, dataCurta, diaDaSemana, faixa, hora, inicioDoDia, lerPeriodo, somaDias } from "@/lib/formato";
 import { ListaAgenda } from "./lista-agenda";
 
@@ -61,7 +61,7 @@ export default async function Agenda({ searchParams }: PageProps<"/painel">) {
       status: a.status,
       cliente: a.cliente?.nome ?? "",
       clienteFoto: a.cliente?.foto_url ?? null,
-      servico: a.servico?.nome ?? "",
+      servico: servicosDoAgendamento(a).nomes,
       profissional: a.profissional?.nome ?? "",
       canal: a.canal,
     }));
@@ -164,7 +164,7 @@ export default async function Agenda({ searchParams }: PageProps<"/painel">) {
                 <Link href={`/painel/agendamentos/${a.id}`} className="flex justify-between gap-3 px-4 py-3 hover:bg-base">
                   <span className="min-w-0">
                     <span className="block truncate text-[15px] font-medium">{a.cliente?.nome}</span>
-                    <span className="block text-[13px] text-ink-muted">{a.servico?.nome}</span>
+                    <span className="block text-[13px] text-ink-muted">{servicosDoAgendamento(a).nomes}</span>
                   </span>
                   <span className="shrink-0 text-right text-[13px] text-ink-muted">
                     {dataCurta(a.inicio)}

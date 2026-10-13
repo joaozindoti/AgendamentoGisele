@@ -46,9 +46,9 @@ test("remoção apaga só o que é TESTE", async () => {
   await j(`insert into profissional_servicos (profissional_id, servico_id) values ($1, $2)`, [profTeste, servico]);
   const [{ obter_ou_criar_cliente: cliTeste }] = await j(`select obter_ou_criar_cliente('TESTE Cliente', '+5599900008888')`);
   const [{ obter_ou_criar_cliente: cliReal }] = await j(`select obter_ou_criar_cliente('Maria Real', '+5599900007777')`);
-  await j(`select agendar($1, $2, now() + interval '3 days', $3)`, [profTeste, servico, cliReal]);
-  await j(`select agendar($1, $2, now() + interval '4 days', $3)`, [idGisele, servico, cliTeste]);
-  const [{ agendar: agReal }] = await j(`select agendar($1, $2, now() + interval '5 days', $3)`, [idGisele, servico, cliReal]);
+  await j(`select agendar($1, $2::uuid, now() + interval '3 days', $3)`, [profTeste, servico, cliReal]);
+  await j(`select agendar($1, $2::uuid, now() + interval '4 days', $3)`, [idGisele, servico, cliTeste]);
+  const [{ agendar: agReal }] = await j(`select agendar($1, $2::uuid, now() + interval '5 days', $3)`, [idGisele, servico, cliReal]);
 
   const [resumo] = (await db.exec(ler("remover-conta-teste.sql"))).at(-1).rows;
   assert.deepEqual([Number(resumo.profissionais_teste), Number(resumo.clientes_teste)], [0, 0]);

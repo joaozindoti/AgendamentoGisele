@@ -105,7 +105,7 @@ Deno.serve(async (req) => {
   const { data: detalhes, error } = await supabase
     .from("agendamentos")
     .select(
-      "cliente:clientes(nome, whatsapp), profissional:profissionais(nome, telefone, papel), servico:servicos(nome)",
+      "cliente:clientes(nome, whatsapp), profissional:profissionais(nome, telefone, papel), servico:servicos(nome), itens:agendamento_servicos(ordem, servico_id, servico:servicos(nome))",
     )
     .eq("id", record.id)
     .single();
@@ -120,24 +120,39 @@ Deno.serve(async (req) => {
   const cliente = detalhes.cliente as unknown as { nome: string; whatsapp: string };
   const profissional = detalhes.profissional as unknown as { nome: string; telefone: string | null };
   const servico = detalhes.servico as unknown as { nome: string };
+  // Vários serviços por agendamento: nomes na ordem, juntos com " + ".
+  // Sem itens (agendamento antigo), cai para o servico único.
+  const itens = ((detalhes as { itens?: unknown }).itens ?? []) as {
+    ordem: number;
+    servico_id: string;
+    servico: { nome: string } | { nome: string }[] | null;
+  }[];
+  itens.sort((a, b) => a.ordem - b.ordem);
+  const nomesServicos = itens
+    .map((i) => (Array.isArray(i.servico) ? i.servico[0]?.nome : i.servico?.nome))
+    .filter((n): n is string => !!n);
+  const servicoNome = nomesServicos.length ? nomesServicos.join(" + ") : servico.nome;
   const { data, hora } = formataDataHora(record.periodo);
 
   // Sem texto (ou erro na leitura), segue só com a confirmação.
   let protocoloPre: string | null = null;
   if (evento === "confirmacao") {
+    const ids = itens.length ? itens.map((i) => i.servico_id) : [record.servico_id];
     const { data: ps } = await supabase
       .from("profissional_servicos")
-      .select("protocolo_pre")
+      .select("servico_id, protocolo_pre")
       .eq("profissional_id", record.profissional_id)
-      .eq("servico_id", record.servico_id)
-      .maybeSingle();
-    protocoloPre = ps?.protocolo_pre ?? null;
+      .in("servico_id", ids);
+    const textos = ids
+      .map((id) => ps?.find((p) => p.servico_id === id)?.protocolo_pre?.trim())
+      .filter((t): t is string => !!t);
+    protocoloPre = textos.length ? [...new Set(textos)].join("\n\n") : null;
   }
 
   const anterior = evento === "remarcacao" && old_record ? formataDataHora(old_record.periodo) : null;
   const dados = {
     clienteNome: cliente.nome,
-    servicoNome: servico.nome,
+    servicoNome,
     profissionalNome: profissional.nome,
     data,
     hora,

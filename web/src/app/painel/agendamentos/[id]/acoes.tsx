@@ -12,7 +12,7 @@ export function AcoesPainel({
   status,
   passou,
   profissionalId,
-  servicoId,
+  servicoIds,
   horarioAtual,
   diasMaximos,
 }: {
@@ -20,7 +20,7 @@ export function AcoesPainel({
   status: StatusAgendamento;
   passou: boolean;
   profissionalId: string;
-  servicoId: string;
+  servicoIds: string[];
   /** início (ISO) do agendamento, destacado na grade ao remarcar */
   horarioAtual: string;
   diasMaximos: number;
@@ -118,7 +118,7 @@ export function AcoesPainel({
               ) : (
                 <SeletorHorario
                   profissionalId={profissionalId}
-                  servicoId={servicoId}
+                  servicoIds={servicoIds}
                   ignorarAgendamentoId={agendamentoId}
                   horarioAtual={horarioAtual}
                   diasMaximos={diasMaximos}

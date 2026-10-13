@@ -23,7 +23,7 @@ interface Janela {
 // horários ocupados/passados como indisponíveis, em vez de uma lista solta.
 export function SeletorHorario({
   profissionalId,
-  servicoId,
+  servicoIds,
   ignorarAgendamentoId,
   horarioAtual,
   diasMaximos,
@@ -32,7 +32,7 @@ export function SeletorHorario({
   versao = 0,
 }: {
   profissionalId: string;
-  servicoId: string;
+  servicoIds: string[];
   ignorarAgendamentoId?: string;
   /** remarcação: início (ISO) do horário que a cliente já tem — aparece destacado, não escolhível */
   horarioAtual?: string;
@@ -49,7 +49,8 @@ export function SeletorHorario({
   // a gerou; se a chave atual é outra (trocou profissional, dia, versão), a
   // resposta antiga simplesmente não vale — sem precisar zerar estado dentro
   // de effect.
-  const chaveDias = [profissionalId, servicoId, ignorarAgendamentoId ?? "", hoje, limite, versao].join("|");
+  const chaveServicos = servicoIds.join(",");
+  const chaveDias = [profissionalId, chaveServicos, ignorarAgendamentoId ?? "", hoje, limite, versao].join("|");
   const [respDias, setRespDias] = useState<{ chave: string; livres: Set<string> } | null>(null);
   const diasLivres = respDias?.chave === chaveDias ? respDias.livres : null;
 
@@ -60,7 +61,7 @@ export function SeletorHorario({
     ? diaEscolhido
     : ([...diasLivres].sort()[0] ?? null);
 
-  const chaveHorarios = dia ? [dia, profissionalId, servicoId, ignorarAgendamentoId ?? "", versao].join("|") : null;
+  const chaveHorarios = dia ? [dia, profissionalId, chaveServicos, ignorarAgendamentoId ?? "", versao].join("|") : null;
   const [respHorarios, setRespHorarios] = useState<{ chave: string; lista: string[] } | null>(null);
   const horarios = chaveHorarios && respHorarios?.chave === chaveHorarios ? respHorarios.lista : null;
 
@@ -78,7 +79,7 @@ export function SeletorHorario({
     criarClienteNavegador()
       .rpc("dias_disponiveis", {
         p_profissional_id: profissionalId,
-        p_servico_id: servicoId,
+        p_servico_ids: chaveServicos.split(","),
         p_de: hoje,
         p_ate: limite,
         p_ignorar_agendamento_id: ignorarAgendamentoId ?? null,
@@ -89,7 +90,7 @@ export function SeletorHorario({
     return () => {
       vivo = false;
     };
-  }, [chaveDias, profissionalId, servicoId, ignorarAgendamentoId, hoje, limite]);
+  }, [chaveDias, profissionalId, chaveServicos, ignorarAgendamentoId, hoje, limite]);
 
   useEffect(() => {
     if (!dia || !chaveHorarios) return;
@@ -97,7 +98,7 @@ export function SeletorHorario({
     criarClienteNavegador()
       .rpc("horarios_disponiveis", {
         p_profissional_id: profissionalId,
-        p_servico_id: servicoId,
+        p_servico_ids: chaveServicos.split(","),
         p_data: dia,
         p_ignorar_agendamento_id: ignorarAgendamentoId ?? null,
       })
@@ -107,7 +108,7 @@ export function SeletorHorario({
     return () => {
       vivo = false;
     };
-  }, [chaveHorarios, dia, profissionalId, servicoId, ignorarAgendamentoId]);
+  }, [chaveHorarios, dia, profissionalId, chaveServicos, ignorarAgendamentoId]);
 
   useEffect(() => {
     let vivo = true;

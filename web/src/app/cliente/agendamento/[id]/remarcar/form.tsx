@@ -11,13 +11,13 @@ import { criarClienteNavegador } from "@/lib/supabase/client";
 export function FormRemarcar({
   agendamentoId,
   profissionalId,
-  servicoId,
+  servicoIds,
   horarioAtual,
   diasMaximos,
 }: {
   agendamentoId: string;
   profissionalId: string;
-  servicoId: string;
+  servicoIds: string[];
   /** início (ISO) do agendamento sendo remarcado */
   horarioAtual: string;
   diasMaximos: number;
@@ -51,7 +51,7 @@ export function FormRemarcar({
     <div className="space-y-5">
       <SeletorHorario
         profissionalId={profissionalId}
-        servicoId={servicoId}
+        servicoIds={servicoIds}
         ignorarAgendamentoId={agendamentoId}
         horarioAtual={horarioAtual}
         diasMaximos={diasMaximos}
