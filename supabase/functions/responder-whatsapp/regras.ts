@@ -100,7 +100,7 @@ export function decidir(categoria: Categoria, clienteCadastrada: boolean): Acao 
 
 export function mensagemLink(linkApp: string): string {
   return (
-    `Oi! 💛 Pra agendar no Studio Gisele Lima é só usar o nosso app:\n${linkApp}\n\n` +
+    `Oi, lindeza! 💛 Pra agendar no Studio Gisele Lima é só usar o nosso app:\n${linkApp}\n\n` +
     `Lá você escolhe o serviço, a profissional e o horário livre, e a confirmação chega aqui no WhatsApp. ` +
     `Abrindo o link, ele mostra como instalar o app na tela inicial do celular.\n\n` +
     `Atendimento exclusivo para o público feminino.`

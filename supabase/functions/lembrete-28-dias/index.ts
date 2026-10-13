@@ -31,7 +31,7 @@ Deno.serve(async (req) => {
 
   for (const linha of (linhas ?? []) as LinhaPosProcedimento[]) {
     const mensagem =
-      `Oi, ${linha.cliente_nome}! Já faz um tempinho desde o seu ${linha.servico_nome} no Studio Gisele Lima. ` +
+      `Oi, lindeza! Já faz um tempinho desde o seu ${linha.servico_nome} no Studio Gisele Lima. ` +
       `Bora agendar a manutenção? É só abrir o app e escolher o melhor horário. 💛`;
 
     const resultado = await registraEEnvia(supabase, {

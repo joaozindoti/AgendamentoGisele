@@ -56,8 +56,8 @@ Deno.serve(async (req) => {
       const { data, hora } = formataDataHora(linha.inicio);
       const mensagem =
         tipo === "24h"
-          ? `Oi, ${linha.cliente_nome}! Lembrete do Studio Gisele Lima: você tem ${linha.servico_nome} amanhã, dia ${data} às ${hora}, com ${linha.profissional_nome}. Te esperamos! 💛`
-          : `Oi, ${linha.cliente_nome}! Seu horário de ${linha.servico_nome} com ${linha.profissional_nome} é às ${hora}, daqui a pouco. Studio Gisele Lima te espera!`;
+          ? `Oi, lindeza! Lembrete do Studio Gisele Lima: você tem ${linha.servico_nome} amanhã, dia ${data} às ${hora}, com ${linha.profissional_nome}. Te esperamos! 💛`
+          : `Oi, lindeza! Seu horário de ${linha.servico_nome} com ${linha.profissional_nome} é às ${hora}, daqui a pouco. Studio Gisele Lima te espera!`;
 
       const resultado = await registraEEnvia(supabase, {
         agendamentoId: linha.agendamento_id,

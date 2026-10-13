@@ -19,7 +19,9 @@ function antes(d: Dados): string {
 }
 
 /**
- * Mensagens da cliente, na ordem de envio. Na confirmação, o protocolo
+ * Mensagens da cliente, na ordem de envio. A cliente é sempre chamada de
+ * "lindeza", o bordão do studio (nunca pelo nome, que pode ser "Cliente").
+ * Na confirmação, o protocolo
  * pré-atendimento da profissional + serviço (fase 23) vai logo depois do
  * "Agendamento confirmado!"; sem texto cadastrado, só a confirmação.
  */
@@ -28,19 +30,19 @@ export function mensagensCliente(evento: Evento, d: Dados, protocoloPre: string 
   switch (evento) {
     case "confirmacao":
       return [
-        `Agendamento confirmado! ${d.servicoNome} no dia ${d.data} às ${d.hora}, com ${d.profissionalNome}. ` +
+        `Agendamento confirmado, lindeza! ${d.servicoNome} no dia ${d.data} às ${d.hora}, com ${d.profissionalNome}. ` +
           `Studio Gisele Lima te espera 💛`,
-        ...(pre ? [`Cuidados antes do seu ${d.servicoNome} (${d.profissionalNome}):\n\n${pre}`] : []),
+        ...(pre ? [`Lindeza, seguem os cuidados antes do seu ${d.servicoNome} (${d.profissionalNome}):\n\n${pre}`] : []),
       ];
     case "remarcacao":
       return [
-        `Horário remarcado! ${d.servicoNome} agora é no dia ${d.data} às ${d.hora}, com ${d.profissionalNome}. ` +
+        `Horário remarcado, lindeza! ${d.servicoNome} agora é no dia ${d.data} às ${d.hora}, com ${d.profissionalNome}. ` +
           `Studio Gisele Lima te espera 💛`,
       ];
     case "cancelamento":
       return [
-        `Seu agendamento de ${d.servicoNome} no dia ${d.data} às ${d.hora} foi cancelado. ` +
-          `Se quiser remarcar, é só abrir o app. Studio Gisele Lima`,
+        `Lindeza, seu agendamento de ${d.servicoNome} no dia ${d.data} às ${d.hora} foi cancelado. ` +
+          `Se quiser remarcar, é só abrir o app. Studio Gisele Lima 💛`,
       ];
   }
 }

@@ -14,15 +14,15 @@ describe("mensagens da confirmação", () => {
   test("com protocolo_pre: confirmação e, depois, o protocolo", () => {
     const msgs = mensagensCliente("confirmacao", DADOS, "  Venha sem maquiagem.  ");
     assert.equal(msgs.length, 2);
-    assert.match(msgs[0], /^Agendamento confirmado! Henna no dia 06\/10 às 14:00, com Ana Staff\./);
-    assert.equal(msgs[1], "Cuidados antes do seu Henna (Ana Staff):\n\nVenha sem maquiagem.");
+    assert.match(msgs[0], /^Agendamento confirmado, lindeza! Henna no dia 06\/10 às 14:00, com Ana Staff\./);
+    assert.equal(msgs[1], "Lindeza, seguem os cuidados antes do seu Henna (Ana Staff):\n\nVenha sem maquiagem.");
   });
 
   test("sem protocolo_pre (nulo, vazio ou só espaço): só a confirmação", () => {
     for (const pre of [null, undefined, "", "   \n "]) {
       const msgs = mensagensCliente("confirmacao", DADOS, pre);
       assert.equal(msgs.length, 1, JSON.stringify(pre));
-      assert.match(msgs[0], /^Agendamento confirmado!/);
+      assert.match(msgs[0], /^Agendamento confirmado, lindeza!/);
     }
   });
 
@@ -131,6 +131,6 @@ describe("protocolo_pre no banco", () => {
     assert.equal((await pre(idGisele, design)).protocolo_pre, null);
     const msgs = await mensagensDaConfirmacao(idGisele, design);
     assert.equal(msgs.length, 1);
-    assert.match(msgs[0], /^Agendamento confirmado!/);
+    assert.match(msgs[0], /^Agendamento confirmado, lindeza!/);
   });
 });

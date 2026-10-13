@@ -54,7 +54,7 @@ Deno.serve(async (req) => {
   const telefone = telefoneCru.startsWith("+") ? telefoneCru : `+${telefoneCru}`;
 
   const mensagem =
-    `Studio Gisele Lima\nSeu código de verificação: ${otp}\n` +
+    `Oi, lindeza! 💛\nSeu código de verificação do Studio Gisele Lima: ${otp}\n` +
     `Válido por alguns minutos. Não compartilhe esse código com ninguém.`;
 
   try {
