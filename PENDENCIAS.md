@@ -516,6 +516,40 @@ Não tem secret novo.
       "Agendamento confirmado!" e, logo depois, "Cuidados antes do seu …".
 - [ ] Agendar um serviço com "Antes" em branco → chega só a confirmação.
 
+## Passo 8j — Remarcar só com 4h de antecedência e aviso pra Gisele
+
+Pelo app, a cliente passa a remarcar (ou cancelar) só até **4h antes** do
+horário — antes eram 2h. Depois disso o app mostra o botão "Falar com o
+studio". O número continua ajustável em **Mais → Configurações**; colar o
+SQL de novo nunca baixa um valor maior que a Gisele tenha escolhido.
+
+E **toda remarcação avisa a Gisele** no WhatsApp pessoal dela, mesmo quando
+o atendimento é de outra profissional: "Remarcação: Ana — Henna com Bia
+passou para 08/10 às 15:00 (antes: 06/10 às 14:00)". A profissional do
+atendimento continua recebendo o aviso dela, agora também com o horário de
+antes. Se o atendimento é da própria Gisele, ela recebe um aviso só.
+
+Faça depois do passo 8i:
+
+1. **SQL Editor** → colar e rodar `supabase/colar/14-remarcacao-4-horas.sql`.
+   Não tem senha dentro e pode ser colado de novo sem problema.
+2. **Edge Functions** → `notificar-agendamento` → aba **Code**: apagar tudo,
+   colar o conteúdo **novo** de `supabase/colar/functions/notificar-agendamento.ts`
+   → **Deploy**.
+3. Aba **Details**: conferir que a verificação de JWT continua **desligada**.
+4. O app sai sozinho na Vercel quando o PR for pro `main`.
+
+Não tem secret novo.
+
+**Conferir:**
+- [ ] **Mais → Configurações**: "Antecedência mínima pra remarcar/cancelar"
+      mostra 4.
+- [ ] Remarcar pelo app um horário da profissional nova → chega
+      "Remarcação: …" pra ela **e** pra Gisele, com o horário de antes.
+- [ ] Remarcar um horário da própria Gisele → ela recebe **um** aviso só.
+- [ ] Um agendamento daqui a 3h → o app não deixa remarcar e mostra
+      "Falar com o studio".
+
 ## Passo 9 — Primeiro acesso da Gisele e montagem da equipe
 
 1. No celular da Gisele, abrir `<endereço do passo 7>/entrar`, digitar o
@@ -526,7 +560,7 @@ Não tem secret novo.
    montar a grade de horários.
 3. **Serviços**: conferir preços e durações e enviar as fotos.
 4. **Mais → Configurações**: conferir a antecedência mínima pra remarcar
-   (2h), a grade (30 min), os dias à frente (60) e o lembrete de manutenção
+   (4h), a grade (30 min), os dias à frente (60) e o lembrete de manutenção
    (28 dias).
 5. Instalar o painel como app no celular: **Mais → Adicionar à tela
    inicial**. No iPhone: Safari → Compartilhar → Adicionar à Tela de Início.
@@ -551,9 +585,10 @@ de reserva até o novo estar comprovado (seção 13).
 - [ ] `/entrar` com um celular que não é da equipe: não mostra o painel.
 - [ ] Agendar pelo app → a confirmação chega pra cliente **e** pra
       profissional.
-- [ ] Remarcar pelo app → chega "Horário remarcado" pras duas.
+- [ ] Remarcar pelo app → chega "Horário remarcado" pra cliente e o aviso
+      de remarcação pra profissional e pra Gisele.
 - [ ] Cancelar pelo app → chega o aviso de cancelamento.
-- [ ] Tentar remarcar ou cancelar a menos de 2h do horário → o app bloqueia e
+- [ ] Tentar remarcar ou cancelar a menos de 4h do horário → o app bloqueia e
       mostra o botão "Falar com o studio".
 - [ ] Duas pessoas no mesmo horário ao mesmo tempo → a segunda vê "Esse
       horário acabou de ser ocupado", e não uma tela de erro (seção 15).
