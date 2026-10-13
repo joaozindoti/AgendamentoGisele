@@ -44,9 +44,8 @@ Deno.serve(async (req) => {
       continue;
     }
 
-    const primeiroNome = linha.cliente_nome.split(" ")[0];
     const mensagem =
-      `Oi, ${primeiroNome}! Obrigada pela visita ao Studio Gisele Lima. 💛\n\n` +
+      `Oi, lindeza! Obrigada pela visita ao Studio Gisele Lima. 💛\n\n` +
       `Cuidados depois do seu ${linha.servico_nome} (${linha.profissional_nome}):\n\n` +
       linha.protocolo;
 

@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
 
   for (const linha of (linhas ?? []) as Aniversariante[]) {
     const mensagem =
-      `Feliz aniversário, ${linha.nome}! 🎉 A equipe do Studio Gisele Lima deseja um dia lindo, ` +
+      `Feliz aniversário, lindeza! 🎉 A equipe do Studio Gisele Lima deseja um dia lindo, ` +
       `do jeitinho que você merece. Um presentinho te espera na sua próxima visita!`;
 
     const resultado = await registraEEnvia(supabase, {
