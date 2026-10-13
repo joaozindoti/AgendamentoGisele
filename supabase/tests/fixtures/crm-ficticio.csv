@@ -1,0 +1,10 @@
+Nome,WhatsApp,Endereço,Data de Nascimento,Data de Cadastro,Avaliação Enviada,bloqueado
+Teste,5599900000000,,,,,
+,,,,,,
+Ana Fictícia da Silva,5599900001111,Rua A,1990-05-10,2026-08-02T23:17:00.484Z,,
+Kátia Duplicada,5555999812618,"Rua B, 10",1985-01-01,2026-08-03T10:00:00.000Z,,
+Lia Sem Nove,559988887777,Rua C,{{ANIVERSARIO}},2026-08-04T10:00:00.000Z,,
+Mara Bloqueada,5599911112222,,,,,5599911112222
+Nina Data Errada,5599900012345,,{{HOJE}},2026-08-05T10:00:00.000Z,,
+Joana Planilha,5599900007777,Rua D,1980-01-01,2026-08-06T10:00:00.000Z,,
+Gisele Lima,5599984183784,Rua do studio,1989-03-07,2026-09-13T02:01:46.044Z,,
