@@ -13,6 +13,8 @@ import { CATEGORIAS, CHAVES_CONFIG, type StatusAgendamento } from "@/lib/tipos";
 // (seção 4). exigirOwner/exigirProfissional aqui só evitam round-trip inútil
 // e dão mensagem clara — não são a barreira de segurança.
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export type Estado = { ok?: boolean; erro?: string } | null;
 
 const texto = (d: FormData, k: string) => String(d.get(k) ?? "").trim();
@@ -52,16 +54,30 @@ export async function salvarObservacoes(id: string, _: Estado, dados: FormData):
   return { ok: true };
 }
 
+const erroPainel = (e: Parameters<typeof mensagemDeErro>[0]) =>
+  e?.message?.includes("cliente_nao_encontrada") ? "Cliente não encontrada." : mensagemDeErro(e);
+
 export async function agendarPainel(params: {
   clienteId: string | null;
   novoNome?: string;
   novoWhatsapp?: string;
   profissionalId: string;
-  servicoId: string;
+  servicoIds: string[];
   inicioIso: string;
   observacoes?: string;
 }): Promise<{ ok?: boolean; erro?: string; id?: string }> {
   const { supabase } = await exigirProfissional();
+
+  const servicoIds = params.servicoIds;
+  if (
+    !Array.isArray(servicoIds) ||
+    servicoIds.length < 1 ||
+    servicoIds.length > 6 ||
+    !servicoIds.every((id) => typeof id === "string" && UUID.test(id)) ||
+    new Set(servicoIds).size !== servicoIds.length
+  ) {
+    return { erro: mensagemDeErro({ message: "servicos_invalidos" }) };
+  }
 
   let clienteId = params.clienteId;
   if (!clienteId) {
@@ -77,17 +93,29 @@ export async function agendarPainel(params: {
 
   const { data: id, error } = await supabase.rpc("agendar", {
     p_profissional_id: params.profissionalId,
-    p_servico_id: params.servicoId,
+    p_servico_ids: servicoIds,
     p_inicio: params.inicioIso,
     p_cliente_id: clienteId,
     p_observacoes: params.observacoes || null,
   });
-  if (error) return { erro: mensagemDeErro(error) };
+  if (error) return { erro: erroPainel(error) };
   revalidatePath("/painel", "layout");
   return { ok: true, id: id as string };
 }
 
 // ---------- clientes (owner) ----------
+
+export async function renomearCliente(clienteId: string, nome: string): Promise<Estado & object> {
+  const { supabase } = await exigirProfissional();
+  const limpo = nome.trim().replace(/\s+/g, " ");
+  if (limpo.length < 2 || limpo.length > 120) return { erro: "Informe o nome." };
+  const { error } = await supabase.rpc("renomear_cliente", { p_cliente_id: clienteId, p_nome: limpo });
+  if (error) return { erro: erroPainel(error) };
+  revalidatePath("/painel/clientes", "layout");
+  revalidatePath(`/painel/clientes/${clienteId}`);
+  revalidatePath("/painel", "layout");
+  return { ok: true };
+}
 
 export async function salvarCliente(id: string | null, _: Estado, dados: FormData): Promise<Estado> {
   const { supabase } = await exigirOwner();

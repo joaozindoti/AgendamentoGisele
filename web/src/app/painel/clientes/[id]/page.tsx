@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Card, LinkBotao, PontoStatus, Titulo } from "@/components/ui";
 import { exigirProfissional } from "@/lib/auth";
-import { SELECT_AGENDAMENTO_PAINEL, type AgendamentoComDetalhes } from "@/lib/consultas";
+import { SELECT_AGENDAMENTO_PAINEL, servicosDoAgendamento, type AgendamentoComDetalhes } from "@/lib/consultas";
 import { dataCompleta, hora, inicioDoDia, lerPeriodo } from "@/lib/formato";
 import { exibirTelefone, linkWhatsApp } from "@/lib/telefone";
 import { ROTULO_STATUS, type Cliente } from "@/lib/tipos";
@@ -64,7 +64,7 @@ export default async function DetalheCliente({ params }: PageProps<"/painel/clie
               <li key={a.id}>
                 <Link href={`/painel/agendamentos/${a.id}`} className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-base">
                   <span className="min-w-0">
-                    <span className="block truncate text-[15px]">{a.servico?.nome}</span>
+                    <span className="block truncate text-[15px]">{servicosDoAgendamento(a).nomes}</span>
                     <span className="block text-[13px] text-ink-muted">
                       {dataCompleta(a.inicio)} · {hora(a.inicio)} · {a.profissional?.nome}
                     </span>

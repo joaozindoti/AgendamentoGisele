@@ -2,8 +2,8 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Card, Eyebrow, PontoStatus } from "@/components/ui";
 import { exigirProfissional } from "@/lib/auth";
-import { SELECT_AGENDAMENTO_PAINEL, lerConfigNumero, type AgendamentoComDetalhes } from "@/lib/consultas";
-import { agoraMs, chaveDia, dataLonga, hora, lerPeriodo } from "@/lib/formato";
+import { SELECT_AGENDAMENTO_PAINEL, lerConfigNumero, servicosDoAgendamento, type AgendamentoComDetalhes } from "@/lib/consultas";
+import { agoraMs, chaveDia, dataLonga, duracao, hora, lerPeriodo, preco } from "@/lib/formato";
 import { exibirTelefone, linkWhatsApp } from "@/lib/telefone";
 import { ROTULO_STATUS } from "@/lib/tipos";
 import { AcoesPainel, FormObservacoes } from "./acoes";
@@ -20,6 +20,9 @@ export default async function DetalheAgendamento({ params }: PageProps<"/painel/
 
   const ag = data as unknown as AgendamentoComDetalhes;
   const { inicio, fim } = lerPeriodo(ag.periodo);
+  const servicos = servicosDoAgendamento(ag);
+  const ids = servicos.lista.every((i) => i.id) ? servicos.lista.map((i) => i.id as string) : [ag.servico_id];
+  const varios = servicos.lista.length > 1;
 
   return (
     <div className="space-y-5">
@@ -31,11 +34,31 @@ export default async function DetalheAgendamento({ params }: PageProps<"/painel/
           <Eyebrow>{ag.canal === "app" ? "Marcado pela cliente no app" : "Marcado pelo painel"}</Eyebrow>
           <PontoStatus status={ag.status} rotulo={ROTULO_STATUS[ag.status]} />
         </div>
-        <h1 className="mt-2 text-[24px] font-semibold tracking-tight">{ag.servico?.nome}</h1>
+        <h1 className="mt-2 text-[24px] font-semibold tracking-tight">{servicos.nomes}</h1>
         <p className="mt-1 text-[15px]">
           {dataLonga(inicio)} · {hora(inicio)}–{hora(fim)}
         </p>
         <p className="text-[15px] text-ink-muted">com {ag.profissional?.nome}</p>
+        {varios && (
+          <ul className="mt-3 space-y-1 border-t border-line pt-3 text-[14px]">
+            {servicos.lista.map((i, n) => (
+              <li key={`${i.id}-${n}`} className="flex justify-between gap-3">
+                <span>{i.nome}</span>
+                <span className="shrink-0 text-ink-muted">
+                  {i.duracao_min != null && duracao(i.duracao_min)}
+                  {i.preco != null && ` · ${preco(i.preco)}`}
+                </span>
+              </li>
+            ))}
+            <li className="flex justify-between gap-3 pt-1 font-semibold">
+              <span>Total</span>
+              <span className="text-gold-ink">
+                {servicos.duracaoTotal != null && duracao(servicos.duracaoTotal)}
+                {servicos.precoTotal != null && ` · ${preco(servicos.precoTotal)}${servicos.lista.some((i) => i.preco == null) ? " +" : ""}`}
+              </span>
+            </li>
+          </ul>
+        )}
 
         <div className="mt-4 border-t border-line pt-4">
           <p className="text-[13px] text-ink-muted">Cliente</p>
@@ -57,7 +80,7 @@ export default async function DetalheAgendamento({ params }: PageProps<"/painel/
         status={ag.status}
         passou={fim.getTime() <= agoraMs()}
         profissionalId={ag.profissional_id}
-        servicoId={ag.servico_id}
+        servicoIds={ids}
         horarioAtual={inicio.toISOString()}
         diasMaximos={diasMaximos}
       />

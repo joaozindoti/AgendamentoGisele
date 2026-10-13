@@ -14,7 +14,8 @@ import type { ProfissionalDoServico, Servico } from "@/lib/tipos";
 
 // 5 = cadastro, só na primeira vez (cliente sem cadastro nesta sessão)
 type Etapa = 1 | 2 | 3 | 4 | 5;
-const ROTULOS = ["Serviço", "Profissional", "Horário"];
+const ROTULOS = ["Serviços", "Profissional", "Horário"];
+const MAX_SERVICOS = 6;
 
 export function FluxoAgendar({
   servicos,
@@ -30,10 +31,14 @@ export function FluxoAgendar({
   const router = useRouter();
   const inicial = servicos.find((s) => s.id === servicoInicial) ?? null;
   const [etapa, setEtapa] = useState<Etapa>(inicial ? 2 : 1);
-  const [servico, setServico] = useState<Servico | null>(inicial);
+  // serviços na ordem escolhida: a mesma profissional faz todos em sequência
+  const [selecionados, setSelecionados] = useState<Servico[]>(inicial ? [inicial] : []);
+  const chaveServicos = selecionados.map((s) => s.id).join(",");
+  const nomesServicos = selecionados.map((s) => s.nome).join(" + ");
+  const temServicos = selecionados.length > 0;
   const [categoria, setCategoria] = useState("todos");
-  const [respProfissionais, setRespProfissionais] = useState<{ servicoId: string; lista: ProfissionalDoServico[] } | null>(null);
-  const profissionais = servico && respProfissionais?.servicoId === servico.id ? respProfissionais.lista : null;
+  const [respProfissionais, setRespProfissionais] = useState<{ chave: string; lista: ProfissionalDoServico[] } | null>(null);
+  const profissionais = temServicos && respProfissionais?.chave === chaveServicos ? respProfissionais.lista : null;
   const [profissional, setProfissional] = useState<ProfissionalDoServico | null>(null);
   const [inicio, setInicio] = useState<string | null>(null);
   const [observacoes, setObservacoes] = useState("");
@@ -44,14 +49,14 @@ export function FluxoAgendar({
   const [cadastroFeito, setCadastroFeito] = useState(cadastrada);
 
   useEffect(() => {
-    if (!servico) return;
+    if (!chaveServicos) return;
     let vivo = true;
     criarClienteNavegador()
-      .rpc("profissionais_do_servico", { p_servico_id: servico.id })
+      .rpc("profissionais_dos_servicos", { p_servico_ids: chaveServicos.split(",") })
       .then(({ data }) => {
         if (!vivo) return;
         const lista = (data ?? []) as ProfissionalDoServico[];
-        setRespProfissionais({ servicoId: servico.id, lista });
+        setRespProfissionais({ chave: chaveServicos, lista });
         // Uma profissional só (caso da maioria dos serviços hoje): pula a escolha.
         if (lista.length === 1) {
           setProfissional(lista[0]);
@@ -61,16 +66,22 @@ export function FluxoAgendar({
     return () => {
       vivo = false;
     };
-  }, [servico]);
+  }, [chaveServicos]);
 
-  function escolherServico(s: Servico) {
-    setServico(s);
+  function alternarServico(s: Servico) {
+    setSelecionados((atual) =>
+      atual.some((x) => x.id === s.id)
+        ? atual.filter((x) => x.id !== s.id)
+        : atual.length >= MAX_SERVICOS
+        ? atual
+        : [...atual, s],
+    );
     setProfissional(null);
     setInicio(null);
   }
 
   async function confirmar() {
-    if (!servico || !profissional || !inicio) return;
+    if (!temServicos || !profissional || !inicio) return;
     if (!cadastroFeito) {
       setErro(null);
       setEtapa(5);
@@ -80,12 +91,12 @@ export function FluxoAgendar({
   }
 
   async function agendar() {
-    if (!servico || !profissional || !inicio) return;
+    if (!temServicos || !profissional || !inicio) return;
     setEnviando(true);
     setErro(null);
     const { error } = await criarClienteNavegador().rpc("agendar", {
       p_profissional_id: profissional.id,
-      p_servico_id: servico.id,
+      p_servico_ids: selecionados.map((s) => s.id),
       p_inicio: inicio,
       p_observacoes: observacoes || null,
     });
@@ -109,6 +120,10 @@ export function FluxoAgendar({
   const { presentes: categorias, grupos } = agruparPorCategoria(servicos, categoria);
   const totalVisiveis = grupos.reduce((n, g) => n + g.itens.length, 0);
   const etapaVisual = Math.min(etapa, 3);
+  const duracaoSel = selecionados.reduce((t, s) => t + s.duracao_min, 0);
+  const comPreco = selecionados.filter((s) => s.preco != null);
+  const precoSel = comPreco.reduce((t, s) => t + Number(s.preco), 0);
+  const textoPrecoSel = comPreco.length === 0 ? "Consulte o valor" : `${preco(precoSel)}${comPreco.length < selecionados.length ? " +" : ""}`;
 
   return (
     <div className="pb-24">
@@ -160,7 +175,7 @@ export function FluxoAgendar({
         <>
           <FiltroCategorias categorias={categorias} ativa={categoria} aoTrocar={setCategoria} />
           <p className="mb-3 flex justify-between text-[13px] text-ink-muted">
-            <span>Escolha o seu cuidado</span>
+            <span>Escolha um ou mais cuidados</span>
             <span>{totalVisiveis} opções</span>
           </p>
           {totalVisiveis === 0 ? (
@@ -172,19 +187,31 @@ export function FluxoAgendar({
                   <CabecalhoCategoria grupo={g} mostrarNome={categorias.length > 0} />
                   <div className="space-y-3">
                     {g.itens.map((s) => {
-                      const escolhido = servico?.id === s.id;
+                      const escolhido = selecionados.some((x) => x.id === s.id);
                       return (
                         <button
                           key={s.id}
                           type="button"
-                          onClick={() => escolherServico(s)}
+                          onClick={() => alternarServico(s)}
                           aria-pressed={escolhido}
                           className={`block w-full rounded-card border bg-surface p-4 text-left transition-colors ${
                             escolhido ? "border-accent ring-1 ring-accent" : "border-line hover:border-accent/60"
                           }`}
                         >
-                          {s.destaque && <Selo>Premium</Selo>}
-                          <p className="mt-1 text-[18px] leading-snug font-semibold">{s.nome}</p>
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              {s.destaque && <Selo>Premium</Selo>}
+                              <p className="mt-1 text-[18px] leading-snug font-semibold">{s.nome}</p>
+                            </div>
+                            <span
+                              aria-hidden
+                              className={`mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-[13px] font-bold ${
+                                escolhido ? "border-accent bg-accent text-white" : "border-line text-transparent"
+                              }`}
+                            >
+                              ✓
+                            </span>
+                          </div>
                           {s.descricao && <p className="mt-1 text-[14px] text-ink-muted">{s.descricao}</p>}
                           <p className="mt-3 flex justify-between border-t border-line pt-2 text-[14px]">
                             <span className="text-ink-muted">{duracao(s.duracao_min)}</span>
@@ -198,24 +225,31 @@ export function FluxoAgendar({
               ))}
             </div>
           )}
-          {servico && (
+          {temServicos && (
             <BarraContinuar
-              resumo={servico.nome}
-              valor={preco(servico.preco)}
+              resumo={`${selecionados.length === 1 ? nomesServicos : `${selecionados.length} serviços`} · ${duracao(duracaoSel)}`}
+              valor={textoPrecoSel}
               aoContinuar={() => setEtapa(profissionais?.length === 1 ? 3 : 2)}
             />
+          )}
+          {selecionados.length >= MAX_SERVICOS && (
+            <p className="mt-3 text-[12px] text-ink-muted">Máximo de {MAX_SERVICOS} serviços por agendamento.</p>
           )}
         </>
       )}
 
-      {etapa === 2 && servico && (
+      {etapa === 2 && temServicos && (
         <>
-          <ResumoEscolha rotulo="Serviço" valor={servico.nome} aoTrocar={() => setEtapa(1)} />
+          <ResumoEscolha rotulo={selecionados.length > 1 ? "Serviços" : "Serviço"} valor={nomesServicos} aoTrocar={() => setEtapa(1)} />
           <p className="mb-3 text-[14px] font-medium">Com quem você quer ser atendida?</p>
           {profissionais === null ? (
             <p className="text-[13px] text-ink-muted">Carregando…</p>
           ) : profissionais.length === 0 ? (
-            <Vazio>Esse serviço está sem profissional disponível agora. Fale com o studio pelo WhatsApp.</Vazio>
+            <Vazio>
+              {selecionados.length > 1
+                ? "Nenhuma profissional faz todos esses serviços juntos. Tire algum da lista ou fale com o studio pelo WhatsApp."
+                : "Esse serviço está sem profissional disponível agora. Fale com o studio pelo WhatsApp."}
+            </Vazio>
           ) : (
             <div className="space-y-3">
               {profissionais.map((p) => (
@@ -245,9 +279,9 @@ export function FluxoAgendar({
         </>
       )}
 
-      {etapa === 3 && servico && profissional && (
+      {etapa === 3 && temServicos && profissional && (
         <>
-          <ResumoEscolha rotulo="Serviço" valor={servico.nome} aoTrocar={() => setEtapa(1)} />
+          <ResumoEscolha rotulo={selecionados.length > 1 ? "Serviços" : "Serviço"} valor={nomesServicos} aoTrocar={() => setEtapa(1)} />
           <ResumoEscolha
             rotulo="Profissional"
             valor={profissional.nome}
@@ -255,7 +289,7 @@ export function FluxoAgendar({
           />
           <SeletorHorario
             profissionalId={profissional.id}
-            servicoId={servico.id}
+            servicoIds={selecionados.map((s) => s.id)}
             diasMaximos={diasMaximos}
             valor={inicio}
             aoEscolher={setInicio}
@@ -274,10 +308,10 @@ export function FluxoAgendar({
         </>
       )}
 
-      {etapa === 4 && servico && profissional && inicio && (
+      {etapa === 4 && temServicos && profissional && inicio && (
         <Card className="p-5">
           <Eyebrow>Confira seu agendamento</Eyebrow>
-          <p className="mt-2 text-[22px] leading-snug font-semibold">{servico.nome}</p>
+          <p className="mt-2 text-[22px] leading-snug font-semibold">{nomesServicos}</p>
           <dl className="mt-3 space-y-1 text-[15px]">
             <div className="flex justify-between">
               <dt className="text-ink-muted">Com</dt>
@@ -315,11 +349,11 @@ export function FluxoAgendar({
         </Card>
       )}
 
-      {etapa === 5 && servico && profissional && inicio && (
+      {etapa === 5 && temServicos && profissional && inicio && (
         <Card className="p-5">
           <Eyebrow>Falta pouco</Eyebrow>
           <p className="mt-2 text-[18px] leading-snug font-semibold">
-            {servico.nome} · {dataLonga(new Date(inicio))} às {hora(new Date(inicio))}
+            {nomesServicos} · {dataLonga(new Date(inicio))} às {hora(new Date(inicio))}
           </p>
           <p className="mt-1 mb-4 text-[14px] text-ink-muted">
             Só na primeira vez: seus dados pra gente confirmar o horário no seu WhatsApp. Não tem senha nem código.

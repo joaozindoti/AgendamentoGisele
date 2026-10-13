@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { PontoStatus, Titulo, Vazio } from "@/components/ui";
 import { obterAreaCliente } from "@/lib/auth";
-import { SELECT_AGENDAMENTO_CLIENTE, type AgendamentoComDetalhes } from "@/lib/consultas";
+import { SELECT_AGENDAMENTO_CLIENTE, servicosDoAgendamento, type AgendamentoComDetalhes } from "@/lib/consultas";
 import { agoraMs, dataCompleta, hora, lerPeriodo } from "@/lib/formato";
 import { ROTULO_STATUS } from "@/lib/tipos";
 
@@ -41,7 +41,7 @@ function Grupo({ titulo, itens }: { titulo: string; itens: (AgendamentoComDetalh
         {itens.map((a) => (
           <li key={a.id} className="flex items-center justify-between gap-3 px-4 py-3">
             <div className="min-w-0">
-              <p className="truncate text-[15px] font-medium">{a.servico?.nome}</p>
+              <p className="truncate text-[15px] font-medium">{servicosDoAgendamento(a).nomes}</p>
               <p className="text-[13px] text-ink-muted">
                 {dataCompleta(a.inicio)} · {hora(a.inicio)} · {a.profissional?.nome}
               </p>

@@ -21,6 +21,8 @@ const MENSAGENS: Record<string, string> = {
   protocolo_longo: "O protocolo pode ter no máximo 2000 caracteres.",
   agendamento_nao_encontrado: "Agendamento não encontrado.",
   whatsapp_invalido: "WhatsApp inválido. Confira o DDD e o número.",
+  servicos_invalidos: "Escolha de 1 a 6 serviços, sem repetir.",
+  sem_permissao: "Você não tem permissão pra fazer isso.",
   nome_invalido: "Informe o nome.",
   apenas_owner: "Só a Gisele tem acesso a isso.",
   apenas_profissionais: "Só a equipe do studio tem acesso a isso.",

@@ -4,16 +4,24 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { SeletorHorario } from "@/components/seletor-horario";
 import { AreaTexto, Botao, Caixa, Campo, Selecao } from "@/components/ui";
-import { dataLonga, hora, instanteLocal } from "@/lib/formato";
+import { dataLonga, duracao, hora, instanteLocal } from "@/lib/formato";
 import { criarClienteNavegador } from "@/lib/supabase/client";
 import { exibirTelefone, mascaraTelefone, paraE164 } from "@/lib/telefone";
 import type { ProfissionalDoServico } from "@/lib/tipos";
-import { agendarPainel } from "../actions";
+import { agendarPainel, renomearCliente } from "../actions";
 
 interface ClienteBusca {
   id: string;
   nome: string;
   whatsapp: string;
+}
+
+const MAX_SERVICOS = 6;
+
+// Cliente criada por WhatsApp/pré-cadastro chega como "Cliente" (ou sem letras):
+// a Gisele precisa dar o nome de verdade.
+function nomePendente(nome: string) {
+  return !/\p{L}/u.test(nome) || nome.trim().toLowerCase() === "cliente";
 }
 
 export function FormNovoAgendamento({
@@ -29,7 +37,7 @@ export function FormNovoAgendamento({
   meuProfissional: { id: string; nome: string };
   diaInicial: string;
   diasMaximos: number;
-  clienteInicial: { id: string; nome: string } | null;
+  clienteInicial: { id: string; nome: string; whatsapp?: string } | null;
 }) {
   const router = useRouter();
   const [pendente, iniciar] = useTransition();
@@ -39,16 +47,25 @@ export function FormNovoAgendamento({
   const [busca, setBusca] = useState("");
   const [respBusca, setRespBusca] = useState<{ termo: string; lista: ClienteBusca[] } | null>(null);
   const resultados = respBusca && respBusca.termo === busca.trim() ? respBusca.lista : [];
-  const [cliente, setCliente] = useState<{ id: string; nome: string } | null>(clienteInicial);
+  const [cliente, setCliente] = useState<{ id: string; nome: string; whatsapp?: string } | null>(clienteInicial);
+  const [editandoNome, setEditandoNome] = useState(Boolean(clienteInicial && nomePendente(clienteInicial.nome)));
+  const [nomeEditado, setNomeEditado] = useState(clienteInicial && !nomePendente(clienteInicial.nome) ? clienteInicial.nome : "");
+  const [erroNome, setErroNome] = useState<string | null>(null);
+  const [salvandoNome, iniciarNome] = useTransition();
   const [novoNome, setNovoNome] = useState("");
   const [novoTelefone, setNovoTelefone] = useState("");
 
-  const [servicoId, setServicoId] = useState("");
-  const [respProfissionais, setRespProfissionais] = useState<{ servicoId: string; lista: ProfissionalDoServico[] } | null>(null);
-  const profissionais = respProfissionais?.servicoId === servicoId ? respProfissionais.lista : [];
+  const [servicoIds, setServicoIds] = useState<string[]>([]);
+  const chaveServicos = servicoIds.join(",");
+  const escolhidos = servicoIds.flatMap((id) => servicos.find((s) => s.id === id) ?? []);
+  const duracaoBase = escolhidos.reduce((t, s) => t + s.duracao_min, 0);
+  const [respProfissionais, setRespProfissionais] = useState<{ chave: string; lista: ProfissionalDoServico[] } | null>(null);
+  const profissionais = respProfissionais?.chave === chaveServicos ? respProfissionais.lista : [];
   const [profissionalEscolhido, setProfissionalId] = useState(ehOwner ? "" : meuProfissional.id);
-  // owner: só vale a escolha que pertence à lista do serviço atual
+  // owner: só vale a escolha que pertence à lista dos serviços atuais
   const profissionalId = !ehOwner || profissionais.some((p) => p.id === profissionalEscolhido) ? profissionalEscolhido : "";
+  // com a profissional escolhida vale a duração dela (override); antes disso, a soma base
+  const duracaoTotal = profissionais.find((p) => p.id === profissionalId)?.duracao_min ?? duracaoBase;
 
   const [modoLivre, setModoLivre] = useState(false);
   const [inicio, setInicio] = useState<string | null>(null);
@@ -69,20 +86,66 @@ export function FormNovoAgendamento({
     return () => clearTimeout(t);
   }, [busca]);
 
+  // só quem faz TODOS os serviços escolhidos (durações/preços já somados pelo banco)
   useEffect(() => {
-    if (!servicoId || !ehOwner) return;
+    if (!chaveServicos) return;
+    let vivo = true;
     criarClienteNavegador()
-      .rpc("profissionais_do_servico", { p_servico_id: servicoId })
+      .rpc("profissionais_dos_servicos", { p_servico_ids: chaveServicos.split(",") })
       .then(({ data }) => {
+        if (!vivo) return;
         const lista = (data ?? []) as ProfissionalDoServico[];
-        setRespProfissionais({ servicoId, lista });
-        setProfissionalId(lista.length === 1 ? lista[0].id : "");
+        setRespProfissionais({ chave: chaveServicos, lista });
+        if (ehOwner) setProfissionalId((atual) => (lista.length === 1 ? lista[0].id : lista.some((p) => p.id === atual) ? atual : ""));
       });
-  }, [servicoId, ehOwner]);
+    return () => {
+      vivo = false;
+    };
+  }, [chaveServicos, ehOwner]);
+
+  function selecionarCliente(c: { id: string; nome: string; whatsapp?: string }) {
+    setCliente(c);
+    setErroNome(null);
+    const semNome = nomePendente(c.nome);
+    setEditandoNome(semNome);
+    setNomeEditado(semNome ? "" : c.nome);
+  }
+
+  function salvarNome() {
+    if (!cliente) return;
+    const nome = nomeEditado.trim();
+    if (nome.length < 2 || nomePendente(nome)) {
+      setErroNome("Digite o nome da cliente.");
+      return;
+    }
+    setErroNome(null);
+    iniciarNome(async () => {
+      const r = await renomearCliente(cliente.id, nome);
+      if (r.erro) {
+        setErroNome(r.erro);
+        return;
+      }
+      setCliente({ ...cliente, nome });
+      setEditandoNome(false);
+    });
+  }
+
+  function alterarServicos(novos: string[]) {
+    setServicoIds(novos);
+    setInicio(null);
+  }
+
+  function mover(i: number, delta: number) {
+    const novos = [...servicoIds];
+    const j = i + delta;
+    if (j < 0 || j >= novos.length) return;
+    [novos[i], novos[j]] = [novos[j], novos[i]];
+    alterarServicos(novos);
+  }
 
   const inicioEscolhido = modoLivre ? (horaLivre ? instanteLocal(diaLivre, horaLivre).toISOString() : null) : inicio;
   const clienteOk = modoCliente === "busca" ? Boolean(cliente) : novoNome.trim().length >= 2 && Boolean(paraE164(novoTelefone));
-  const podeEnviar = clienteOk && servicoId && profissionalId && inicioEscolhido;
+  const podeEnviar = clienteOk && servicoIds.length > 0 && profissionalId && inicioEscolhido;
 
   function enviar() {
     if (!podeEnviar || !inicioEscolhido) return;
@@ -93,7 +156,7 @@ export function FormNovoAgendamento({
         novoNome: novoNome.trim(),
         novoWhatsapp: novoTelefone,
         profissionalId,
-        servicoId,
+        servicoIds,
         inicioIso: inicioEscolhido,
         observacoes,
       });
@@ -115,6 +178,7 @@ export function FormNovoAgendamento({
             onClick={() => {
               setModoCliente((m) => (m === "busca" ? "nova" : "busca"));
               setCliente(null);
+              setEditandoNome(false);
             }}
           >
             {modoCliente === "busca" ? "+ Cliente nova" : "Buscar cadastrada"}
@@ -123,16 +187,81 @@ export function FormNovoAgendamento({
       >
         {modoCliente === "busca" ? (
           cliente ? (
-            <div className="flex items-center justify-between rounded-input border border-accent/40 bg-blush/40 px-4 py-3">
-              <span className="flex items-center gap-3 font-medium">
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-surface font-display text-[13px] font-bold text-accent">
-                  {cliente.nome.charAt(0)}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between gap-3 rounded-input border border-accent/40 bg-blush/40 px-4 py-3">
+                <span className="flex min-w-0 items-center gap-3 font-medium">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface font-display text-[13px] font-bold text-accent">
+                    {nomePendente(cliente.nome) ? "?" : cliente.nome.charAt(0)}
+                  </span>
+                  <span className="min-w-0">
+                    <span className={`block truncate ${nomePendente(cliente.nome) ? "italic text-ink-muted" : ""}`}>
+                      {nomePendente(cliente.nome) ? "Sem nome cadastrado" : cliente.nome}
+                    </span>
+                    {cliente.whatsapp && (
+                      <span className="block text-[12px] font-normal text-ink-muted">{exibirTelefone(cliente.whatsapp)}</span>
+                    )}
+                  </span>
                 </span>
-                {cliente.nome}
-              </span>
-              <button type="button" className="text-[13px] text-accent" onClick={() => setCliente(null)}>
-                Trocar
-              </button>
+                <span className="flex shrink-0 gap-3 text-[13px] text-accent">
+                  {!editandoNome && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setNomeEditado(nomePendente(cliente.nome) ? "" : cliente.nome);
+                        setErroNome(null);
+                        setEditandoNome(true);
+                      }}
+                    >
+                      Editar nome
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCliente(null);
+                      setEditandoNome(false);
+                    }}
+                  >
+                    Trocar
+                  </button>
+                </span>
+              </div>
+              {editandoNome && (
+                <div
+                  className={`space-y-2 rounded-input border p-3 ${
+                    nomePendente(cliente.nome) ? "border-gold bg-gold-soft/20" : "border-line bg-base"
+                  }`}
+                >
+                  {nomePendente(cliente.nome) && (
+                    <p className="text-[13px] font-medium text-gold-ink">Essa cliente ainda está sem nome. Como ela se chama?</p>
+                  )}
+                  <Campo
+                    rotulo="Nome da cliente"
+                    value={nomeEditado}
+                    onChange={(e) => setNomeEditado(e.target.value)}
+                    autoComplete="off"
+                    autoFocus
+                    maxLength={120}
+                    erro={erroNome ?? undefined}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        salvarNome();
+                      }
+                    }}
+                  />
+                  <div className="flex gap-2">
+                    <Botao className="flex-1" disabled={salvandoNome} onClick={salvarNome}>
+                      {salvandoNome ? "Salvando…" : "Salvar nome"}
+                    </Botao>
+                    {!nomePendente(cliente.nome) && (
+                      <Botao variante="fantasma" disabled={salvandoNome} onClick={() => setEditandoNome(false)}>
+                        Cancelar
+                      </Botao>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <>
@@ -141,9 +270,15 @@ export function FormNovoAgendamento({
                 <ul className="divide-y divide-line overflow-hidden rounded-card border border-line bg-surface">
                   {resultados.map((c) => (
                     <li key={c.id}>
-                      <button type="button" className="flex w-full justify-between px-4 py-2.5 text-left hover:bg-base" onClick={() => setCliente(c)}>
-                        <span>{c.nome}</span>
-                        <span className="text-[13px] text-ink-muted">{exibirTelefone(c.whatsapp)}</span>
+                      <button
+                        type="button"
+                        className="flex w-full justify-between gap-3 px-4 py-2.5 text-left hover:bg-base"
+                        onClick={() => selecionarCliente(c)}
+                      >
+                        <span className={`truncate ${nomePendente(c.nome) ? "italic text-ink-muted" : ""}`}>
+                          {nomePendente(c.nome) ? "Sem nome" : c.nome}
+                        </span>
+                        <span className="shrink-0 text-[13px] text-ink-muted">{exibirTelefone(c.whatsapp)}</span>
                       </button>
                     </li>
                   ))}
@@ -172,24 +307,77 @@ export function FormNovoAgendamento({
         )}
       </Etapa>
 
-      <Etapa numero={2} titulo="Serviço e profissional" feita={Boolean(servicoId && profissionalId)}>
-        <Selecao
-          rotulo="Serviço"
-          value={servicoId}
-          onChange={(e) => {
-            setServicoId(e.target.value);
-            setInicio(null);
-          }}
-        >
-          <option value="">Escolha…</option>
-          {servicos.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.nome}
-            </option>
-          ))}
-        </Selecao>
+      <Etapa numero={2} titulo="Serviços e profissional" feita={Boolean(servicoIds.length && profissionalId)}>
+        {escolhidos.length > 0 && (
+          <ol className="space-y-2" aria-label="Serviços escolhidos">
+            {escolhidos.map((s, i) => (
+              <li key={s.id} className="flex items-center gap-1 rounded-input border border-line bg-base py-1.5 pr-1 pl-3 text-[14px]">
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate font-medium">
+                    {i + 1}. {s.nome}
+                  </span>
+                  <span className="text-[12px] text-ink-muted">{duracao(s.duracao_min)}</span>
+                </span>
+                {escolhidos.length > 1 && (
+                  <>
+                    <button
+                      type="button"
+                      aria-label={`Subir ${s.nome}`}
+                      disabled={i === 0}
+                      className="flex h-9 w-9 items-center justify-center text-ink-muted disabled:opacity-25"
+                      onClick={() => mover(i, -1)}
+                    >
+                      ↑
+                    </button>
+                    <button
+                      type="button"
+                      aria-label={`Descer ${s.nome}`}
+                      disabled={i === escolhidos.length - 1}
+                      className="flex h-9 w-9 items-center justify-center text-ink-muted disabled:opacity-25"
+                      onClick={() => mover(i, 1)}
+                    >
+                      ↓
+                    </button>
+                  </>
+                )}
+                <button
+                  type="button"
+                  aria-label={`Remover ${s.nome}`}
+                  className="flex h-9 w-9 items-center justify-center text-[18px] text-accent"
+                  onClick={() => alterarServicos(servicoIds.filter((id) => id !== s.id))}
+                >
+                  ×
+                </button>
+              </li>
+            ))}
+          </ol>
+        )}
+        {servicoIds.length < MAX_SERVICOS ? (
+          <Selecao
+            rotulo={servicoIds.length ? "Adicionar outro serviço" : "Serviço"}
+            value=""
+            onChange={(e) => e.target.value && alterarServicos([...servicoIds, e.target.value])}
+          >
+            <option value="">Escolha…</option>
+            {servicos
+              .filter((s) => !servicoIds.includes(s.id))
+              .map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.nome} · {duracao(s.duracao_min)}
+                </option>
+              ))}
+          </Selecao>
+        ) : (
+          <p className="text-[12px] text-ink-muted">Máximo de {MAX_SERVICOS} serviços por agendamento.</p>
+        )}
+        {servicoIds.length > 1 && (
+          <p className="flex justify-between border-t border-line pt-2 text-[14px]">
+            <span className="text-ink-muted">Duração total (em sequência)</span>
+            <strong>{duracao(duracaoTotal)}</strong>
+          </p>
+        )}
         {ehOwner ? (
-          servicoId && (
+          servicoIds.length > 0 && (
             <Selecao
               rotulo="Profissional"
               value={profissionalId}
@@ -209,12 +397,16 @@ export function FormNovoAgendamento({
         ) : (
           <p className="text-[14px] text-ink-muted">Profissional: {meuProfissional.nome}</p>
         )}
-        {ehOwner && servicoId && profissionais.length === 0 && (
-          <Caixa>Nenhuma profissional ativa faz esse serviço. Vincule em Equipe ou em Serviços.</Caixa>
+        {ehOwner && servicoIds.length > 0 && respProfissionais?.chave === chaveServicos && profissionais.length === 0 && (
+          <Caixa>
+            {servicoIds.length > 1
+              ? "Nenhuma profissional ativa faz todos esses serviços juntos. Tire algum ou vincule em Equipe."
+              : "Nenhuma profissional ativa faz esse serviço. Vincule em Equipe ou em Serviços."}
+          </Caixa>
         )}
       </Etapa>
 
-      {servicoId && profissionalId && (
+      {servicoIds.length > 0 && profissionalId && (
         <Etapa
           numero={3}
           titulo="Horário"
@@ -237,7 +429,7 @@ export function FormNovoAgendamento({
           ) : (
             <SeletorHorario
               profissionalId={profissionalId}
-              servicoId={servicoId}
+              servicoIds={servicoIds}
               diasMaximos={diasMaximos}
               valor={inicio}
               aoEscolher={setInicio}

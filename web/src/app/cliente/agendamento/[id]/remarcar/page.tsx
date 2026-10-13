@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Caixa, LinkBotao, Titulo } from "@/components/ui";
 import { exigirCliente } from "@/lib/auth";
-import { SELECT_AGENDAMENTO_CLIENTE, lerConfigNumero, type AgendamentoComDetalhes } from "@/lib/consultas";
+import { SELECT_AGENDAMENTO_CLIENTE, lerConfigNumero, servicosDoAgendamento, type AgendamentoComDetalhes } from "@/lib/consultas";
 import { agoraMs, dataLonga, hora, lerPeriodo } from "@/lib/formato";
 import { WHATSAPP_STUDIO } from "@/lib/studio";
 import { linkWhatsApp } from "@/lib/telefone";
@@ -23,18 +23,20 @@ export default async function PaginaRemarcar({ params }: PageProps<"/cliente/age
 
   const ag = data as unknown as AgendamentoComDetalhes;
   const { inicio } = lerPeriodo(ag.periodo);
+  const servicos = servicosDoAgendamento(ag);
+  const ids = servicos.lista.every((i) => i.id) ? servicos.lista.map((i) => i.id as string) : [ag.servico_id];
   const podeAlterar = ag.status === "confirmado" && inicio.getTime() - agoraMs() > horasMinimas * 3600_000;
 
   return (
     <>
       <Titulo eyebrow="Remarcar" sub={`Atual: ${dataLonga(inicio)} · ${hora(inicio)}`}>
-        {ag.servico?.nome}
+        {servicos.nomes}
       </Titulo>
       {podeAlterar ? (
         <FormRemarcar
           agendamentoId={ag.id}
           profissionalId={ag.profissional_id}
-          servicoId={ag.servico_id}
+          servicoIds={ids}
           horarioAtual={inicio.toISOString()}
           diasMaximos={diasMaximos}
         />

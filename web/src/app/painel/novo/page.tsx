@@ -16,7 +16,7 @@ export default async function NovoAgendamento({ searchParams }: PageProps<"/pain
     supabase.from("profissional_servicos").select("servico_id").eq("profissional_id", profissionalId),
     lerConfigNumero(supabase, "dias_maximos_agendamento", 60),
     typeof cliente === "string"
-      ? supabase.from("clientes").select("id, nome").eq("id", cliente).maybeSingle()
+      ? supabase.from("clientes").select("id, nome, whatsapp").eq("id", cliente).maybeSingle()
       : Promise.resolve({ data: null }),
   ]);
 
@@ -27,7 +27,7 @@ export default async function NovoAgendamento({ searchParams }: PageProps<"/pain
 
   return (
     <>
-      <Titulo sub="Cliente, serviço e horário, nessa ordem.">Novo agendamento</Titulo>
+      <Titulo sub="Cliente, serviços e horário, nessa ordem.">Novo agendamento</Titulo>
       <FormNovoAgendamento
         servicos={lista as { id: string; nome: string; duracao_min: number }[]}
         ehOwner={ehOwner}

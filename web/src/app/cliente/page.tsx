@@ -8,7 +8,7 @@ import {
 } from "@/components/home-cliente";
 import { Caixa, Card, Eyebrow } from "@/components/ui";
 import { obterAreaCliente } from "@/lib/auth";
-import { SELECT_AGENDAMENTO_CLIENTE, lerConfigNumero, type AgendamentoComDetalhes } from "@/lib/consultas";
+import { SELECT_AGENDAMENTO_CLIENTE, lerConfigNumero, servicosDoAgendamento, type AgendamentoComDetalhes } from "@/lib/consultas";
 import { agoraMs, dataLonga, hora, lerPeriodo, saudacao } from "@/lib/formato";
 import { WHATSAPP_STUDIO } from "@/lib/studio";
 
@@ -98,7 +98,7 @@ export default async function InicioCliente({ searchParams }: PageProps<"/client
             </div>
             <div className="min-w-0 flex-1 p-4">
               <Eyebrow>Seu próximo horário</Eyebrow>
-              <p className="mt-1 font-display text-[19px] leading-snug font-bold tracking-[-0.02em]">{proximo.servico?.nome}</p>
+              <p className="mt-1 font-display text-[19px] leading-snug font-bold tracking-[-0.02em]">{servicosDoAgendamento(proximo).nomes}</p>
               <p className="mt-0.5 text-[14px] text-ink-muted">
                 com {proximo.profissional?.nome} · {dataLonga(proximo.inicio)}
               </p>

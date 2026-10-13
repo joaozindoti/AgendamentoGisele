@@ -46,7 +46,7 @@ describe("cliente anônima: cadastro sem código", () => {
     const c = como(db, "authenticated", anaSessao);
     assert.deepEqual(await c(`select id from clientes`), []);
     assert.deepEqual(await c(`select id from agendamentos`), []);
-    await assert.rejects(c(`select agendar($1, $2, $3)`, [idGisele, design, instante(TERCA, "14:00")]), /cliente_nao_encontrada/);
+    await assert.rejects(c(`select agendar($1, $2::uuid, $3)`, [idGisele, design, instante(TERCA, "14:00")]), /cliente_nao_encontrada/);
   });
 
   test("não insere em clientes direto, só pela RPC", async () => {
@@ -88,8 +88,8 @@ describe("cliente anônima: cadastro sem código", () => {
   test("agenda e só vê o próprio agendamento", async () => {
     const ana = como(db, "authenticated", anaSessao);
     const bia = como(db, "authenticated", biaSessao);
-    const [{ agendar: agAna }] = await ana(`select agendar($1, $2, $3)`, [idGisele, design, instante(TERCA, "14:00")]);
-    const [{ agendar: agBia }] = await bia(`select agendar($1, $2, $3)`, [idGisele, design, instante(TERCA, "15:00")]);
+    const [{ agendar: agAna }] = await ana(`select agendar($1, $2::uuid, $3)`, [idGisele, design, instante(TERCA, "14:00")]);
+    const [{ agendar: agBia }] = await bia(`select agendar($1, $2::uuid, $3)`, [idGisele, design, instante(TERCA, "15:00")]);
     assert.deepEqual((await ana(`select id from agendamentos`)).map((r) => r.id), [agAna]);
     assert.deepEqual((await bia(`select id from agendamentos`)).map((r) => r.id), [agBia]);
     await assert.rejects(ana(`select cancelar($1)`, [agBia]), /fora_da_janela_de_remarcacao/);
@@ -103,11 +103,11 @@ describe("cliente anônima: cadastro sem código", () => {
 
   test("teto de agendamentos futuros por cliente", async () => {
     const c = como(db, "authenticated", anaSessao);
-    await c(`select agendar($1, $2, $3)`, [idGisele, design, instante(TERCA, "16:00")]);
-    await c(`select agendar($1, $2, $3)`, [idGisele, design, instante(QUARTA, "14:00")]);
-    await assert.rejects(c(`select agendar($1, $2, $3)`, [idGisele, design, instante(QUARTA, "15:00")]), /limite_agendamentos/);
+    await c(`select agendar($1, $2::uuid, $3)`, [idGisele, design, instante(TERCA, "16:00")]);
+    await c(`select agendar($1, $2::uuid, $3)`, [idGisele, design, instante(QUARTA, "14:00")]);
+    await assert.rejects(c(`select agendar($1, $2::uuid, $3)`, [idGisele, design, instante(QUARTA, "15:00")]), /limite_agendamentos/);
     // o studio continua podendo encaixar pra ela
-    await como(db, "authenticated", gisele)(`select agendar($1, $2, $3, $4)`, [idGisele, design, instante(QUARTA, "15:00"), anaId]);
+    await como(db, "authenticated", gisele)(`select agendar($1, $2::uuid, $3, $4)`, [idGisele, design, instante(QUARTA, "15:00"), anaId]);
   });
 
   test("não chama faturamento, métricas nem RPCs de admin/lembrete", async () => {
