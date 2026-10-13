@@ -1,0 +1,9 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "redirects": [
+    { "source": "/horario.html", "destination": "https://agendamento-gisele-eacy.vercel.app/cliente/agendar", "permanent": false },
+    { "source": "/servicos.html", "destination": "https://agendamento-gisele-eacy.vercel.app/servicos", "permanent": false },
+    { "source": "/precadastro.html", "destination": "https://agendamento-gisele-eacy.vercel.app/pre-cadastro", "permanent": false },
+    { "source": "/(.*)", "destination": "https://agendamento-gisele-eacy.vercel.app/", "permanent": false }
+  ]
+}
