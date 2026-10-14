@@ -76,6 +76,10 @@
     <input id="nomeCliente" type="text" autocomplete="name" maxlength="60" placeholder="Digite seu nome"
       style="width:100%;min-height:48px;padding:0 14px;border:1px solid #ddd;border-radius:12px;font-size:16px;background:#fff;color:#222">
     <p id="nomeAviso" style="display:none;margin-top:8px;color:#9a3b2f;font-size:14px">Digite seu nome antes de escolher o horário.</p>
+    <label class="section-label" for="whatsCliente" style="display:block;margin-top:20px">Seu WhatsApp</label>
+    <input id="whatsCliente" type="tel" inputmode="numeric" autocomplete="tel-national" maxlength="15" placeholder="(99) 99999-9999"
+      style="width:100%;min-height:48px;padding:0 14px;border:1px solid #ddd;border-radius:12px;font-size:16px;background:#fff;color:#222">
+    <p id="whatsAviso" style="display:none;margin-top:8px;color:#9a3b2f;font-size:14px">Digite seu WhatsApp com DDD antes de escolher o horário.</p>
   </div>
 
   <!-- Calendário -->
@@ -251,8 +255,16 @@ function selectTime(time) {
     campo.focus();
     return;
   }
-  try { localStorage.setItem('sgl_nome', nome); } catch (e) {}
-  openWhatsApp(services, curY, curMo, selDay, time, nome);
+  var campoW = document.getElementById('whatsCliente');
+  var digitos = campoW.value.replace(/\D/g, '');
+  if (digitos.length < 10 || digitos.length > 11) {
+    document.getElementById('whatsAviso').style.display = 'block';
+    campoW.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    campoW.focus();
+    return;
+  }
+  try { localStorage.setItem('sgl_nome', nome); localStorage.setItem('sgl_whats', campoW.value); } catch (e) {}
+  openWhatsApp(services, curY, curMo, selDay, time, nome, campoW.value);
   Store.clear();
 }
 
@@ -272,6 +284,14 @@ function nextMonth() {
 try { document.getElementById('nomeCliente').value = localStorage.getItem('sgl_nome') || ''; } catch (e) {}
 document.getElementById('nomeCliente').addEventListener('input', function () {
   document.getElementById('nomeAviso').style.display = 'none';
+});
+try { document.getElementById('whatsCliente').value = localStorage.getItem('sgl_whats') || ''; } catch (e) {}
+document.getElementById('whatsCliente').addEventListener('input', function (e) {
+  // máscara (99) 99999-9999
+  var d = e.target.value.replace(/\D/g, '').slice(0, 11);
+  e.target.value = d.length > 6 ? '(' + d.slice(0, 2) + ') ' + d.slice(2, d.length - 4) + '-' + d.slice(-4)
+    : d.length > 2 ? '(' + d.slice(0, 2) + ') ' + d.slice(2) : d;
+  document.getElementById('whatsAviso').style.display = 'none';
 });
 renderSummary();
 var now = new Date();
