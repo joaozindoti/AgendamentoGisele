@@ -70,6 +70,14 @@
 
   <p class="notice-audience">Atendimento exclusivo para o público feminino.</p>
 
+  <!-- Nome: vai na mensagem do WhatsApp (o número já sai do próprio WhatsApp dela) -->
+  <div style="margin-bottom:32px">
+    <label class="section-label" for="nomeCliente">Seu nome</label>
+    <input id="nomeCliente" type="text" autocomplete="name" maxlength="60" placeholder="Digite seu nome"
+      style="width:100%;min-height:48px;padding:0 14px;border:1px solid #ddd;border-radius:12px;font-size:16px;background:#fff;color:#222">
+    <p id="nomeAviso" style="display:none;margin-top:8px;color:#9a3b2f;font-size:14px">Digite seu nome antes de escolher o horário.</p>
+  </div>
+
   <!-- Calendário -->
   <div style="margin-bottom:32px">
     <span class="section-label">Escolha a data</span>
@@ -235,7 +243,16 @@ async function loadSlots(y, mo, d) {
 }
 
 function selectTime(time) {
-  openWhatsApp(services, curY, curMo, selDay, time);
+  var campo = document.getElementById('nomeCliente');
+  var nome = campo.value.trim();
+  if (nome.length < 2) {
+    document.getElementById('nomeAviso').style.display = 'block';
+    campo.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    campo.focus();
+    return;
+  }
+  try { localStorage.setItem('sgl_nome', nome); } catch (e) {}
+  openWhatsApp(services, curY, curMo, selDay, time, nome);
   Store.clear();
 }
 
@@ -252,6 +269,10 @@ function nextMonth() {
 }
 
 /* ── Init ── */
+try { document.getElementById('nomeCliente').value = localStorage.getItem('sgl_nome') || ''; } catch (e) {}
+document.getElementById('nomeCliente').addEventListener('input', function () {
+  document.getElementById('nomeAviso').style.display = 'none';
+});
 renderSummary();
 var now = new Date();
 curY = now.getFullYear(); curMo = now.getMonth();
