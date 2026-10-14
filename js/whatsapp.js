@@ -10,7 +10,7 @@ function profissionalDe(services) {
   return lara && gisele ? 'Gisele e Lara' : lara ? 'Lara' : 'Gisele';
 }
 
-function buildMessage(services, y, mo, d, time, nome) {
+function buildMessage(services, y, mo, d, time, nome, whats) {
   var lines = services.map(function (s) {
     return '- ' + s.name + ' — ' + fmtPrice(s.price);
   }).join('\n');
@@ -22,6 +22,7 @@ function buildMessage(services, y, mo, d, time, nome) {
 
   return 'Olá! Gostaria de agendar no Studio Gisele Lima ✨\n\n'
     + '👤 Nome: ' + nome + '\n'
+    + '📱 WhatsApp: ' + whats + '\n'
     + '💆 Profissional: ' + profissionalDe(services) + '\n\n'
     + lines
     + '\n\n📅 ' + fmtDateFull(y, mo, d)
@@ -31,8 +32,8 @@ function buildMessage(services, y, mo, d, time, nome) {
     + '\n\nPode confirmar?';
 }
 
-function openWhatsApp(services, y, mo, d, time, nome) {
-  var msg = encodeURIComponent(buildMessage(services, y, mo, d, time, nome));
+function openWhatsApp(services, y, mo, d, time, nome, whats) {
+  var msg = encodeURIComponent(buildMessage(services, y, mo, d, time, nome, whats));
   var hasNumber = /^\d{10,15}$/.test(WHATSAPP_NUMBER);
   var url = hasNumber
     ? 'https://wa.me/' + WHATSAPP_NUMBER + '?text=' + msg
