@@ -22,11 +22,15 @@ const nextConfig: NextConfig = {
   // URLs do site estático atual continuam funcionando depois da troca
   // (links antigos no Instagram, WhatsApp, Google).
   async redirects() {
+    // 14/10/2026: o studio voltou pro site + WhatsApp + n8n. App, painel e
+    // cadastro saíram do ar; todo endereço daqui leva pro site
+    // (studio-gisele-lima.vercel.app). Temporário (307) pra poder voltar.
+    const SITE = "https://studio-gisele-lima.vercel.app";
     return [
-      { source: "/index.html", destination: "/", permanent: true },
-      { source: "/servicos.html", destination: "/servicos", permanent: true },
-      { source: "/precadastro.html", destination: "/pre-cadastro", permanent: true },
-      { source: "/horario.html", destination: "/cliente/agendar", permanent: true },
+      { source: "/servicos", destination: `${SITE}/servicos.html`, permanent: false },
+      { source: "/pre-cadastro", destination: `${SITE}/precadastro.html`, permanent: false },
+      { source: "/cliente/:path*", destination: `${SITE}/servicos.html`, permanent: false },
+      { source: "/:path*", destination: `${SITE}/`, permanent: false },
     ];
   },
 

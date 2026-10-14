@@ -21,7 +21,7 @@ var SERVICES = [{
         id: '3',
         name: 'Design personalizado + Henna',
         description: 'Design premium com aplicação de henna para preenchimento',
-        price: 40,
+        price: 50,
         duration: 60,
         category: 'sobrancelha',
         premium: true
@@ -84,6 +84,107 @@ var SERVICES = [{
         price: 60,
         duration: 60,
         category: 'epilacao'
+    },
+    /* Serviços da Lara (out/2026): mesma agenda do Google; a mensagem do
+       WhatsApp leva "Profissional: Lara" e o Agente marca "(Lara)" no evento */
+    {
+        id: '12',
+        name: 'Cílios Volume Brasileiro',
+        description: 'Extensão de cílios volume brasileiro — com Lara',
+        price: 85,
+        duration: 150,
+        category: 'cilios',
+        pro: 'Lara'
+    },
+    {
+        id: '13',
+        name: 'Cílios Volume Híbrido',
+        description: 'Extensão de cílios volume híbrido — com Lara',
+        price: 90,
+        duration: 150,
+        category: 'cilios',
+        pro: 'Lara'
+    },
+    {
+        id: '14',
+        name: 'Cílios Efeito Molhado/Rímel',
+        description: 'Extensão de cílios efeito molhado (rímel) — com Lara',
+        price: 85,
+        duration: 150,
+        category: 'cilios',
+        pro: 'Lara'
+    },
+    {
+        id: '15',
+        name: 'Cílios Efeito Fox Eyes',
+        description: 'Extensão de cílios efeito fox eyes — com Lara',
+        price: 110,
+        duration: 150,
+        category: 'cilios',
+        pro: 'Lara'
+    },
+    {
+        id: '16',
+        name: 'Manutenção Cílios Volume Brasileiro',
+        description: 'Manutenção do volume brasileiro — com Lara',
+        price: 70,
+        duration: 150,
+        category: 'cilios',
+        pro: 'Lara'
+    },
+    {
+        id: '17',
+        name: 'Manutenção Cílios Volume Híbrido',
+        description: 'Manutenção do volume híbrido — com Lara',
+        price: 80,
+        duration: 150,
+        category: 'cilios',
+        pro: 'Lara'
+    },
+    {
+        id: '18',
+        name: 'Manutenção Cílios Efeito Molhado/Rímel',
+        description: 'Manutenção do efeito molhado (rímel) — com Lara',
+        price: 70,
+        duration: 150,
+        category: 'cilios',
+        pro: 'Lara'
+    },
+    {
+        id: '19',
+        name: 'Manutenção Cílios Efeito Fox Eyes',
+        description: 'Manutenção do efeito fox eyes — com Lara',
+        price: 80,
+        duration: 150,
+        category: 'cilios',
+        pro: 'Lara'
+    },
+    {
+        id: '20',
+        name: 'Massagem',
+        description: 'Massagem relaxante — com Lara',
+        price: 100,
+        duration: 60,
+        category: 'corpo',
+        pro: 'Lara'
+    },
+    {
+        id: '21',
+        name: 'Drenagem Linfática',
+        description: 'Drenagem linfática corporal — com Lara',
+        price: 100,
+        duration: 90,
+        category: 'corpo',
+        pro: 'Lara'
+    },
+    {
+        id: '22',
+        name: 'Combo Massagem + Drenagem Linfática',
+        description: 'Massagem e drenagem linfática na mesma sessão — com Lara',
+        price: 170,
+        duration: 150,
+        category: 'corpo',
+        pro: 'Lara'
     }
 ];
 
@@ -94,7 +195,9 @@ var CATS = [
     { key: 'all', label: 'Todos' },
     { key: 'sobrancelha', label: 'Sobrancelha', sub: 'Design & Brow Lamination', photo: 'assets/fotos/sobrancelha-01.webp', alt: 'Design de sobrancelha finalizado no Studio Gisele Lima' },
     { key: 'epilacao', label: 'Epilação', sub: 'Epilação Premium', photo: 'assets/fotos/epilacao-02.webp', alt: 'Epilação premium no Studio Gisele Lima' },
-    { key: 'facial', label: 'Facial', sub: 'Limpeza de Pele', photo: 'assets/fotos/facial-nova.webp', alt: 'Máscara facial dourada com toalha personalizada Gisele Lima Estética Feminina' }
+    { key: 'facial', label: 'Facial', sub: 'Limpeza de Pele', photo: 'assets/fotos/facial-nova.webp', alt: 'Máscara facial dourada com toalha personalizada Gisele Lima Estética Feminina' },
+    { key: 'cilios', label: 'Cílios', sub: 'com Lara' },
+    { key: 'corpo', label: 'Massagem e Drenagem', sub: 'com Lara' }
 ];
 
 function getByCategory(cat) {

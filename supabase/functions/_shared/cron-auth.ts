@@ -9,5 +9,11 @@ export function autenticaCron(req: Request): Response | null {
   if (!secret || req.headers.get("x-cron-secret") !== secret) {
     return new Response(JSON.stringify({ error: "unauthorized" }), { status: 401 });
   }
+  // Interruptor: com SISTEMA_PAUSADO=1 (Edge Functions → Secrets) nenhum
+  // lembrete automático sai daqui — em 14/10/2026 o studio voltou pro n8n,
+  // que manda os lembretes a partir do Google Agenda. Apagar o secret religa.
+  if (Deno.env.get("SISTEMA_PAUSADO") === "1") {
+    return new Response(JSON.stringify({ pausado: true }), { status: 200 });
+  }
   return null;
 }

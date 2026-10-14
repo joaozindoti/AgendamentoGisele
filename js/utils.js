@@ -13,13 +13,13 @@ var ADDRESS_PLACEHOLDER = 'Av. Zeca Branco - Mutirão, Pedreiras - MA, 65725-000
 var MAPS_URL_PLACEHOLDER = 'https://share.google/ZL5nk044N2o113GlP';
 
 /* 4) WEBHOOK DE PRÉ-CADASTRO (n8n) */
-var PRECADASTRO_WEBHOOK_URL = 'https://179.197.229.103.nip.io/webhook/precadastro';
+var PRECADASTRO_WEBHOOK_URL = 'https://n8n-2-28-202-160.sslip.io/webhook/precadastro';
 
 /* ════════════════════════════════════════════════════════════════ */
 
 /* Webhook de disponibilidade — retorna os horários livres de um dia
    específico (usado em horario.html, ver js/calendar.js). */
-var DISPONIBILIDADE_API = 'https://179.197.229.103.nip.io/webhook/disponibilidade';
+var DISPONIBILIDADE_API = 'https://n8n-2-28-202-160.sslip.io/webhook/disponibilidade';
 
 /* Botão "Ver no mapa" da home */
 function openMaps() {
