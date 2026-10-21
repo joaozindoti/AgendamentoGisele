@@ -38,5 +38,7 @@ function openWhatsApp(services, y, mo, d, time, nome, whats) {
   var url = hasNumber
     ? 'https://wa.me/' + WHATSAPP_NUMBER + '?text=' + msg
     : 'https://api.whatsapp.com/send?text=' + msg; // placeholder: sem destinatário
-  window.open(url, '_blank');
+  // location em vez de window.open: o clique agora passa por uma conferência
+  // assíncrona do horário, e o navegador bloqueia pop-up fora do toque.
+  window.location.href = url;
 }
