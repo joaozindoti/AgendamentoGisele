@@ -246,7 +246,7 @@ async function loadSlots(y, mo, d) {
   }
 }
 
-function selectTime(time) {
+async function selectTime(time) {
   var campo = document.getElementById('nomeCliente');
   var nome = campo.value.trim();
   if (nome.length < 2) {
@@ -264,6 +264,26 @@ function selectTime(time) {
     return;
   }
   try { localStorage.setItem('sgl_nome', nome); localStorage.setItem('sgl_whats', campoW.value); } catch (e) {}
+
+  /* Confere de novo na hora do clique: se outra cliente pegou o horário
+     enquanto a página estava aberta, ele some da lista e ela escolhe outro
+     (sem mandar mensagem nenhuma). Se a conferência falhar, segue normal. */
+  var grid = document.getElementById('timesGrid');
+  grid.style.opacity = '0.5';
+  grid.style.pointerEvents = 'none';
+  var livres = null;
+  try { livres = await fetchHorariosDisponiveis(curY, curMo + 1, selDay, totalDur); } catch (e) { livres = null; }
+  grid.style.opacity = '';
+  grid.style.pointerEvents = '';
+  if (livres && livres.indexOf(time) === -1) {
+    if (livres.length) renderSlots(livres); else renderTimesEmpty();
+    grid.insertAdjacentHTML('afterbegin',
+      '<p class="times-loading" style="color:#9a3b2f;margin-bottom:12px">O horário das ' + time +
+      ' acabou de ser preenchido. Escolha outro:</p>');
+    grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return;
+  }
+
   openWhatsApp(services, curY, curMo, selDay, time, nome, campoW.value);
   Store.clear();
 }
