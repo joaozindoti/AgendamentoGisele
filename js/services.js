@@ -88,10 +88,10 @@ var SERVICES = [{
     /* Serviços da Lara (out/2026): mesma agenda do Google; a mensagem do
        WhatsApp leva "Profissional: Lara" e o Agente marca "(Lara)" no evento */
     {
-        id: '13',
-        name: 'Cílios Volume Híbrido',
-        description: 'Extensão de cílios volume híbrido — com Lara',
-        price: 90,
+        id: '12',
+        name: 'Cílios Volume Brasileiro',
+        description: 'Extensão de cílios volume brasileiro — com Lara',
+        price: 85,
         duration: 150,
         category: 'cilios',
         pro: 'Lara'
@@ -106,10 +106,10 @@ var SERVICES = [{
         pro: 'Lara'
     },
     {
-        id: '17',
-        name: 'Manutenção Cílios Volume Híbrido',
-        description: 'Manutenção do volume híbrido — com Lara',
-        price: 80,
+        id: '16',
+        name: 'Manutenção Cílios Volume Brasileiro',
+        description: 'Manutenção do volume brasileiro — com Lara',
+        price: 70,
         duration: 150,
         category: 'cilios',
         pro: 'Lara'
