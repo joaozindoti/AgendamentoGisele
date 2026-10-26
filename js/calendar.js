@@ -92,6 +92,9 @@ function generateSlots(y, mo, d, serviceDuration) {
 async function fetchHorariosDisponiveis(ano, mes, dia, duracaoMinutos) {
     var dataStr = ano + '-' + pad2(mes) + '-' + pad2(dia);
     var url = DISPONIBILIDADE_API + '?data=' + dataStr + '&duracao=' + duracaoMinutos;
+    // Lara atende em horário próprio (9:30–12:00 e 14:00–17:30): avisa o motor
+    var escolhidos = Store.load();
+    if (escolhidos.some(function (s) { return s.pro === 'Lara'; })) url += '&prof=lara';
     var controller = new AbortController();
     var timeoutId = setTimeout(function() { controller.abort(); }, 8000);
     try {
