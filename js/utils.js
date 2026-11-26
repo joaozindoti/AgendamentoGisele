@@ -13,13 +13,16 @@ var ADDRESS_PLACEHOLDER = 'Av. Zeca Branco - Mutirão, Pedreiras - MA, 65725-000
 var MAPS_URL_PLACEHOLDER = 'https://share.google/ZL5nk044N2o113GlP';
 
 /* 4) WEBHOOK DE PRÉ-CADASTRO (n8n) */
-var PRECADASTRO_WEBHOOK_URL = 'https://n8n-2-28-202-160.sslip.io/webhook/precadastro';
+/* Pelo próprio domínio do site (a Vercel repassa ao n8n, ver vercel.json):
+   o celular da cliente não depende do DNS do sslip.io, que algumas
+   operadoras não resolvem. */
+var PRECADASTRO_WEBHOOK_URL = '/api/precadastro';
 
 /* ════════════════════════════════════════════════════════════════ */
 
 /* Webhook de disponibilidade — retorna os horários livres de um dia
    específico (usado em horario.html, ver js/calendar.js). */
-var DISPONIBILIDADE_API = 'https://n8n-2-28-202-160.sslip.io/webhook/disponibilidade';
+var DISPONIBILIDADE_API = '/api/disponibilidade';
 
 /* Botão "Ver no mapa" da home */
 function openMaps() {
