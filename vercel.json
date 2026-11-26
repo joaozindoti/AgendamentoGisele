@@ -1,0 +1,7 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    { "source": "/api/disponibilidade", "destination": "https://n8n-2-28-202-160.sslip.io/webhook/disponibilidade" },
+    { "source": "/api/precadastro", "destination": "https://n8n-2-28-202-160.sslip.io/webhook/precadastro" }
+  ]
+}
